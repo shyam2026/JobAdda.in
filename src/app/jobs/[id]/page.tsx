@@ -37,7 +37,8 @@ function parseListItems(text?: string | null): string[] {
   return text.split('\n').map(l => l.replace(/^[-*•]\s*/, '').trim()).filter(Boolean);
 }
 
-export default function JobDetailPage({ params }: { params: { id: string } }) {
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const { data: session } = useSession();
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,18 +48,18 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [applyError, setApplyError] = useState('');
 
   useEffect(() => {
-    fetch(`/api/jobs/${params.id}`)
+    fetch(`/api/jobs/${id}`)
       .then(r => {
         if (!r.ok) throw new Error('Job not found');
         return r.json();
       })
       .then(data => { setJob(data); setLoading(false); })
       .catch(err => { setError(err.message); setLoading(false); });
-  }, [params.id]);
+  }, [id]);
 
   const handleApply = async () => {
     if (!session) {
-      window.location.href = `/login?callbackUrl=/jobs/${params.id}`;
+      window.location.href = `/login?callbackUrl=/jobs/${id}`;
       return;
     }
     setApplying(true);
@@ -67,7 +68,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       const res = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId: params.id }),
+        body: JSON.stringify({ jobId: id }),
       });
       const data = await res.json();
       if (res.status === 201) {

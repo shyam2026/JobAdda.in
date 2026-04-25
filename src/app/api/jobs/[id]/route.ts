@@ -4,11 +4,12 @@ import { auth } from "@/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const job = await prisma.job.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         company: {
           select: {
@@ -35,9 +36,10 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const user = session?.user as { id: string; role: string } | undefined;
 
@@ -47,7 +49,7 @@ export async function PATCH(
 
     const body = await req.json();
     const job = await prisma.job.update({
-      where: { id: params.id, companyId: user.id },
+      where: { id, companyId: user.id },
       data: body
     });
 

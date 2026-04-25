@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { JobType } from "@prisma/client";
 import { z } from "zod";
 import { auth } from "@/auth";
 
@@ -9,7 +10,7 @@ const jobSchema = z.object({
   location: z.string().min(2),
   salary: z.string().optional(),
   requirements: z.string().optional(),
-  type: z.string().optional().default('INTERNAL'),
+  type: z.nativeEnum(JobType).optional().default(JobType.INTERNAL),
   externalLink: z.string().url().optional().or(z.literal('')),
 });
 
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
         title, description, location,
         salary: salary || null,
         requirements: requirements || null,
-        type: type || 'INTERNAL',
+        type: type as JobType || JobType.INTERNAL,
         externalLink: externalLink || null,
         status: 'OPEN',
       }
