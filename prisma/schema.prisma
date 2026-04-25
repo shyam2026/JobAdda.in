@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  COMPANY
+  ADMIN
+  SUBADMIN
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  HIRED
+  REJECTED
+}
+
+enum JobType {
+  INTERNAL
+  EXTERNAL
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  password       String
+  name           String?
+  role           Role      @default(STUDENT)
+  
+  // Relations for normalized profile data
+  studentProfile StudentProfile?
+  educations     Education[]
+  experiences    Experience[]
+  skills         Skill[]
+  certificates   Certificate[]
+
+  referralCode   String    @unique
+  referredBy     String?
+  walletBalance  Float     @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  jobs             Job[]         @relation("CompanyJobs")
+  applications     Application[]
+  purchases        Purchase[]
+  sentMessages     Message[]     @relation("SentMessages")
+  receivedMessages Message[]     @relation("ReceivedMessages")
+  transactions     Transaction[]
+}
+
+model StudentProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio       String?  @db.Text
+  phone     String?
+  location  String?
+  github    String?
+  linkedin  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Education {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school      String
+  degree      String
+  field       String?
+  startDate   DateTime?
+  endDate     DateTime?
+  current     Boolean  @default(false)
+  grade       String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company     String
+  role        String
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  current     Boolean  @default(false)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Skill {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  level     String?  // Beginner, Intermediate, Advanced
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, name])
+}
+
+model Certificate {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  issuer    String
+  issueDate DateTime?
+  url       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Job {
+  id              String            @id @default(cuid())
+  companyId       String
+  company         User              @relation("CompanyJobs", fields: [companyId], references: [id])
+  title           String
+  description     String            @db.Text
+  location        String
+  salary          String?
+  requirements    String?           @db.Text
+  type            JobType           @default(INTERNAL)
+  externalLink    String?
+  status          String            @default("OPEN")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  applications    Application[]
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  jobId       String
+  job         Job               @relation(fields: [jobId], references: [id])
+  studentId   String
+  student     User              @relation(fields: [studentId], references: [id])
+  status      ApplicationStatus @default(PENDING)
+  resumeUrl   String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model ResumeTemplate {
+  id           String    @id @default(cuid())
+  name         String
+  price        Float
+  previewImage String?
+  purchases    Purchase[]
+}
+
+model Purchase {
+  id           String         @id @default(cuid())
+  userId       String
+  user         User           @relation(fields: [userId], references: [id])
+  templateId   String
+  template     ResumeTemplate @relation(fields: [templateId], references: [id])
+  amount       Float
+  status       String         @default("COMPLETED")
+  createdAt    DateTime       @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content    String   @db.Text
+  timestamp  DateTime @default(now())
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Float
+  type      String   // REFERRAL_BONUS, PAYOUT
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+}
