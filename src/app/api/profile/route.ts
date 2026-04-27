@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
+// Forced Refresh to clear dev server cache
 export async function GET() {
   try {
     const session = await auth();
@@ -16,36 +17,46 @@ export async function GET() {
         educations: true,
         experiences: true,
         certificates: true,
-      }
+        projects: true,
+      } as any
     });
 
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
+    const u = user as any;
+
     return NextResponse.json({
-      bio: user.studentProfile?.bio || '',
-      phone: user.studentProfile?.phone || '',
-      city: user.studentProfile?.location || '',
-      linkedin: user.studentProfile?.linkedin || '',
-      github: user.studentProfile?.github || '',
-      skills: user.skills.map(s => s.name),
-      education: user.educations.map(e => ({
-        school: e.school,
-        degree: e.degree,
+      name: u.name || '',
+      email: u.email || '',
+      bio: u.studentProfile?.bio || '',
+      phone: u.studentProfile?.phone || '',
+      city: u.studentProfile?.location || '',
+      linkedin: u.studentProfile?.linkedin || '',
+      github: u.studentProfile?.github || '',
+      skills: u.skills?.map((s: any) => s.name) || [],
+      education: u.educations?.map((e: any) => ({
+        school: e.school || '',
+        degree: e.degree || '',
         year: e.description?.replace('Passing Year: ', '') || '',
         grade: e.grade || '',
-      })),
-      experience: user.experiences.map(e => ({
-        company: e.company,
-        role: e.role,
+      })) || [],
+      experience: u.experiences?.map((e: any) => ({
+        company: e.company || '',
+        role: e.role || '',
         duration: '',
         description: e.description || '',
-      })),
-      certificates: user.certificates.map(c => ({
-        name: c.name,
-        issuer: c.issuer,
+      })) || [],
+      certificates: u.certificates?.map((c: any) => ({
+        name: c.name || '',
+        issuer: c.issuer || '',
         date: '',
         url: c.url || '',
-      })),
+      })) || [],
+      projects: u.projects?.map((p: any) => ({
+        title: p.title || '',
+        description: p.description || '',
+        link: p.link || '',
+      })) || [],
     });
   } catch (error) {
     console.error("PROFILE_GET_ERROR", error);
@@ -62,22 +73,30 @@ export async function PUT(req: Request) {
     const userId = userSession.id;
     const data = await req.json();
 
+    // Update User basic info
+    if (data.name) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { name: data.name }
+      });
+    }
+
     await prisma.studentProfile.upsert({
       where: { userId },
       update: {
-        bio: data.bio,
-        phone: data.phone,
-        location: data.city,
-        linkedin: data.linkedin,
-        github: data.github,
+        bio: data.bio || '',
+        phone: data.phone || '',
+        location: data.city || '',
+        linkedin: data.linkedin || '',
+        github: data.github || '',
       },
       create: {
         userId,
-        bio: data.bio,
-        phone: data.phone,
-        location: data.city,
-        linkedin: data.linkedin,
-        github: data.github,
+        bio: data.bio || '',
+        phone: data.phone || '',
+        location: data.city || '',
+        linkedin: data.linkedin || '',
+        github: data.github || '',
       },
     });
 
@@ -116,6 +135,21 @@ export async function PUT(req: Request) {
             company: exp.company,
             role: exp.role,
             description: `${exp.duration ? `Duration: ${exp.duration}\n` : ''}${exp.description || ''}`,
+          })),
+        });
+      }
+    }
+
+    if (data.projects && Array.isArray(data.projects)) {
+      await (prisma as any).project.deleteMany({ where: { userId } });
+      const valid = data.projects.filter((p: any) => p.title);
+      if (valid.length > 0) {
+        await (prisma as any).project.createMany({
+          data: valid.map((proj: any) => ({
+            userId,
+            title: proj.title,
+            description: proj.description,
+            link: proj.link,
           })),
         });
       }

@@ -12,6 +12,7 @@ const jobSchema = z.object({
   requirements: z.string().optional(),
   type: z.nativeEnum(JobType).optional().default(JobType.INTERNAL),
   externalLink: z.string().url().optional().or(z.literal('')),
+  category: z.string().optional().default('Other'),
 });
 
 export async function GET(req: Request) {
@@ -29,6 +30,7 @@ export async function GET(req: Request) {
       ...(q && { OR: [{ title: { contains: q } }, { description: { contains: q } }] }),
       ...(location && { location: { contains: location } }),
       ...(type && { type }),
+      ...(category && { category }),
     };
 
     const [jobs, total] = await Promise.all([
@@ -52,9 +54,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    const user = session?.user as { id: string; role: string } | undefined;
+    const user = session?.user as { id: string; role: string; portalType?: string } | undefined;
 
-    if (!user || user.role !== 'COMPANY') {
+    if (!user || user.portalType !== 'company') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -64,19 +66,57 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid data", details: result.error.format() }, { status: 400 });
     }
 
-    const { title, description, location, salary, requirements, type, externalLink } = result.data;
+    const { title, description, location, salary, requirements, type, externalLink, category } = result.data;
 
-    const job = await prisma.job.create({
-      data: {
-        companyId: user.id,
-        title, description, location,
-        salary: salary || null,
-        requirements: requirements || null,
-        type: type as JobType || JobType.INTERNAL,
-        externalLink: externalLink || null,
-        status: 'OPEN',
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let idLength = 6;
+    let customJobId = '';
+    let job = null;
+    let attempts = 0;
+
+    while (!job) {
+      customJobId = '';
+      for (let i = 0; i < idLength; i++) {
+        customJobId += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-    });
+
+      // Proactively check if ID exists to handle collisions before creation
+      const exists = await prisma.job.findUnique({ where: { id: customJobId } });
+      if (exists) {
+        attempts++;
+        if (attempts >= 5) {
+          idLength++; // Increase length if 6-digit space is crowded
+          attempts = 0;
+        }
+        continue;
+      }
+
+      try {
+        job = await prisma.job.create({
+          data: {
+            id: customJobId,
+            companyId: user.id,
+            title, description, location,
+            salary: salary || null,
+            requirements: requirements || null,
+            type: type as JobType || JobType.INTERNAL,
+            externalLink: externalLink || null,
+            category: category || 'Other',
+            status: 'OPEN',
+          } as any
+        });
+      } catch (e: any) {
+        if (e.code === 'P2002') {
+          attempts++;
+          if (attempts >= 5) {
+            idLength++;
+            attempts = 0;
+          }
+        } else {
+          throw e;
+        }
+      }
+    }
 
     return NextResponse.json(job, { status: 201 });
   } catch (error) {

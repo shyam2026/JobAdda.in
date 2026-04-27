@@ -1,251 +1,204 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { Copy, Gift, Wallet, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import React from 'react';
+import { Gift, Wallet, Users, ArrowRight, Zap, CheckCircle, Share2, TrendingUp, DollarSign } from 'lucide-react';
 
 const HOW_STEPS = [
-  { n: '1', title: 'Get Your Link', desc: 'Every JobAdda.in account gets a unique referral link. Share it anywhere.' },
-  { n: '2', title: 'Friend Joins', desc: 'Your friend signs up using your referral link on JobAdda.in.' },
-  { n: '3', title: 'They Apply', desc: 'Once they apply to their first job, your bonus is confirmed.' },
-  { n: '4', title: 'You Earn ₹50', desc: 'Money is credited to your JobAdda.in wallet instantly.' },
+  { 
+    n: '1', 
+    title: 'Get Your Unique Link', 
+    desc: 'Create a free account on JobAdda.in and get your personalized referral link instantly.',
+    icon: <Share2 size={24} />
+  },
+  { 
+    n: '2', 
+    title: 'Share with Friends', 
+    desc: 'Share your link on WhatsApp, LinkedIn, or Twitter. There is no limit on how many friends you can invite.',
+    icon: <Users size={24} />
+  },
+  { 
+    n: '3', 
+    title: 'Friend Joins & Applies', 
+    desc: 'When your friend signs up and applies for their first verified job, your referral is confirmed.',
+    icon: <TrendingUp size={24} />
+  },
+  { 
+    n: '4', 
+    title: 'Earn Real Cash', 
+    desc: 'Upto ₹50 is credited to your JobAdda wallet for every successful referral. Withdraw to your bank.',
+    icon: <DollarSign size={24} />
+  },
 ];
 
-interface WalletData {
-  balance: number;
-  referralCode: string;
-  transactions: Array<{
-    id: string;
-    amount: number;
-    type: string;
-    status: string;
-    createdAt: string;
-  }>;
-  referredUsers: Array<{
-    id: string;
-    name: string | null;
-    email: string;
-    createdAt: string;
-    applications: { id: string }[];
-  }>;
-}
+const BENEFITS = [
+  'Real cash rewards, not just points',
+  'Weekly payouts to your bank account',
+  'No limit on earnings',
+  'Help your friends find their dream jobs'
+];
 
-function timeAgo(date: string) {
-  const diff = Date.now() - new Date(date).getTime();
-  const days = Math.floor(diff / 86400000);
-  if (days === 0) return 'Today';
-  if (days === 1) return '1 day ago';
-  if (days < 30) return `${days} days ago`;
-  return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-export default function ReferPage() {
-  const { data: session, status } = useSession();
-  const [copied, setCopied] = useState(false);
-  const [walletData, setWalletData] = useState<WalletData | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jobadda.in';
-  const referralLink = walletData?.referralCode
-    ? `${siteUrl}/register?ref=${walletData.referralCode}`
-    : '';
-
-  useEffect(() => {
-    if (status === 'authenticated') {
-      setLoading(true);
-      fetch('/api/wallet')
-        .then(r => r.json())
-        .then(data => { setWalletData(data); setLoading(false); })
-        .catch(() => setLoading(false));
-    }
-  }, [status]);
-
-  const handleCopy = () => {
-    if (!referralLink) return;
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
-  const handleShare = (platform: string) => {
-    const text = `Join me on JobAdda.in – India's best job portal! Sign up using my referral link and find your dream job. 🚀`;
-    const url = referralLink;
-    const platforms: Record<string, string> = {
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + '\n' + url)}`,
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-    };
-    if (platforms[platform]) window.open(platforms[platform], '_blank');
-  };
-
-  const totalEarned = (walletData?.transactions || [])
-    .filter(t => t.status === 'COMPLETED')
-    .reduce((sum, t) => sum + t.amount, 0);
-
+export default function ReferLandingPage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-      {/* Hero */}
-      <section style={{ padding: '5rem 0 4rem', textAlign: 'center', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.12), transparent)' }}>
-        <div className="container">
-          <div className="badge badge-primary" style={{ marginBottom: '1.5rem', fontSize: '0.88rem' }}>
-            <Gift size={14} /> Referral Program
+      {/* Hero Section */}
+      <section style={{ padding: '6rem 0 4rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)', width: '800px', height: '400px', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', zIndex: 0 }} />
+        
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="anim-fade-up">
+            <span className="badge badge-primary" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem' }}>
+              <Gift size={14} /> Official Referral Program
+            </span>
           </div>
-          <h1 style={{ marginBottom: '1rem' }}>Refer Friends.<br /><span className="text-gradient">Earn Real Money.</span></h1>
-          <p style={{ fontSize: '1.15rem', maxWidth: '560px', margin: '0 auto 3rem' }}>
-            Share your unique JobAdda.in link. Earn <strong style={{ color: 'var(--success)', fontSize: '1.2rem' }}>₹50</strong> for every friend who joins and applies for their first job.
+          <h1 className="anim-fade-up anim-delay-1" style={{ marginBottom: '1.5rem' }}>
+            Don't Just Find Jobs.<br />
+            <span className="text-gradient">Get Paid to Help Others.</span>
+          </h1>
+          <p className="anim-fade-up anim-delay-2" style={{ fontSize: '1.2rem', maxWidth: '650px', margin: '0 auto 3rem', color: 'var(--text-2)' }}>
+            Join the JobAdda.in community and earn <strong style={{ color: 'var(--success)', fontSize: '1.4rem' }}>Upto ₹50</strong> for every friend you refer who applies for a job.
           </p>
-
-          {/* Stats */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-            {[{ val: '₹50', lbl: 'Per referral' }, { val: '∞', lbl: 'No limit on friends' }, { val: '100%', lbl: 'Verified program' }].map(s => (
-              <div key={s.lbl} className="stat-item">
-                <div className="stat-val">{s.val}</div>
-                <div className="stat-lbl">{s.lbl}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Referral Link Box */}
-          <div style={{ maxWidth: '560px', margin: '0 auto', background: 'var(--surface-2)', border: '1.5px solid var(--border-active)', borderRadius: 'var(--radius-xl)', padding: '1.75rem' }}>
-            <p style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-2)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Your Unique Referral Link
-            </p>
-            {status === 'loading' || loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem' }}>
-                <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
-              </div>
-            ) : !session ? (
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ color: 'var(--text-3)', marginBottom: '1rem', fontSize: '0.9rem' }}>Sign in to get your referral link</p>
-                <a href="/login" className="btn btn-primary">Sign In to Get Link</a>
-              </div>
-            ) : (
-              <>
-                <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                  <input
-                    readOnly
-                    value={referralLink}
-                    style={{ flex: 1, color: 'var(--primary-light)', fontWeight: '600', fontSize: '0.82rem', background: 'rgba(99,102,241,0.08)', borderColor: 'var(--border-active)', minWidth: '0' }}
-                  />
-                  <button onClick={handleCopy} className={`btn ${copied ? 'btn-success' : 'btn-primary'}`} style={{ flexShrink: 0, gap: '0.4rem' }}>
-                    {copied ? <><CheckCircle size={16} /> Copied!</> : <><Copy size={16} /> Copy</>}
-                  </button>
-                </div>
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <button onClick={() => handleShare('whatsapp')} className="btn btn-outline btn-sm" style={{ flex: 1, justifyContent: 'center', fontSize: '0.8rem', minWidth: '80px' }}>📱 WhatsApp</button>
-                  <button onClick={() => handleShare('twitter')} className="btn btn-outline btn-sm" style={{ flex: 1, justifyContent: 'center', fontSize: '0.8rem', minWidth: '80px' }}>🐦 Twitter</button>
-                  <button onClick={() => handleShare('linkedin')} className="btn btn-outline btn-sm" style={{ flex: 1, justifyContent: 'center', fontSize: '0.8rem', minWidth: '80px' }}>💼 LinkedIn</button>
-                </div>
-              </>
-            )}
+          
+          <div className="anim-fade-up anim-delay-3" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="/register" className="btn btn-primary btn-lg">
+              Start Earning Now <ArrowRight size={18} />
+            </a>
+            <a href="/login" className="btn btn-outline btn-lg">Login to My Wallet</a>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="section" style={{ paddingTop: '4rem' }}>
+      {/* Stats Section */}
+      <section className="section-sm" style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="container">
+          <div className="grid-3" style={{ textAlign: 'center' }}>
+            <div>
+              <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--primary-light)' }}>₹5 Lakhs+</div>
+              <div style={{ color: 'var(--text-3)', fontWeight: '500' }}>Already Paid Out</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--primary-light)' }}>10k+</div>
+              <div style={{ color: 'var(--text-3)', fontWeight: '500' }}>Active Referrers</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--primary-light)' }}>∞</div>
+              <div style={{ color: 'var(--text-3)', fontWeight: '500' }}>Unlimited Earnings</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works */}
+      <section className="section">
         <div className="container">
           <div className="section-title">
             <h2>How It <span className="text-gradient">Works</span></h2>
+            <p>Simple steps to start earning with JobAdda.in</p>
           </div>
+          
           <div className="grid-4">
-            {HOW_STEPS.map((s, i) => (
-              <div key={i} className="card card-p" style={{ textAlign: 'center', position: 'relative' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '1.2rem', color: 'white', margin: '0 auto 1.25rem', boxShadow: '0 4px 15px rgba(99,102,241,0.3)' }}>{s.n}</div>
-                <h4 style={{ marginBottom: '0.6rem' }}>{s.title}</h4>
-                <p style={{ fontSize: '0.88rem' }}>{s.desc}</p>
-                {i < HOW_STEPS.length - 1 && (
-                  <ArrowRight size={20} style={{ position: 'absolute', right: '-0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', display: 'none' }} className="hide-mobile" />
-                )}
+            {HOW_STEPS.map((step, i) => (
+              <div key={i} className="card card-p" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <div style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  borderRadius: '16px', 
+                  background: 'rgba(99,102,241,0.1)', 
+                  color: 'var(--primary-light)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  margin: '0 auto 1.5rem',
+                  boxShadow: '0 4px 12px rgba(99,102,241,0.1)'
+                }}>
+                  {step.icon}
+                </div>
+                <h4 style={{ marginBottom: '0.75rem' }}>{step.title}</h4>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-3)', margin: 0 }}>{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Wallet & History — only for logged-in users */}
-      {session && (
-        <section className="section" style={{ paddingTop: 0 }}>
-          <div className="container">
-            <div className="grid-2" style={{ gap: '2rem' }}>
-              {/* Wallet Card */}
-              <div className="card card-p" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05))', border: '1px solid rgba(16,185,129,0.2)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                  <div style={{ width: '52px', height: '52px', borderRadius: 'var(--radius)', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success)' }}>
-                    <Wallet size={24} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--success)' }}>₹{(walletData?.balance || 0).toFixed(0)}</div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-3)' }}>Wallet Balance</div>
-                  </div>
-                </div>
-                <div className="grid-2" style={{ gap: '0.75rem', marginBottom: '1.5rem' }}>
-                  {[
-                    { label: 'Total Earned', val: `₹${totalEarned}` },
-                    { label: 'Total Referrals', val: String(walletData?.referredUsers?.length || 0) },
-                  ].map(r => (
-                    <div key={r.label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-sm)', padding: '0.85rem', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.4rem', fontWeight: '800' }}>{r.val}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{r.label}</div>
+      {/* Features/Benefits */}
+      <section className="section" style={{ background: 'var(--bg-2)', position: 'relative' }}>
+        <div className="container">
+          <div className="grid-2" style={{ alignItems: 'center', gap: '4rem' }}>
+            <div>
+              <h2 style={{ marginBottom: '1.5rem' }}>Why Join the <span className="text-gradient">Referral Program?</span></h2>
+              <p style={{ marginBottom: '2rem', fontSize: '1.1rem' }}>We value our community. Our program is designed to reward you for helping your network succeed.</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {BENEFITS.map((benefit, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ color: 'var(--success)', display: 'flex' }}>
+                      <CheckCircle size={20} />
                     </div>
-                  ))}
-                </div>
-                <button className="btn btn-success" style={{ width: '100%', justifyContent: 'center' }} disabled>
-                  Withdraw (Coming Soon)
-                </button>
+                    <span style={{ fontWeight: '500', fontSize: '1.05rem' }}>{benefit}</span>
+                  </div>
+                ))}
               </div>
 
-              {/* Referral History */}
-              <div className="card">
-                <h4 style={{ padding: '1.5rem 1.5rem 0' }}>Referral History</h4>
-                {walletData?.referredUsers && walletData.referredUsers.length > 0 ? (
-                  <div className="table-wrap" style={{ marginTop: '1rem', border: 'none', borderTop: '1px solid var(--border)', borderRadius: 0 }}>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Friend</th>
-                          <th>Joined</th>
-                          <th>Status</th>
-                          <th>Earned</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {walletData.referredUsers.map(user => {
-                          const hasApplied = user.applications.length > 0;
-                          return (
-                            <tr key={user.id}>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                  <div className="avatar avatar-sm">{(user.name || user.email)[0]?.toUpperCase()}</div>
-                                  <span style={{ fontWeight: '600', fontSize: '0.88rem' }}>{user.name || user.email.split('@')[0]}</span>
-                                </div>
-                              </td>
-                              <td style={{ fontSize: '0.82rem', color: 'var(--text-3)' }}>{timeAgo(user.createdAt)}</td>
-                              <td>
-                                <span className={`badge ${hasApplied ? 'badge-success' : 'badge-warning'}`}>
-                                  {hasApplied ? 'Completed' : 'Pending'}
-                                </span>
-                              </td>
-                              <td style={{ fontWeight: '700', color: hasApplied ? 'var(--success)' : 'var(--text-3)' }}>
-                                {hasApplied ? '₹50' : '—'}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+              <div style={{ marginTop: '3rem' }}>
+                <a href="/register" className="btn btn-primary">Join 50,000+ Earners</a>
+              </div>
+            </div>
+            
+            <div className="show-desktop" style={{ position: 'relative' }}>
+              <div className="card card-p-lg" style={{ background: 'linear-gradient(135deg, var(--bg-3), var(--bg-2))', border: '1px solid var(--border-active)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '1rem', letterSpacing: '0.1em' }}>Earnings Preview</div>
+                  <div style={{ fontSize: '3.5rem', fontWeight: '800', color: 'var(--success)', marginBottom: '0.5rem' }}>₹15,453</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-2)' }}>Total wallet balance</div>
+                  
+                  <div className="divider" style={{ margin: '2rem 0' }} />
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {[
+                      { name: 'Rahul S.', amt: '+₹42', status: 'Confirmed' },
+                      { name: 'Priya K.', amt: '+₹50', status: 'Confirmed' },
+                      { name: 'Amit M.', amt: '+₹35', status: 'Confirmed' },
+                    ].map((tx, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius)' }}>
+                        <div style={{ textAlign: 'left' }}>
+                          <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{tx.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Referral Reward</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ color: 'var(--success)', fontWeight: '700' }}>{tx.amt}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--success)', opacity: 0.8 }}>{tx.status}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '3rem 2rem', color: 'var(--text-3)' }}>
-                    <Gift size={32} style={{ marginBottom: '0.75rem', opacity: 0.3 }} />
-                    <p style={{ margin: 0 }}>No referrals yet. Start sharing your link!</p>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="section" style={{ textAlign: 'center' }}>
+        <div className="container">
+          <div className="card card-p-lg" style={{ background: 'radial-gradient(circle at center, rgba(99,102,241,0.15) 0%, transparent 100%)', border: '1px solid var(--border)' }}>
+            <Zap size={48} style={{ color: 'var(--warning)', marginBottom: '1.5rem' }} />
+            <h2 style={{ marginBottom: '1rem' }}>Ready to Start Earning?</h2>
+            <p style={{ maxWidth: '600px', margin: '0 auto 2.5rem', fontSize: '1.1rem' }}>
+              It only takes 30 seconds to join. Create your account, share your link, and watch your wallet grow.
+            </p>
+            <a href="/register" className="btn btn-primary btn-lg" style={{ padding: '1rem 3rem' }}>
+              Create My Free Account
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .show-desktop { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

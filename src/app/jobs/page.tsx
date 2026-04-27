@@ -16,6 +16,7 @@ export default function JobsPage() {
   const [query, setQuery] = useState('');
   const [location, setLocation] = useState('');
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchJobs = useCallback(async () => {
@@ -24,6 +25,7 @@ export default function JobsPage() {
       const params = new URLSearchParams();
       if (query) params.set('q', query);
       if (location) params.set('location', location);
+      if (categoryFilter) params.set('category', categoryFilter);
       if (typeFilter.length === 1) params.set('type', typeFilter[0]);
       params.set('page', String(page));
       params.set('limit', '10');
@@ -51,6 +53,7 @@ export default function JobsPage() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('q')) setQuery(params.get('q')!);
       if (params.get('location')) setLocation(params.get('location')!);
+      if (params.get('category')) setCategoryFilter(params.get('category')!);
     }
   }, []);
 
@@ -129,7 +132,7 @@ export default function JobsPage() {
           <div className="card card-p" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.05))', border: '1px solid rgba(99,102,241,0.2)', textAlign: 'center' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>💸</div>
             <h4 style={{ marginBottom: '0.5rem' }}>Refer & Earn</h4>
-            <p style={{ fontSize: '0.85rem', marginBottom: '1rem', color: 'var(--text-2)' }}>Invite friends. Earn ₹50 per referral.</p>
+            <p style={{ fontSize: '0.85rem', marginBottom: '1rem', color: 'var(--text-2)' }}>Invite friends. Earn Upto ₹50 per referral.</p>
             <a href="/refer" className="btn btn-primary btn-sm" style={{ width: '100%', justifyContent: 'center' }}>Get My Link</a>
           </div>
         </aside>
@@ -138,7 +141,12 @@ export default function JobsPage() {
         <div>
           <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
             <p style={{ margin: 0, color: 'var(--text-3)', fontSize: '0.9rem' }}>
-              {loading ? 'Searching...' : <><strong style={{ color: 'var(--text)' }}>{total}</strong> jobs found</>}
+              {loading ? 'Searching...' : (
+                <>
+                  <strong style={{ color: 'var(--text)' }}>{total}</strong> jobs found
+                  {categoryFilter && <> in <strong style={{ color: 'var(--primary-light)' }}>{categoryFilter}</strong></>}
+                </>
+              )}
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               {loading && <Loader2 size={16} style={{ color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />}

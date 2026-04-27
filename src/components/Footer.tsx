@@ -12,15 +12,15 @@ const FOOTER_LINKS: Record<string, { label: string; href: string }[]> = {
   ],
   'For Employers': [
     { label: 'Post a Job', href: '/company/register' },
-    { label: 'Recruiter Login', href: '/login' },
+    { label: 'Employer Login', href: '/company/login' },
     { label: 'Company Dashboard', href: '/company/dashboard' },
     { label: 'View Pricing', href: '/company/pricing' },
   ],
   'Company': [
     { label: 'About Us', href: '/about' },
     { label: 'Contact Us', href: '/contact' },
+    { label: 'Terms & Conditions', href: '/terms' },
     { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
   ],
 };
 
@@ -39,7 +39,6 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: 'white', fontSize: '1.1rem' }}>J</div>
               <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>JobAdda<span style={{ color: '#818cf8' }}>.in</span></span>
             </div>
             <p style={{ fontSize: '0.9rem', lineHeight: '1.8', maxWidth: '240px', color: 'var(--text-3)' }}>
@@ -86,12 +85,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>© 2026 JobAdda.in — All rights reserved.</p>
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
-            <Link href="/privacy" style={{ fontSize: '0.85rem', color: 'var(--text-3)', textDecoration: 'none' }}>Privacy</Link>
-            <Link href="/terms" style={{ fontSize: '0.85rem', color: 'var(--text-3)', textDecoration: 'none' }}>Terms</Link>
-            <Link href="/contact" style={{ fontSize: '0.85rem', color: 'var(--text-3)', textDecoration: 'none' }}>Contact</Link>
-          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>© 2026 JobAdda.in | All rights reserved.</p>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>Made with ❤️ in India</p>
         </div>
       </div>

@@ -3,25 +3,34 @@ import { NextResponse } from "next/server";
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
+  const session = req.auth;
 
-  // Skip proxy for API routes
+  // Skip API routes
   if (pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
-  // Protected routes — require login
-  const protectedRoutes = ['/dashboard', '/profile', '/resume', '/refer', '/notifications', '/jobs/applied'];
-  const companyRoutes = ['/company/dashboard', '/company/jobs', '/company/applicants'];
-  const adminRoutes = ['/admin'];
+  // Define route categories
+  const isAdminPath = pathname.startsWith('/admin');
+  const isCompanyPath = pathname.startsWith('/company');
+  const isStudentPath = pathname.startsWith('/user');
 
-  const isProtected = protectedRoutes.some(r => pathname.startsWith(r));
-  const isCompany = companyRoutes.some(r => pathname.startsWith(r));
-  const isAdmin = adminRoutes.some(r => pathname.startsWith(r));
+  // Skip for public routes like login/register within portals
+  const isAuthPage = pathname.includes('/login') || pathname.includes('/register');
+  if (isAuthPage) return NextResponse.next();
 
-  // req.auth contains the session in v5
-  const session = req.auth;
+  // Admin Protection
+  if (isAdminPath && !session) {
+    return NextResponse.redirect(new URL('/admin/login', req.url));
+  }
 
-  if ((isProtected || isCompany || isAdmin) && !session) {
+  // Company Protection
+  if (isCompanyPath && !session) {
+    return NextResponse.redirect(new URL('/company/login', req.url));
+  }
+
+  // Student Protection
+  if (isStudentPath && !session) {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
@@ -32,15 +41,8 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/profile/:path*',
-    '/resume/:path*',
-    '/refer/:path*',
-    '/notifications/:path*',
-    '/jobs/applied/:path*',
-    '/company/dashboard/:path*',
-    '/company/jobs/:path*',
-    '/company/applicants/:path*',
+    '/user/:path*',
+    '/company/:path*',
     '/admin/:path*',
   ]
 };

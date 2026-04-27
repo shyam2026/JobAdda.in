@@ -215,12 +215,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 </div>
               )}
 
-              {applied ? (
+              {job.status === 'ARCHIVED' ? (
+                <div style={{ textAlign: 'center', padding: '1.25rem', background: 'rgba(245,158,11,0.1)', borderRadius: 'var(--radius)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                  <AlertCircle size={32} style={{ color: 'var(--warning)', marginBottom: '0.5rem', margin: '0 auto' }} />
+                  <p style={{ margin: '0.5rem 0 0', fontWeight: '700', color: 'var(--warning)' }}>Job Archived</p>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: 'var(--text-3)' }}>This job is no longer accepting new applications.</p>
+                </div>
+              ) : applied ? (
                 <div style={{ textAlign: 'center', padding: '1.25rem', background: 'rgba(16,185,129,0.1)', borderRadius: 'var(--radius)', border: '1px solid rgba(16,185,129,0.2)' }}>
-                  <CheckCircle size={32} style={{ color: 'var(--success)', marginBottom: '0.5rem' }} />
+                  <CheckCircle size={32} style={{ color: 'var(--success)', marginBottom: '0.5rem', margin: '0 auto' }} />
                   <p style={{ margin: 0, fontWeight: '700', color: 'var(--success)' }}>Applied Successfully!</p>
                   <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: 'var(--text-3)' }}>We'll notify you of any updates</p>
-                  <a href="/jobs/applied" className="btn btn-outline btn-sm" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>View My Applications</a>
+                  <a href="/user/applied-jobs" className="btn btn-outline btn-sm" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>View My Applications</a>
                 </div>
               ) : isExternal ? (
                 <a
@@ -243,8 +249,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     {applying ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Submitting...</> : '⚡ One-Click Apply'}
                   </button>
                   {applyError && (
-                    <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'rgba(239,68,68,0.1)', borderRadius: 'var(--radius)', fontSize: '0.85rem', color: 'var(--danger)', textAlign: 'center' }}>
-                      {applyError}
+                    <div style={{ marginTop: '0.75rem', padding: '1rem', background: 'rgba(239,68,68,0.1)', borderRadius: 'var(--radius)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '0.85rem', color: 'var(--danger)', textAlign: 'center' }}>
+                      <AlertCircle size={20} style={{ margin: '0 auto 0.5rem', display: 'block' }} />
+                      <p style={{ fontWeight: '700', marginBottom: '0.5rem', margin: 0 }}>{applyError}</p>
+                      {applyError.includes('Profile Incomplete') && (
+                        <a href="/user/profile" className="btn btn-primary btn-sm" style={{ marginTop: '0.75rem', width: '100%', justifyContent: 'center' }}>
+                          Complete Profile (40%)
+                        </a>
+                      )}
                     </div>
                   )}
                   {!session && (
@@ -275,7 +287,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   className="btn btn-outline"
                   style={{ width: '100%', justifyContent: 'center', gap: '0.5rem' }}
                 >
-                  <Share2 size={15} /> Share & Earn ₹50
+                  <Share2 size={15} /> Share & Earn Upto ₹50
                 </button>
               </div>
             </div>

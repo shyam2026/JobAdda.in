@@ -25,7 +25,7 @@ export function LoginForm() {
       if (res?.error) {
         setError('Invalid email or password. Please try again.');
       } else {
-        router.push('/dashboard');
+        router.push('/user/dashboard');
       }
     } catch (err) {
       setError('An unexpected error occurred.');
@@ -90,14 +90,7 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-        <Button variant="outline" fullWidth onClick={() => router.push('/company/login')}>
-          🏢 Recruiter Login
-        </Button>
-        <Button variant="outline" fullWidth onClick={() => router.push('/admin/login')}>
-          🛡 Admin Login
-        </Button>
-      </div>
+
     </div>
   );
 }

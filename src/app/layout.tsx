@@ -2,8 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 export const metadata: Metadata = {
   title: "JobAdda.in | Find Your Dream Job in India",
@@ -16,9 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <Providers>
-          <Navbar />
-          <main style={{ minHeight: 'calc(100vh - 70px)' }}>{children}</main>
-          <Footer />
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
         </Providers>
       </body>
     </html>

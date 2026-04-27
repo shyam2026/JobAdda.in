@@ -30,7 +30,7 @@ export default function Navbar() {
     { href: '/jobs', label: 'Find Jobs', icon: Search },
     { href: '/companies', label: 'Companies', icon: Building2 },
     { href: '/salary', label: 'Salary Guide', icon: DollarSign },
-    { href: '/refer', label: 'Refer & Earn', icon: Gift },
+    { href: session ? '/user/refer' : '/refer', label: 'Refer & Earn', icon: Gift },
   ];
 
   const user = session?.user as { name?: string | null; email?: string | null; role?: string } | undefined;
@@ -39,7 +39,7 @@ export default function Navbar() {
     ? '/company/dashboard'
     : user?.role === 'ADMIN'
     ? '/admin/dashboard'
-    : '/dashboard';
+    : '/user/dashboard';
 
   return (
     <>
@@ -47,7 +47,6 @@ export default function Navbar() {
         <div className="container nav-inner">
           {/* Logo */}
           <a href="/" className="nav-logo">
-            <div className="logo-mark">J</div>
             <span>JobAdda<span style={{ color: 'var(--primary-light)', fontWeight: '700' }}>.in</span></span>
           </a>
 
@@ -64,7 +63,7 @@ export default function Navbar() {
               <div className="hide-mobile" style={{ width: '120px', height: '36px', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }} />
             ) : session ? (
               <>
-                <a href="/notifications" className="btn btn-ghost btn-icon hide-mobile" aria-label="Notifications">
+                <a href="/user/notifications" className="btn btn-ghost btn-icon hide-mobile" aria-label="Notifications">
                   <Bell size={20} />
                 </a>
                 {/* Profile Dropdown */}
@@ -88,13 +87,12 @@ export default function Navbar() {
                       <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', marginBottom: '0.4rem' }}>
                         <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{user?.name}</div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', wordBreak: 'break-all' }}>{user?.email}</div>
-                        {user?.role && <div style={{ fontSize: '0.72rem', color: 'var(--primary-light)', marginTop: '0.2rem', textTransform: 'capitalize' }}>{user.role.toLowerCase()}</div>}
                       </div>
-                      <a href={dashboardLink} className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><LayoutDashboard size={16} />Dashboard</a>
-                      <a href="/profile" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><User size={16} />My Profile</a>
-                      <a href="/jobs/applied" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><Briefcase size={16} />Applied Jobs</a>
-                      <a href="/resume" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><FileText size={16} />Resume Builder</a>
-                      <a href="/refer" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><Share2 size={16} />Refer & Earn</a>
+                      <a href="/user/dashboard" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><LayoutDashboard size={16} />Dashboard</a>
+                      <a href="/user/profile" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><User size={16} />My Profile</a>
+                      <a href="/user/applied-jobs" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><Briefcase size={16} />Applied Jobs</a>
+                      <a href="/user/resume" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><FileText size={16} />Resume Builder</a>
+                      <a href="/user/refer" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><Share2 size={16} />Refer & Earn</a>
                       <div style={{ height: '1px', background: 'var(--border)', margin: '0.4rem 0.5rem' }} />
                       <button
                         onClick={() => { setProfileOpen(false); signOut({ callbackUrl: '/' }); }}
@@ -134,7 +132,7 @@ export default function Navbar() {
           onClick={e => { if (e.target === e.currentTarget) setMobileOpen(false); }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ color: 'var(--text-3)', fontSize: '0.75rem', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Navigation</div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               {navLinks.map(l => (
                 <a key={l.href} href={l.href} className="sidebar-item" style={{ fontSize: '1rem', padding: '0.9rem 1rem' }} onClick={() => setMobileOpen(false)}>
@@ -146,27 +144,27 @@ export default function Navbar() {
             <div style={{ height: '1px', background: 'var(--border)' }} />
 
             {session ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.5rem 1rem 1.25rem' }}>
-                  <div className="avatar avatar-lg">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
-                  <div>
-                    <div style={{ fontWeight: '700', fontSize: '1.1rem' }}>{user?.name}</div>
-                    <div style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>{user?.email}</div>
-                  </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+                  <a 
+                    href="/user/profile" 
+                    onClick={() => setMobileOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit', flex: 1 }}
+                  >
+                    <div className="avatar avatar-md">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: '700', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+                      <div style={{ color: 'var(--text-3)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
+                    </div>
+                  </a>
+                  <button
+                    onClick={() => { setMobileOpen(false); signOut({ callbackUrl: '/' }); }}
+                    style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: 'var(--danger)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', display: 'flex' }}
+                    title="Sign Out"
+                  >
+                    <LogOut size={20} />
+                  </button>
                 </div>
-                <a href={dashboardLink} className="sidebar-item" style={{ fontSize: '1rem', padding: '0.9rem 1rem' }} onClick={() => setMobileOpen(false)}><LayoutDashboard size={20} /> Dashboard</a>
-                <a href="/profile" className="sidebar-item" style={{ fontSize: '1rem', padding: '0.9rem 1rem' }} onClick={() => setMobileOpen(false)}><User size={20} /> My Profile</a>
-                <a href="/notifications" className="sidebar-item" style={{ fontSize: '1rem', padding: '0.9rem 1rem' }} onClick={() => setMobileOpen(false)}><Bell size={20} /> Notifications</a>
-                <a href="/resume" className="sidebar-item" style={{ fontSize: '1rem', padding: '0.9rem 1rem' }} onClick={() => setMobileOpen(false)}><FileText size={20} /> Resume Builder</a>
-                <a href="/refer" className="sidebar-item" style={{ fontSize: '1rem', padding: '0.9rem 1rem' }} onClick={() => setMobileOpen(false)}><Share2 size={20} /> Refer & Earn</a>
-                <div style={{ height: '1px', background: 'var(--border)', margin: '0.5rem 0' }} />
-                <button
-                  onClick={() => { setMobileOpen(false); signOut({ callbackUrl: '/' }); }}
-                  className="sidebar-item"
-                  style={{ color: 'var(--danger)', fontSize: '1rem', padding: '0.9rem 1rem', width: '100%' }}
-                >
-                  <LogOut size={20} /> Sign Out
-                </button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

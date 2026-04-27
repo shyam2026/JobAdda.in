@@ -16,7 +16,6 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            studentProfile: { select: { bio: true, location: true, linkedin: true } }
           }
         },
         applications: { select: { id: true } }
@@ -43,13 +42,20 @@ export async function PATCH(
     const session = await auth();
     const user = session?.user as { id: string; role: string } | undefined;
 
-    if (!user || user.role !== 'COMPANY') {
+    if (!user || (user.role !== 'COMPANY' && user.role !== 'ADMIN' && user.role !== 'SUBADMIN')) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
+    
+    // Only enforce companyId ownership if user is a COMPANY
+    const where: any = { id };
+    if (user.role === 'COMPANY') {
+      where.companyId = user.id;
+    }
+
     const job = await prisma.job.update({
-      where: { id, companyId: user.id },
+      where,
       data: body
     });
 

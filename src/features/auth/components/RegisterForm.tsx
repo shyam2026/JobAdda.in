@@ -2,17 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, User, Building2, ArrowRight, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, User, Building2, ArrowRight, CheckCircle, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 
 export function RegisterForm() {
   const [role, setRole] = useState<'STUDENT' | 'COMPANY'>('STUDENT');
   const [showPwd, setShowPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', password: '', referredBy: '' });
+  const [form, setForm] = useState({ name: '', email: '', contact: '', password: '', confirmPassword: '', referredBy: '' });
   const router = useRouter();
 
   // Auto-fill referral code from URL ?ref=CODE
@@ -26,8 +27,19 @@ export function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
@@ -69,29 +81,7 @@ export function RegisterForm() {
         <a href="/login" style={{ color: 'var(--primary-light)', fontWeight: '600' }}>Sign in</a>
       </p>
 
-      {/* Role Toggle */}
-      <div style={{ display: 'flex', background: 'var(--surface)', borderRadius: 'var(--radius)', padding: '0.3rem', marginBottom: '2rem', border: '1px solid var(--border)' }}>
-        {[
-          { val: 'STUDENT' as const, icon: User, label: 'Job Seeker' },
-          { val: 'COMPANY' as const, icon: Building2, label: 'Recruiter' }
-        ].map(r => (
-          <button
-            key={r.val}
-            type="button"
-            onClick={() => setRole(r.val)}
-            style={{
-              flex: 1, padding: '0.6rem', borderRadius: 'calc(var(--radius) - 2px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-              fontSize: '0.9rem', fontWeight: '600', border: 'none', cursor: 'pointer',
-              transition: 'var(--transition)',
-              background: role === r.val ? 'linear-gradient(135deg, var(--primary), var(--accent))' : 'transparent',
-              color: role === r.val ? 'white' : 'var(--text-3)'
-            }}
-          >
-            <r.icon size={16} />{r.label}
-          </button>
-        ))}
-      </div>
+
 
       {error && (
         <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', padding: '0.85rem 1rem', borderRadius: 'var(--radius)', marginBottom: '1.5rem', fontSize: '0.88rem', color: '#f87171' }}>
@@ -101,9 +91,9 @@ export function RegisterForm() {
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
         <Input
-          label={role === 'COMPANY' ? 'Company Name' : 'Full Name'}
+          label="Full Name"
           required
-          placeholder={role === 'COMPANY' ? 'e.g. Infosys Limited' : 'e.g. Rahul Sharma'}
+          placeholder="e.g. Rahul Sharma"
           value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
         />
@@ -111,9 +101,18 @@ export function RegisterForm() {
           label="Email Address"
           type="email"
           required
-          placeholder={role === 'COMPANY' ? 'hr@company.com' : 'you@gmail.com'}
+          placeholder="you@gmail.com"
           value={form.email}
           onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+        />
+        <Input
+          label="Contact Number"
+          type="tel"
+          required
+          placeholder="e.g. +91 9876543210"
+          value={form.contact}
+          onChange={e => setForm(f => ({ ...f, contact: e.target.value }))}
+          leftIcon={<Phone size={18} />}
         />
         <Input
           label="Password"
@@ -125,6 +124,19 @@ export function RegisterForm() {
           rightIcon={
             <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', display: 'flex' }}>
               {showPwd ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          }
+        />
+        <Input
+          label="Confirm Password"
+          type={showConfirmPwd ? 'text' : 'password'}
+          required
+          placeholder="Repeat your password"
+          value={form.confirmPassword}
+          onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+          rightIcon={
+            <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', display: 'flex' }}>
+              {showConfirmPwd ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
           }
         />

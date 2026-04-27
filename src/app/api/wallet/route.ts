@@ -21,17 +21,35 @@ export async function GET() {
       take: 20,
     });
 
-    // Get referred users
-    const referredUsers = await prisma.user.findMany({
+    // Get referred users and their potential bonuses
+    const referredUsersRaw = await prisma.user.findMany({
       where: { referredBy: user.referralCode },
       select: {
         id: true,
         name: true,
         email: true,
         createdAt: true,
-        applications: { select: { id: true } }
+        applications: { select: { id: true }, take: 1 }
       },
       orderBy: { createdAt: 'desc' }
+    });
+
+    // Get all referral bonus transactions for these users
+    const referralTransactions = await (prisma.transaction as any).findMany({
+      where: {
+        userId: userSession.id,
+        type: 'REFERRAL_BONUS',
+        triggeredById: { in: referredUsersRaw.map(u => u.id) }
+      },
+      select: { amount: true, triggeredById: true }
+    });
+
+    const referredUsers = referredUsersRaw.map(u => {
+      const tx = (referralTransactions as any[]).find(t => t.triggeredById === u.id);
+      return {
+        ...u,
+        earnedAmount: tx ? tx.amount : null
+      };
     });
 
     return NextResponse.json({
