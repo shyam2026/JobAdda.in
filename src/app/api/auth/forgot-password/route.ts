@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       where: { email }
     });
 
-    await prisma.passwordResetToken.create({
+    await (prisma as any).passwordResetToken.create({
       data: { email, token, expires }
     });
 
