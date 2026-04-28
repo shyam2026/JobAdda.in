@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     // 1. Save to Database
-    const contactMessage = await prisma.contactMessage.create({
+    const contactMessage = await (prisma as any).contactMessage.create({
       data: {
         name,
         email,
