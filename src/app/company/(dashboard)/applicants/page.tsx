@@ -2,6 +2,7 @@ import React from 'react';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { ExternalLink, User } from 'lucide-react';
+import { StatusUpdate } from './StatusUpdate';
 
 export default async function CompanyApplicantsPage() {
   const session = await auth();
@@ -76,7 +77,7 @@ export default async function CompanyApplicantsPage() {
                           Resume <ExternalLink size={12} style={{ marginLeft: '0.2rem' }} />
                         </a>
                       )}
-                      <button className="btn btn-primary btn-sm" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>Update Status</button>
+                      <StatusUpdate applicationId={app.id} currentStatus={app.status} />
                     </div>
                   </td>
                 </tr>

@@ -30,6 +30,39 @@ model User {
   studentProfile   StudentProfile?
   transactions     Transaction[]
   projects         Project[]
+  notifications    Notification[]
+  resumeConfig     ResumeConfig?
+}
+
+model ResumeConfig {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  showBio      Boolean  @default(true)
+  showPhone    Boolean  @default(true)
+  showEmail    Boolean  @default(true)
+  showSkills   Boolean  @default(true)
+  showEdu      Boolean  @default(true)
+  showExp      Boolean  @default(true)
+  showProjects Boolean  @default(true)
+  showSocials  Boolean  @default(true)
+  selectedTemplate String @default("T1")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String   @db.Text
+  type      String   // REFERRAL, JOB_STATUS, SYSTEM
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Project {

@@ -136,6 +136,15 @@ export async function POST(req: Request) {
                 type: 'REFERRAL_BONUS',
                 status: 'COMPLETED'
               }
+            }),
+            (prisma as any).notification.create({
+              data: {
+                userId: referrer.id,
+                title: "💸 Referral Bonus Credited!",
+                message: `You earned ₹${bonusAmount} because ${fullProfile.name || 'a friend'} applied for their first job!`,
+                type: "REFERRAL",
+                link: "/user/wallet"
+              }
             })
           ]);
         }

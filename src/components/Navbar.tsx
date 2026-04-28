@@ -8,6 +8,7 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -26,10 +27,25 @@ export default function Navbar() {
     setMobileOpen(false);
   }, []);
 
+  // Fetch unread notifications count
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetch('/api/user/notifications')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setUnreadCount(data.filter((n: any) => !n.isRead).length);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [status]);
+
   const navLinks = [
     { href: '/jobs', label: 'Find Jobs', icon: Search },
     { href: '/companies', label: 'Companies', icon: Building2 },
     { href: '/salary', label: 'Salary Guide', icon: DollarSign },
+    { href: session ? '/user/resume' : '/resume', label: 'Resume', icon: FileText },
     { href: session ? '/user/refer' : '/refer', label: 'Refer & Earn', icon: Gift },
   ];
 
@@ -63,8 +79,11 @@ export default function Navbar() {
               <div className="hide-mobile" style={{ width: '120px', height: '36px', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }} />
             ) : session ? (
               <>
-                <a href="/user/notifications" className="btn btn-ghost btn-icon hide-mobile" aria-label="Notifications">
+                <a href="/user/notifications" className="btn btn-ghost btn-icon hide-mobile" style={{ position: 'relative' }} aria-label="Notifications">
                   <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%', border: '2px solid var(--bg-2)' }} />
+                  )}
                 </a>
                 {/* Profile Dropdown */}
                 <div style={{ position: 'relative' }} className="hide-mobile" ref={dropdownRef}>
