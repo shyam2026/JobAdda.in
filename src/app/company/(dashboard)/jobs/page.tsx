@@ -2,6 +2,7 @@ import React from 'react';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { ExternalLink, Edit2, Trash2 } from 'lucide-react';
+import { JobActions } from './JobActions';
 
 export default async function CompanyJobsPage() {
   const session = await auth();
