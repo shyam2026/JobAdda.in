@@ -50,7 +50,7 @@ export default function CompanyLoginPage() {
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '100%', maxWidth: '460px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginBottom: '3rem' }}>
-            <span style={{ fontSize: '2rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#fff' }}>JobAdda<span style={{ color: '#38bdf8' }}>.in</span> <span style={{ fontWeight: '400', fontSize: '1.2rem', color: '#7dd3fc', marginLeft: '0.5rem' }}>for Employers</span></span>
+            <span style={{ fontSize: '2rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#fff' }}>JobAdda<span style={{ color: '#38bdf8' }}>.in</span></span>
           </div>
           
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', lineHeight: '1.2', color: '#fff' }}>Hire the <br/><span style={{ color: '#38bdf8' }}>Best Talent Faster</span></h2>

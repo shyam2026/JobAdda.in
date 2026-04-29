@@ -24,6 +24,7 @@ const SECTIONS = [
   { key: 'showExp',      label: 'Experience'      },
   { key: 'showEdu',      label: 'Education'       },
   { key: 'showProjects', label: 'Projects'        },
+  { key: 'showCert',     label: 'Certifications'  },
 ];
 
 type WindowMap = Record<string, string>;
@@ -33,7 +34,7 @@ export default function ResumeBuilderPage() {
   const [selected, setSelected]     = useState('TPL_1');
   const [windows, setWindows]       = useState<WindowMap>({});
   const [accentColor, setAccent]    = useState('#6366f1');
-  const [config, setConfig]         = useState({ showBio: true, showEmail: true, showPhone: true, showSocials: true, showSkills: true, showExp: true, showEdu: true, showProjects: true });
+  const [config, setConfig]         = useState({ showBio: true, showEmail: true, showPhone: true, showSocials: true, showSkills: true, showExp: true, showEdu: true, showProjects: true, showCert: true });
   const [checkout, setCheckout]     = useState<string | null>(null);
   const [offerTimer, setOffer]      = useState(599);
   const [remaining, setRemaining]   = useState(0);

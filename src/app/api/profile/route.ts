@@ -33,29 +33,40 @@ export async function GET() {
       city: u.studentProfile?.location || '',
       linkedin: u.studentProfile?.linkedin || '',
       github: u.studentProfile?.github || '',
-      skills: u.skills?.map((s: any) => s.name) || [],
+      website: u.studentProfile?.website || '',
+      profileImage: u.studentProfile?.profileImage || '',
+      skills: u.skills?.map((s: any) => ({ name: s.name, level: s.level || '8' })) || [],
       education: u.educations?.map((e: any) => ({
         school: e.school || '',
         degree: e.degree || '',
-        year: e.description?.replace('Passing Year: ', '') || '',
+        year: e.endDate ? new Date(e.endDate).getFullYear().toString() : '',
         grade: e.grade || '',
+        description: e.description || '',
       })) || [],
       experience: u.experiences?.map((e: any) => ({
         company: e.company || '',
         role: e.role || '',
-        duration: '',
+        startDate: e.startDate || '',
+        endDate: e.endDate || '',
+        isCurrent: e.current || false,
         description: e.description || '',
       })) || [],
       certificates: u.certificates?.map((c: any) => ({
         name: c.name || '',
         issuer: c.issuer || '',
-        date: '',
+        date: c.issueDate ? (() => {
+          const d = new Date(c.issueDate);
+          return `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        })() : '',
         url: c.url || '',
       })) || [],
       projects: u.projects?.map((p: any) => ({
         title: p.title || '',
         description: p.description || '',
         link: p.link || '',
+        startDate: p.startDate ? new Date(p.startDate).toISOString().slice(0, 7) : '',
+        endDate: p.endDate ? new Date(p.endDate).toISOString().slice(0, 7) : '',
+        isCurrent: p.current || false,
       })) || [],
     });
   } catch (error) {
@@ -81,7 +92,7 @@ export async function PUT(req: Request) {
       });
     }
 
-    await prisma.studentProfile.upsert({
+    await (prisma.studentProfile as any).upsert({
       where: { userId },
       update: {
         bio: data.bio || '',
@@ -89,6 +100,7 @@ export async function PUT(req: Request) {
         location: data.city || '',
         linkedin: data.linkedin || '',
         github: data.github || '',
+        website: data.website || '',
       },
       create: {
         userId,
@@ -97,6 +109,7 @@ export async function PUT(req: Request) {
         location: data.city || '',
         linkedin: data.linkedin || '',
         github: data.github || '',
+        website: data.website || '',
       },
     });
 
@@ -104,7 +117,11 @@ export async function PUT(req: Request) {
       await prisma.skill.deleteMany({ where: { userId } });
       if (data.skills.length > 0) {
         await prisma.skill.createMany({
-          data: data.skills.map((name: string) => ({ userId, name })),
+          data: data.skills.map((s: any) => ({ 
+            userId, 
+            name: typeof s === 'string' ? s : s.name,
+            level: typeof s === 'string' ? '8' : String(s.level || '8')
+          })),
         });
       }
     }
@@ -119,7 +136,8 @@ export async function PUT(req: Request) {
             school: edu.school,
             degree: edu.degree,
             grade: edu.grade,
-            description: `Passing Year: ${edu.year}`,
+            endDate: edu.year ? new Date(`${edu.year}-01-01`) : null,
+            description: edu.description || '',
           })),
         });
       }
@@ -130,12 +148,24 @@ export async function PUT(req: Request) {
       const valid = data.experience.filter((e: any) => e.company || e.role);
       if (valid.length > 0) {
         await prisma.experience.createMany({
-          data: valid.map((exp: any) => ({
-            userId,
-            company: exp.company,
-            role: exp.role,
-            description: `${exp.duration ? `Duration: ${exp.duration}\n` : ''}${exp.description || ''}`,
-          })),
+          data: valid.map((exp: any) => {
+            const startDate = exp.startDate && !isNaN(new Date(exp.startDate).getTime()) 
+              ? new Date(exp.startDate) 
+              : null;
+            const endDate = !exp.isCurrent && exp.endDate && !isNaN(new Date(exp.endDate).getTime())
+              ? new Date(exp.endDate)
+              : null;
+              
+            return {
+              userId,
+              company: exp.company,
+              role: exp.role,
+              startDate,
+              endDate,
+              current: exp.isCurrent || false,
+              description: exp.description || '',
+            };
+          }),
         });
       }
     }
@@ -150,6 +180,9 @@ export async function PUT(req: Request) {
             title: proj.title,
             description: proj.description,
             link: proj.link,
+            startDate: proj.startDate && !isNaN(new Date(proj.startDate).getTime()) ? new Date(proj.startDate) : null,
+            endDate: !proj.isCurrent && proj.endDate && !isNaN(new Date(proj.endDate).getTime()) ? new Date(proj.endDate) : null,
+            current: proj.isCurrent || false,
           })),
         });
       }
@@ -160,12 +193,22 @@ export async function PUT(req: Request) {
       const valid = data.certificates.filter((c: any) => c.name || c.issuer);
       if (valid.length > 0) {
         await prisma.certificate.createMany({
-          data: valid.map((cert: any) => ({
-            userId,
-            name: cert.name,
-            issuer: cert.issuer,
-            url: cert.url,
-          })),
+          data: valid.map((cert: any) => {
+            // Handle MM/YYYY format
+            let issueDate = null;
+            if (cert.date && cert.date.includes('/')) {
+              const [m, y] = cert.date.split('/');
+              issueDate = new Date(`${y}-${m}-01`);
+            }
+            
+            return {
+              userId,
+              name: cert.name,
+              issuer: cert.issuer,
+              issueDate,
+              url: cert.url,
+            };
+          }),
         });
       }
     }

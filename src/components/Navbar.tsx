@@ -9,6 +9,7 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [navProfileImage, setNavProfileImage] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -37,6 +38,12 @@ export default function Navbar() {
             setUnreadCount(data.filter((n: any) => !n.isRead).length);
           }
         })
+        .catch(() => {});
+
+      // Fetch profile image for navbar avatar
+      fetch('/api/profile')
+        .then(res => res.json())
+        .then(data => { if (data?.profileImage) setNavProfileImage(data.profileImage); })
         .catch(() => {});
     }
   }, [status]);
@@ -93,7 +100,11 @@ export default function Navbar() {
                     aria-expanded={profileOpen}
                     aria-haspopup="true"
                   >
-                    <div className="avatar avatar-sm">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
+                    {navProfileImage ? (
+                      <img src={navProfileImage} alt="profile" style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                    ) : (
+                      <div className="avatar avatar-sm">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
+                    )}
                     <span style={{ fontSize: '0.88rem', fontWeight: '600' }}>{user?.name?.split(' ')[0]}</span>
                     <ChevronDown size={14} style={{ color: 'var(--text-3)', transition: 'transform 0.2s', transform: profileOpen ? 'rotate(180deg)' : 'none' }} />
                   </button>
@@ -170,7 +181,11 @@ export default function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit', flex: 1 }}
                   >
-                    <div className="avatar avatar-md">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
+                    {navProfileImage ? (
+                      <img src={navProfileImage} alt="profile" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', display: 'block', flexShrink: 0 }} />
+                    ) : (
+                      <div className="avatar avatar-md">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
+                    )}
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: '700', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
                       <div style={{ color: 'var(--text-3)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
