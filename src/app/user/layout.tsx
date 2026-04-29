@@ -29,6 +29,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   if (status === 'loading') {
     return (
@@ -46,16 +47,24 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const user = session?.user as any;
 
   return (
-    <div className="dashboard-layout">
+    <div className={`dashboard-layout ${isCollapsed ? 'collapsed' : ''}`} style={{ transition: 'grid-template-columns 0.3s ease' }}>
       {/* Navigation - Sidebar on Desktop, 6-Column Bottom Bar on Mobile */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{ transition: 'padding 0.3s ease' }}>
         <div className="mobile-grid-nav" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div className="desktop-sidebar-header hide-mobile" style={{ padding: '0.5rem 0.5rem 1.5rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
+          <div className="desktop-sidebar-header hide-mobile" style={{ padding: isCollapsed ? '0.5rem 0 1.5rem' : '0.5rem 0.5rem 1.5rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem', display: 'flex', justifyContent: isCollapsed ? 'center' : 'space-between', alignItems: 'center', flexDirection: isCollapsed ? 'column' : 'row', gap: isCollapsed ? '1rem' : '0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div className="avatar">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: '700', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+              <div className={`avatar ${isCollapsed ? 'avatar-sm' : ''}`} style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                {user?.profileImage ? (
+                  <img src={user.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <User size={isCollapsed ? 16 : 20} color="var(--text-3)" />
+                )}
               </div>
+              {!isCollapsed && (
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: '700', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -74,9 +83,11 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                   key={item.href} 
                   href={item.href} 
                   className={`sidebar-item ${isActive ? 'active' : ''}`}
+                  style={{ justifyContent: isCollapsed ? 'center' : 'flex-start', padding: isCollapsed ? '0.7rem' : '0.7rem 1rem' }}
+                  title={isCollapsed ? item.label : undefined}
                 >
-                  <item.icon size={19} />
-                  <span>{item.label}</span>
+                  <item.icon size={19} style={{ minWidth: '19px' }} />
+                  {!isCollapsed && <span>{item.label}</span>}
                 </a>
               );
             })}
@@ -84,12 +95,22 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
           <div className="hide-mobile" style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
             <button 
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="sidebar-item"
+              style={{ width: '100%', justifyContent: isCollapsed ? 'center' : 'flex-start', padding: isCollapsed ? '0.7rem' : '0.7rem 1rem', marginBottom: '0.5rem' }}
+              title={isCollapsed ? 'Expand Sidebar' : undefined}
+            >
+              <ChevronRight size={18} style={{ minWidth: '18px', transform: isCollapsed ? 'rotate(0)' : 'rotate(180deg)', transition: 'transform 0.3s' }} />
+              {!isCollapsed && <span>Collapse Sidebar</span>}
+            </button>
+            <button 
               onClick={() => signOut({ callbackUrl: '/' })}
               className="sidebar-item"
-              style={{ color: 'var(--danger)', width: '100%' }}
+              style={{ color: 'var(--danger)', width: '100%', justifyContent: isCollapsed ? 'center' : 'flex-start', padding: isCollapsed ? '0.7rem' : '0.7rem 1rem' }}
+              title={isCollapsed ? 'Sign Out' : undefined}
             >
-              <LogOut size={18} />
-              <span>Sign Out</span>
+              <LogOut size={18} style={{ minWidth: '18px' }} />
+              {!isCollapsed && <span>Sign Out</span>}
             </button>
           </div>
         </div>
@@ -101,6 +122,14 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       </main>
 
       <style jsx global>{`
+        @media (min-width: 769px) {
+          .dashboard-layout.collapsed {
+            grid-template-columns: 80px 1fr !important;
+          }
+          .sidebar.collapsed {
+            padding: 2rem 0.5rem !important;
+          }
+        }
         @media (max-width: 768px) {
           .sidebar {
             position: fixed !important;

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Bell, ChevronDown, LogOut, User, LayoutDashboard, Briefcase, Menu, X, DollarSign, Gift, Building2, Search, FileText, Share2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -25,7 +26,7 @@ export default function Navbar() {
 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileOpen(false);
+    setTimeout(() => setMobileOpen(false), 0);
   }, []);
 
   // Fetch unread notifications count
@@ -69,9 +70,9 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="container nav-inner">
           {/* Logo */}
-          <a href="/" className="nav-logo">
+          <Link href="/" className="nav-logo">
             <span>JobAdda<span style={{ color: 'var(--primary-light)', fontWeight: '700' }}>.in</span></span>
-          </a>
+          </Link>
 
           {/* Desktop Links */}
           <div className="nav-links hide-mobile">

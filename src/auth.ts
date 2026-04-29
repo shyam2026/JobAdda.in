@@ -25,7 +25,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           } else if (portalType === 'company') {
             user = await (prisma as any).companyUser.findUnique({ where: { email } });
           } else {
-            user = await (prisma as any).user.findUnique({ where: { email } });
+            user = await (prisma as any).user.findUnique({ 
+              where: { email },
+              include: { studentProfile: true }
+            });
           }
 
           if (!user) return null;
@@ -39,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: user.name,
             role: user.role,
             portalType,
+            profileImage: (user as any).studentProfile?.profileImage || null,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -55,6 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.name = user.name;
         token.email = user.email;
         token.portalType = (user as any).portalType;
+        token.profileImage = (user as any).profileImage;
       }
       return token;
     },
@@ -65,6 +70,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.name = token.name as string;
         session.user.email = token.email as string;
         (session.user as any).portalType = token.portalType;
+        (session.user as any).profileImage = token.profileImage;
       }
       return session;
     },

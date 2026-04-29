@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Mail, ArrowRight, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 
@@ -45,7 +46,7 @@ export function ForgotPasswordForm() {
         </div>
         <h2 style={{ marginBottom: '0.5rem', color: 'var(--success)' }}>Check your email</h2>
         <p style={{ color: 'var(--text-3)', marginBottom: '2rem' }}>
-          We've sent password reset instructions to <strong>{email}</strong>.
+          We&apos;ve sent password reset instructions to <strong>{email}</strong>.
         </p>
         <Button variant="outline" fullWidth onClick={() => window.location.href = '/login'}>
           Return to Sign In
@@ -58,7 +59,7 @@ export function ForgotPasswordForm() {
     <div style={{ width: '100%', maxWidth: '420px' }} className="anim-fade-up">
       <h2 style={{ marginBottom: '0.5rem' }}>Reset Password</h2>
       <p style={{ marginBottom: '2rem', color: 'var(--text-3)', lineHeight: '1.6' }}>
-        Enter the email address associated with your account and we'll send you a link to reset your password.
+        Enter the email address associated with your account and we&apos;ll send you a link to reset your password.
       </p>
 
       {error && (
@@ -85,9 +86,9 @@ export function ForgotPasswordForm() {
       </form>
 
       <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <a href="/login" style={{ color: 'var(--primary-light)', fontSize: '0.9rem', fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+        <Link href="/login" style={{ color: 'var(--primary-light)', fontSize: '0.9rem', fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
           ← Back to Login
-        </a>
+        </Link>
       </div>
     </div>
   );

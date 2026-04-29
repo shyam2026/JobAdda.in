@@ -21,10 +21,10 @@ export default function AboutPage() {
             About JobAdda.in
           </div>
           <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', marginBottom: '1.5rem', maxWidth: '900px', margin: '0 auto 1.5rem', lineHeight: 1.1 }}>
-            Empowering India's <span className="text-gradient">Next-Gen</span> Workforce
+            Empowering India&apos;s <span className="text-gradient">Next-Gen</span> Workforce
           </h1>
           <p style={{ fontSize: '1.15rem', color: 'var(--text-2)', maxWidth: '700px', margin: '0 auto 2.5rem', lineHeight: '1.8' }}>
-            We're on a mission to democratize job hunting in India. By blending AI-driven job matching, instant resume generation, and a unique peer-to-peer referral economy, we are building more than a portal—we are building a career ecosystem.
+            We&apos;re on a mission to democratize job hunting in India. By blending AI-driven job matching, instant resume generation, and a unique peer-to-peer referral economy, we are building more than a portal—we are building a career ecosystem.
           </p>
         </div>
       </section>
@@ -68,7 +68,7 @@ export default function AboutPage() {
               </div>
               <h3 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Our Vision</h3>
               <p style={{ color: 'var(--text-2)', lineHeight: '1.7', fontSize: '1.05rem' }}>
-                To become the central hub for India's digital workforce. A place where every individual not only finds their dream job but also possesses the tools to build their brand, network seamlessly, and earn through our decentralized referral network.
+                To become the central hub for India&apos;s digital workforce. A place where every individual not only finds their dream job but also possesses the tools to build their brand, network seamlessly, and earn through our decentralized referral network.
               </p>
             </div>
           </div>

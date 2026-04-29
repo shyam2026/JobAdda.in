@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Briefcase, TrendingUp, ChevronRight, Star, Zap, Shield, ArrowRight, Loader2, Code, Megaphone, Banknote, Palette, Stethoscope, GraduationCap, Settings, BarChart3 } from 'lucide-react';
+import Link from 'next/link';
 import { JobCard } from '@/features/jobs/components/JobCard';
 
 const CATEGORIES = [
@@ -58,7 +59,7 @@ export default function HomePage() {
         <div className="container">
           <div className="anim-fade-up" style={{ marginBottom: '1rem' }}>
             <span className="badge badge-primary" style={{ fontSize: '0.8rem' }}>
-              <Zap size={12} /> India's Fastest Growing Job Portal
+              <Zap size={12} /> India&apos;s Fastest Growing Job Portal
             </span>
           </div>
           <h1 className="hero-title anim-fade-up anim-delay-1">
@@ -99,13 +100,13 @@ export default function HomePage() {
             <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ marginRight: '0.75rem' }}>Popular:</span>
               {popularTags.slice(0, 3).map((tag, idx) => (
-                <a 
+                <Link 
                   key={idx} 
                   href={`/jobs?q=${encodeURIComponent(tag.q)}`} 
                   style={{ color: 'var(--primary-light)', marginRight: '0.75rem' }}
                 >
                   {tag.label}
-                </a>
+                </Link>
               ))}
             </p>
           )}
@@ -133,7 +134,7 @@ export default function HomePage() {
           </div>
           <div className="grid-4">
             {CATEGORIES.map((cat, i) => (
-              <a key={cat.name} href={cat.link} className="card card-p" style={{ textDecoration: 'none', animationDelay: `${i * 0.07}s`, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Link key={cat.name} href={cat.link} className="card card-p" style={{ textDecoration: 'none', animationDelay: `${i * 0.07}s`, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ 
                   width: '60px', height: '60px', borderRadius: '16px', 
                   background: `${cat.color}15`, color: cat.color,
@@ -145,7 +146,7 @@ export default function HomePage() {
                 </div>
                 <h4 style={{ marginBottom: '0.25rem', fontWeight: '700' }}>{cat.name}</h4>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>Browse Jobs →</p>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -189,9 +190,9 @@ export default function HomePage() {
           )}
 
           <div className="text-center">
-            <a href="/jobs" className="btn btn-outline" style={{ padding: '0.85rem 2rem' }}>
+            <Link href="/jobs" className="btn btn-outline" style={{ padding: '0.85rem 2rem' }}>
               View All Jobs <ArrowRight size={16} />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -210,8 +211,8 @@ export default function HomePage() {
               Share your unique JobAdda.in link. Earn <strong style={{ color: 'var(--success)' }}>Upto ₹50</strong> for every friend who joins and applies — straight to your wallet.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <a href="/register" className="btn btn-primary btn-lg">Join & Get Your Link</a>
-              <a href="/refer" className="btn btn-outline btn-lg">Learn More</a>
+              <Link href="/register" className="btn btn-primary btn-lg">Join & Get Your Link</Link>
+              <Link href="/refer" className="btn btn-outline btn-lg">Learn More</Link>
             </div>
           </div>
         </div>
@@ -249,10 +250,10 @@ export default function HomePage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <a href="/company/register" className="btn btn-primary btn-lg">
+            <Link href="/company/register" className="btn btn-primary btn-lg">
               <Briefcase size={18} /> Post a Job Free
-            </a>
-            <a href="/company" className="btn btn-outline btn-lg">Learn More</a>
+            </Link>
+            <Link href="/company" className="btn btn-outline btn-lg">Learn More</Link>
           </div>
         </div>
       </section>

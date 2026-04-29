@@ -51,7 +51,7 @@ export default function ReferLandingPage() {
             </span>
           </div>
           <h1 className="anim-fade-up anim-delay-1" style={{ marginBottom: '1.5rem' }}>
-            Don't Just Find Jobs.<br />
+            Don&apos;t Just Find Jobs.<br />
             <span className="text-gradient">Get Paid to Help Others.</span>
           </h1>
           <p className="anim-fade-up anim-delay-2" style={{ fontSize: '1.2rem', maxWidth: '650px', margin: '0 auto 3rem', color: 'var(--text-2)' }}>

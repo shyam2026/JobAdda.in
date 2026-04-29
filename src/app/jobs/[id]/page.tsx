@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { MapPin, Briefcase, Clock, Share2, BookmarkPlus, Building, Users, Globe, CheckCircle, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 interface JobDetail {
   id: string;
@@ -112,7 +113,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <AlertCircle size={48} style={{ color: 'var(--danger)', marginBottom: '1rem' }} />
           <h3>Job Not Found</h3>
           <p style={{ color: 'var(--text-3)', marginBottom: '2rem' }}>This job may have been removed or the link is invalid.</p>
-          <a href="/jobs" className="btn btn-primary">Browse All Jobs</a>
+          <Link href="/jobs" className="btn btn-primary">Browse All Jobs</Link>
         </div>
       </div>
     );
@@ -125,9 +126,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     <div style={{ background: 'var(--bg)', minHeight: '100vh', padding: '2rem 0 4rem' }}>
       <div className="container">
         {/* Back */}
-        <a href="/jobs" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-3)', fontSize: '0.9rem', textDecoration: 'none', marginBottom: '1.5rem' }}>
+        <Link href="/jobs" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-3)', fontSize: '0.9rem', textDecoration: 'none', marginBottom: '1.5rem' }}>
           <ArrowLeft size={16} /> Back to Jobs
-        </a>
+        </Link>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: '2rem' }} className="job-detail-grid">
           {/* Main */}
@@ -225,8 +226,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <div style={{ textAlign: 'center', padding: '1.25rem', background: 'rgba(16,185,129,0.1)', borderRadius: 'var(--radius)', border: '1px solid rgba(16,185,129,0.2)' }}>
                   <CheckCircle size={32} style={{ color: 'var(--success)', marginBottom: '0.5rem', margin: '0 auto' }} />
                   <p style={{ margin: 0, fontWeight: '700', color: 'var(--success)' }}>Applied Successfully!</p>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: 'var(--text-3)' }}>We'll notify you of any updates</p>
-                  <a href="/user/applied-jobs" className="btn btn-outline btn-sm" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>View My Applications</a>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: 'var(--text-3)' }}>We&apos;ll notify you of any updates</p>
+                  <Link href="/user/applied-jobs" className="btn btn-outline btn-sm" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>View My Applications</Link>
                 </div>
               ) : isExternal ? (
                 <a
@@ -253,15 +254,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       <AlertCircle size={20} style={{ margin: '0 auto 0.5rem', display: 'block' }} />
                       <p style={{ fontWeight: '700', marginBottom: '0.5rem', margin: 0 }}>{applyError}</p>
                       {applyError.includes('Profile Incomplete') && (
-                        <a href="/user/profile" className="btn btn-primary btn-sm" style={{ marginTop: '0.75rem', width: '100%', justifyContent: 'center' }}>
+                        <Link href="/user/profile" className="btn btn-primary btn-sm" style={{ marginTop: '0.75rem', width: '100%', justifyContent: 'center' }}>
                           Complete Profile (40%)
-                        </a>
+                        </Link>
                       )}
                     </div>
                   )}
                   {!session && (
                     <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.75rem' }}>
-                      <a href="/login" style={{ color: 'var(--primary-light)' }}>Sign in</a> to apply with your profile
+                      <Link href="/login" style={{ color: 'var(--primary-light)' }}>Sign in</Link> to apply with your profile
                     </p>
                   )}
                 </>
@@ -281,7 +282,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               </div>
 
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem', marginTop: '0.25rem' }}>
-                <p style={{ fontSize: '0.82rem', textAlign: 'center', marginBottom: '0.75rem', color: 'var(--text-3)' }}>Know someone who'd be a fit?</p>
+                <p style={{ fontSize: '0.82rem', textAlign: 'center', marginBottom: '0.75rem', color: 'var(--text-3)' }}>Know someone who&apos;d be a fit?</p>
                 <button
                   onClick={() => navigator.clipboard.writeText(window.location.href)}
                   className="btn btn-outline"

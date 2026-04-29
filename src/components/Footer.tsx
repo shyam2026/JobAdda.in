@@ -42,7 +42,7 @@ export default function Footer() {
               <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>JobAdda<span style={{ color: '#818cf8' }}>.in</span></span>
             </div>
             <p style={{ fontSize: '0.9rem', lineHeight: '1.8', maxWidth: '240px', color: 'var(--text-3)' }}>
-              India's fastest growing job portal connecting talent with opportunity.
+              India&apos;s fastest growing job portal connecting talent with opportunity.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
               {SOCIAL_LINKS.map(s => (

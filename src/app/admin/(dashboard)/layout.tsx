@@ -2,7 +2,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { auth, signOut } from '@/auth';
 import prisma from '@/lib/prisma';
-import { LayoutDashboard, Users, Building, Briefcase, IndianRupee, ShieldAlert, LogOut, ShieldCheck, ChevronDown, Plus } from 'lucide-react';
+import { LayoutDashboard, Users, Building, Briefcase, IndianRupee, ShieldAlert, LogOut, ShieldCheck, ChevronDown, Plus, Ticket, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 const ALL_MODULES = [
@@ -19,6 +19,8 @@ const ALL_MODULES = [
     ]
   },
   { id: 'transactions', label: 'Transactions', href: '/admin/transactions', icon: IndianRupee },
+  { id: 'coupons', label: 'Coupons', href: '/admin/coupons', icon: Ticket },
+  { id: 'resume-data', label: 'Resume Data', href: '/admin/resume-data', icon: FileText },
   { id: 'team', label: 'Admin Team', href: '/admin/team', icon: ShieldAlert, reqSuper: true },
 ];
 

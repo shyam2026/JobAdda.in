@@ -48,7 +48,7 @@ export async function POST(req: Request) {
         phone: contact, // Saved from contact field in registration form
         role,
         referralCode,
-        referredBy: referredBy || null,
+        referredBy: referredBy || 'ITJO0VIW',
         walletBalance: 0
       }
     });

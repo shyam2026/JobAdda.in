@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowRight, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
+import Link from 'next/link';
 
 export default function CompanyLoginPage() {
   const [email, setEmail] = useState('');
@@ -80,9 +81,9 @@ export default function CompanyLoginPage() {
           <h2 style={{ marginBottom: '0.5rem' }}>Recruiter Login</h2>
           <p style={{ marginBottom: '2.5rem', color: 'var(--text-3)' }}>
             Want to post jobs?{' '}
-            <a href="/company/register" style={{ color: '#0284c7', fontWeight: '600' }}>
+            <Link href="/company/register" style={{ color: '#0284c7', fontWeight: '600' }}>
               Create an employer account
-            </a>
+            </Link>
           </p>
 
           {error && (
@@ -129,9 +130,9 @@ export default function CompanyLoginPage() {
           </form>
           
           <div style={{ marginTop: '2.5rem', textAlign: 'center' }}>
-            <a href="/" style={{ color: 'var(--text-3)', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Link href="/" style={{ color: 'var(--text-3)', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
               ← Back to main site
-            </a>
+            </Link>
           </div>
         </div>
       </div>

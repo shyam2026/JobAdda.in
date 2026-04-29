@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Wallet, Briefcase, FileText, Share2, TrendingUp, Star, Copy, CheckCircle, ExternalLink, ChevronRight, Loader2, Target } from 'lucide-react';
+import Link from 'next/link';
 
 interface DashboardData {
   walletBalance: number;
@@ -117,7 +118,7 @@ export default function StudentDashboard() {
         <div className="card card-p">
           <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
             <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><TrendingUp size={18} /> Recent Applications</h4>
-            <a href="/user/applied-jobs" className="btn btn-ghost btn-sm">View All</a>
+            <Link href="/user/applied-jobs" className="btn btn-ghost btn-sm">View All</Link>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -146,7 +147,7 @@ export default function StudentDashboard() {
             ) : (
               <div style={{ textAlign: 'center', padding: '2.5rem 1rem', background: 'rgba(255,255,255,0.01)', borderRadius: 'var(--radius)', border: '1px dashed var(--border)' }}>
                 <p style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>No applications yet. Start applying!</p>
-                <a href="/jobs" className="btn btn-primary btn-sm" style={{ marginTop: '1rem' }}>Browse Jobs</a>
+                <Link href="/jobs" className="btn btn-primary btn-sm" style={{ marginTop: '1rem' }}>Browse Jobs</Link>
               </div>
             )}
           </div>
@@ -187,11 +188,11 @@ export default function StudentDashboard() {
       <div style={{ marginTop: '2.5rem' }}>
         <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
           <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target size={18} style={{ color: 'var(--primary-light)' }} /> Recommended for you</h4>
-          <a href="/jobs" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Explore <ChevronRight size={14} /></a>
+          <Link href="/jobs" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Explore <ChevronRight size={14} /></Link>
         </div>
         <div className="grid-3">
           {data?.recommendedJobs.map((job) => (
-            <a key={job.id} href={`/jobs/${job.id}`} className="card card-p-sm job-hover-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+              <Link key={job.id} href={`/jobs/${job.id}`} className="card card-p-sm job-hover-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
               {job.matchCount > 0 && (
                 <div style={{ position: 'absolute', top: '0', right: '0', background: 'var(--primary-light)', color: 'white', fontSize: '0.6rem', fontWeight: '800', padding: '2px 8px', borderRadius: '0 0 0 8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Star size={8} fill="white" /> {job.matchCount} MATCH
@@ -208,7 +209,7 @@ export default function StudentDashboard() {
                 <span style={{ color: 'var(--success)', fontWeight: '700', fontSize: '0.85rem' }}>{job.salary || 'Best in Market'}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{job.location}</span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

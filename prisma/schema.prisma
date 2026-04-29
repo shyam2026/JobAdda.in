@@ -59,6 +59,7 @@ model Notification {
   type      String   // REFERRAL, JOB_STATUS, SYSTEM
   link      String?
   isRead    Boolean  @default(false)
+  expiresAt DateTime?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -205,12 +206,28 @@ model Purchase {
   templateId String
   amount     Float
   status     String         @default("COMPLETED")
+  couponCode String?
+  orderId    String?        // Razorpay Order ID
+  paymentId  String?        // Razorpay Payment ID
+  refId      String?        // Short human-readable reference ID
   createdAt  DateTime       @default(now())
   template   ResumeTemplate @relation(fields: [templateId], references: [id])
   user       User           @relation(fields: [userId], references: [id])
 
   @@index([templateId], map: "Purchase_templateId_fkey")
   @@index([userId], map: "Purchase_userId_fkey")
+}
+
+model Coupon {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  type       String    // "PERCENT" | "FREE"
+  discount   Int?      // e.g. 20 = 20% off (only for PERCENT)
+  usageLimit Int       @default(100)
+  usedCount  Int       @default(0)
+  expiresAt  DateTime?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
 }
 
 model Message {

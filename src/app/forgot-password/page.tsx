@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
           
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', lineHeight: '1.2' }}>Secure <br/><span className="text-gradient">Account Recovery</span></h2>
           <p style={{ fontSize: '1.1rem', color: 'var(--text-2)', lineHeight: '1.6', marginBottom: '3rem' }}>
-            Lost your password? We'll help you securely get back into your account so you don't miss any career opportunities.
+            Lost your password? We&apos;ll help you securely get back into your account so you don&apos;t miss any career opportunities.
           </p>
 
           <div style={{ background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 'var(--radius-xl)', padding: '2rem', textAlign: 'left', display: 'flex', alignItems: 'flex-start', gap: '1.25rem', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>

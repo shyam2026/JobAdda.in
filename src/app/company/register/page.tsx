@@ -6,6 +6,7 @@ import {
   Building2, Globe, Users, MapPin, ArrowRight, CheckCircle,
   Mail, Lock, Phone, Briefcase, FileText, Hash, ChevronRight
 } from 'lucide-react';
+import Link from 'next/link';
 
 const INDUSTRIES = [
   'Information Technology', 'E-Commerce', 'Finance & Banking', 'Healthcare',
@@ -84,7 +85,7 @@ export default function CompanyRegisterPage() {
       </div>
       <h2 style={{ fontSize: '2rem', fontWeight: '900', color: '#fff' }}>Company Registered!</h2>
       <p style={{ color: '#bae6fd', maxWidth: '400px', lineHeight: 1.6 }}>
-        Your JobAdda.in recruiter account is under review. We'll notify you within <strong style={{ color: '#fff' }}>24 hours</strong>.
+        Your JobAdda.in recruiter account is under review. We&apos;ll notify you within <strong style={{ color: '#fff' }}>24 hours</strong>.
       </p>
       <p style={{ fontSize: '0.85rem', color: 'rgba(186,230,253,0.6)' }}>Redirecting to login…</p>
     </div>
@@ -129,9 +130,9 @@ export default function CompanyRegisterPage() {
        
            {/* Back to main site */}
           <div style={{ marginTop: '2.5rem', textAlign: 'center' }}>
-            <a href="/" style={{ color: 'var(--text-3)', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Link href="/" style={{ color: 'var(--text-3)', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
               ← Back to main site
-            </a>
+            </Link>
           </div>
 
         </div>
@@ -312,7 +313,7 @@ export default function CompanyRegisterPage() {
 
                 <div style={{ padding: '1rem 1.25rem', background: 'rgba(56,189,248,0.06)', borderRadius: '14px', border: '1px solid rgba(56,189,248,0.15)', fontSize: '0.85rem', color: '#bae6fd', lineHeight: 1.6, display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                   <span style={{ marginTop: '0.05rem' }}>ℹ️</span>
-                  <span>Your account will be reviewed by the JobAdda.in team within <strong style={{ color: '#fff' }}>24 hours</strong>. You'll be notified via email once approved.</span>
+                  <span>Your account will be reviewed by the JobAdda.in team within <strong style={{ color: '#fff' }}>24 hours</strong>. You&apos;ll be notified via email once approved.</span>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
@@ -329,9 +330,9 @@ export default function CompanyRegisterPage() {
 
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.88rem', color: 'rgba(186,230,253,0.5)' }}>
             Already have an account?{' '}
-            <a href="/company/login" style={{ color: '#7dd3fc', fontWeight: '700', textDecoration: 'none' }}>
+            <Link href="/company/login" style={{ color: '#7dd3fc', fontWeight: '700', textDecoration: 'none' }}>
               Sign in to Company Portal →
-            </a>
+            </Link>
           </p>
         </div>
       </div>

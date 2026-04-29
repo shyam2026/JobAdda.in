@@ -48,7 +48,7 @@ export default async function CompanyJobsPage() {
             {jobs.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-                  You haven't posted any jobs yet.
+                  You haven&apos;t posted any jobs yet.
                 </td>
               </tr>
             ) : (

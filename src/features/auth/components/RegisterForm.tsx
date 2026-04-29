@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Eye, EyeOff, User, Building2, ArrowRight, CheckCircle, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
@@ -21,7 +22,10 @@ export function RegisterForm() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const ref = params.get('ref');
-      if (ref) setForm(f => ({ ...f, referredBy: ref }));
+      if (ref) {
+        // Run asynchronously to avoid synchronous cascading render warning
+        setTimeout(() => setForm(f => ({ ...f, referredBy: ref })), 0);
+      }
     }
   }, []);
 
@@ -78,7 +82,7 @@ export function RegisterForm() {
       <h2 style={{ marginBottom: '0.5rem' }}>Create your account</h2>
       <p style={{ marginBottom: '2rem', color: 'var(--text-3)' }}>
         Already have an account?{' '}
-        <a href="/login" style={{ color: 'var(--primary-light)', fontWeight: '600' }}>Sign in</a>
+        <Link href="/login" style={{ color: 'var(--primary-light)', fontWeight: '600' }}>Sign in</Link>
       </p>
 
 
@@ -155,9 +159,9 @@ export function RegisterForm() {
       </form>
 
       <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '1.5rem' }}>
-        By registering, you agree to JobAdda.in's{' '}
-        <a href="/terms" style={{ color: 'var(--primary-light)' }}>Terms of Service</a>{' '}
-        and <a href="/privacy" style={{ color: 'var(--primary-light)' }}>Privacy Policy</a>
+        By registering, you agree to JobAdda.in&apos;s{' '}
+        <Link href="/terms" style={{ color: 'var(--primary-light)' }}>Terms of Service</Link>{' '}
+        and <Link href="/privacy" style={{ color: 'var(--primary-light)' }}>Privacy Policy</Link>
       </p>
     </div>
   );

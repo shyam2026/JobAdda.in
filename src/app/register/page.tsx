@@ -17,7 +17,7 @@ export default function RegisterPage() {
             <span style={{ fontSize: '2rem', fontWeight: '800', letterSpacing: '-0.02em' }}>JobAdda<span style={{ color: 'var(--primary-light)' }}>.in</span></span>
           </div>
           
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', lineHeight: '1.2' }}>Start Your Journey with <br/><span className="text-gradient">India's Top Portal</span></h2>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', lineHeight: '1.2' }}>Start Your Journey with <br/><span className="text-gradient">India&apos;s Top Portal</span></h2>
           <p style={{ fontSize: '1.1rem', color: 'var(--text-2)', lineHeight: '1.6', marginBottom: '3rem' }}>
             Join 5 lakh+ professionals who found their dream jobs. Build a smart resume, apply instantly, and grow your career.
           </p>

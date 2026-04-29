@@ -6,7 +6,7 @@ import { Copy, Gift, Wallet, CheckCircle, Share2, MessageCircle, MessageSquare, 
 const HOW_STEPS = [
   { n: '1', title: 'Share Link', desc: 'Send your link to friends.' },
   { n: '2', title: 'Friend Joins', desc: 'They sign up on JobAdda.' },
-  { n: '3', title: 'Earn ₹50', desc: 'Bonus when they apply.' },
+  { n: '3', title: 'Earn up to ₹50', desc: 'Bonus when they apply.' },
 ];
 
 interface WalletData {

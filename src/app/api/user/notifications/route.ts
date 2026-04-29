@@ -7,8 +7,22 @@ export async function GET() {
     const session = await auth();
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const userId = (session.user as any).id;
+
+    // Passive cleanup: delete expired notifications
+    try {
+      await (prisma as any).notification.deleteMany({
+        where: {
+          userId,
+          expiresAt: { lt: new Date() }
+        }
+      });
+    } catch (e) {
+      console.error("NOTIFICATION_CLEANUP_ERROR", e);
+    }
+
     const notifications = await (prisma as any).notification.findMany({
-      where: { userId: (session.user as any).id },
+      where: { userId },
       orderBy: { createdAt: "desc" },
       take: 50,
     });

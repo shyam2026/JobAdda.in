@@ -61,7 +61,7 @@ export default function ContactPage() {
           <div className="badge badge-primary" style={{ marginBottom: '1rem' }}>Get in Touch</div>
           <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', marginBottom: '1rem' }}>Contact <span className="text-gradient">Our Team</span></h1>
           <p style={{ color: 'var(--text-2)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-            Have a question, feedback, or need support? We're here to help. Fill out the form below and our team will get back to you shortly.
+            Have a question, feedback, or need support? We&apos;re here to help. Fill out the form below and our team will get back to you shortly.
           </p>
         </div>
 
@@ -175,7 +175,7 @@ export default function ContactPage() {
             {success && (
               <div style={{ marginTop: '1rem', padding: '1.25rem', background: 'rgba(16,185,129,0.1)', border: '1px solid var(--success)', borderRadius: 'var(--radius)', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '0.75rem', animation: 'fadeUp 0.3s ease' }}>
                 <CheckCircle2 size={20} />
-                <span style={{ fontWeight: '500' }}>Your message has been sent successfully! We'll be in touch soon.</span>
+                <span style={{ fontWeight: '500' }}>Your message has been sent successfully! We&apos;ll be in touch soon.</span>
               </div>
             )}
 

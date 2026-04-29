@@ -28,7 +28,7 @@ export default function NotFound() {
         <h1 style={{ fontSize: 'clamp(5rem, 15vw, 8.5rem)', margin: 0, lineHeight: 1, fontWeight: '900', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', opacity: 0.8 }}>404</h1>
         <h2 style={{ fontSize: '2rem', marginBottom: '1rem', marginTop: '1rem' }}>Page Not Found</h2>
         <p style={{ color: 'var(--text-3)', fontSize: '1.1rem', marginBottom: '3rem', lineHeight: '1.6' }}>
-          Oops! The page you are looking for doesn't exist or has been moved to a new location.
+          Oops! The page you are looking for doesn&apos;t exist or has been moved to a new location.
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>

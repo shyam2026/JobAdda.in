@@ -112,7 +112,7 @@ export function ProfileForm({ standalone = true }: { standalone?: boolean }) {
         })
         .catch(() => setFetching(false));
     } else if (status !== 'loading') {
-      setFetching(false);
+      setTimeout(() => setFetching(false), 0);
     }
   }, [status]);
 

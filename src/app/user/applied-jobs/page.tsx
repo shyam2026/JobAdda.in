@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, Clock, TrendingUp, CheckCircle, XCircle, AlertCircle, ChevronRight, MessageCircle, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 interface Application {
   id: string;
@@ -96,8 +97,8 @@ export default function UserApplicationsPage() {
           <div className="card card-p" style={{ textAlign: 'center', padding: '5rem 2rem', background: 'rgba(255,255,255,0.01)', border: '1px dashed var(--border)' }}>
             <Briefcase size={56} style={{ color: 'var(--text-3)', opacity: 0.2, marginBottom: '1.5rem' }} />
             <h3 style={{ marginBottom: '0.5rem' }}>No matching applications</h3>
-            <p style={{ color: 'var(--text-3)', marginBottom: '2rem' }}>You haven't applied to any jobs in this category yet.</p>
-            <a href="/jobs" className="btn btn-primary">Browse Open Jobs</a>
+            <p style={{ color: 'var(--text-3)', marginBottom: '2rem' }}>You haven&apos;t applied to any jobs in this category yet.</p>
+            <Link href="/jobs" className="btn btn-primary">Browse Open Jobs</Link>
           </div>
         ) : (
           filteredApps.map(app => {
@@ -133,9 +134,9 @@ export default function UserApplicationsPage() {
                     <MessageCircle size={16} /> <span className="hide-mobile">Chat with HR</span>
                   </button>
                   
-                  <a href={`/jobs/${app.job?.id}`} className="btn btn-primary btn-sm" style={{ gap: '0.5rem' }}>
+                  <Link href={`/jobs/${app.job?.id}`} className="btn btn-primary btn-sm" style={{ gap: '0.5rem' }}>
                     View Job <ChevronRight size={16} />
-                  </a>
+                  </Link>
                 </div>
               </div>
             );

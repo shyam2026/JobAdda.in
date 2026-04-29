@@ -50,10 +50,12 @@ export default function JobsPage() {
   // Read URL params on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('q')) setQuery(params.get('q')!);
-      if (params.get('location')) setLocation(params.get('location')!);
-      if (params.get('category')) setCategoryFilter(params.get('category')!);
+      setTimeout(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('q')) setQuery(params.get('q')!);
+        if (params.get('location')) setLocation(params.get('location')!);
+        if (params.get('category')) setCategoryFilter(params.get('category')!);
+      }, 0);
     }
   }, []);
 

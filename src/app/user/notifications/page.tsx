@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Check, Zap, Briefcase, Info, Clock, ExternalLink, User, Filter, ShieldCheck, MoreHorizontal, ArrowRight } from 'lucide-react';
+import { Bell, Check, Zap, Briefcase, Info, Clock, ExternalLink, User, Filter, ShieldCheck, MoreHorizontal, ArrowRight, CheckCircle, AlertTriangle, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'REFERRAL' | 'JOB_STATUS' | 'SYSTEM';
+  type: 'REFERRAL' | 'JOB_STATUS' | 'SYSTEM' | 'SUCCESS' | 'DANGER';
   link?: string;
   isRead: boolean;
   createdAt: string;
@@ -19,13 +19,17 @@ export default function UserNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | 'UNREAD' | 'REFERRAL' | 'JOB_STATUS'>('ALL');
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setTimeout(() => setMounted(true), 0);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  const mobile = mounted ? isMobile : false;
 
   const fetchNotifications = async () => {
     try {
@@ -40,7 +44,7 @@ export default function UserNotificationsPage() {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    setTimeout(fetchNotifications, 0);
   }, []);
 
   const markAsRead = async (id: string | 'all') => {
@@ -70,14 +74,39 @@ export default function UserNotificationsPage() {
   });
 
   const getIcon = (type: string, isRead: boolean) => {
-    const baseClass = `${isMobile ? 'w-9 h-9' : 'w-11 h-11'} rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-500`;
+    const baseClass = `${mobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500`;
+    
     switch (type) {
+      case 'SUCCESS':
+        return (
+          <div className={`${baseClass} ${isRead ? 'bg-emerald-500/10 text-emerald-500/50' : 'bg-emerald-500/20 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)] border border-emerald-500/30'}`}>
+            <CheckCircle size={mobile ? 18 : 22} strokeWidth={2.5} />
+          </div>
+        );
+      case 'DANGER':
+        return (
+          <div className={`${baseClass} ${isRead ? 'bg-rose-500/10 text-rose-500/50' : 'bg-rose-500/20 text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.15)] border border-rose-500/30'}`}>
+            <AlertTriangle size={mobile ? 18 : 22} strokeWidth={2.5} />
+          </div>
+        );
       case 'REFERRAL': 
-        return <div className={`${baseClass} ${isRead ? 'bg-yellow-500/10 text-yellow-500' : 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/20'}`}><Zap size={isMobile ? 16 : 20} fill={isRead ? "none" : "currentColor"} /></div>;
+        return (
+          <div className={`${baseClass} ${isRead ? 'bg-amber-500/10 text-amber-500/50' : 'bg-amber-500/20 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.15)] border border-amber-500/30'}`}>
+            <Zap size={mobile ? 18 : 22} fill={isRead ? "none" : "currentColor"} strokeWidth={2.5} />
+          </div>
+        );
       case 'JOB_STATUS': 
-        return <div className={`${baseClass} ${isRead ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'}`}><Briefcase size={isMobile ? 16 : 20} /></div>;
+        return (
+          <div className={`${baseClass} ${isRead ? 'bg-blue-500/10 text-blue-500/50' : 'bg-blue-500/20 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.15)] border border-blue-500/30'}`}>
+            <Briefcase size={mobile ? 18 : 22} strokeWidth={2.5} />
+          </div>
+        );
       default: 
-        return <div className={`${baseClass} ${isRead ? 'bg-primary/10 text-primary' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}><Info size={isMobile ? 16 : 20} /></div>;
+        return (
+          <div className={`${baseClass} ${isRead ? 'bg-indigo-500/10 text-indigo-500/50' : 'bg-indigo-500/20 text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.15)] border border-indigo-500/30'}`}>
+            <Info size={mobile ? 18 : 22} strokeWidth={2.5} />
+          </div>
+        );
     }
   };
 
@@ -87,20 +116,20 @@ export default function UserNotificationsPage() {
     <div className="container py-6 md:py-12 anim-fade-up" style={{ maxWidth: '900px', paddingLeft: '1rem', paddingRight: '1rem' }}>
       
       {/* Responsive Header */}
-      <div style={{ position: 'relative', marginBottom: isMobile ? '2rem' : '3rem' }}>
+      <div style={{ position: 'relative', marginBottom: mobile ? '2rem' : '3rem' }}>
         <div style={{ position: 'absolute', top: '-20px', left: '-20px', width: '80px', height: '80px', background: 'var(--primary)', filter: 'blur(60px)', opacity: 0.1, borderRadius: '50%', pointerEvents: 'none' }} />
         
-        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: mobile ? 'flex-start' : 'center', gap: '1.5rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
               
             </div>
-            <h1 style={{ fontSize: isMobile ? '2.2rem' : '3rem', fontWeight: '900', letterSpacing: '-0.03em', margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontSize: mobile ? '2.2rem' : '3rem', fontWeight: '900', letterSpacing: '-0.03em', margin: 0, lineHeight: 1.1 }}>
               Your <span className="text-gradient">Notifications</span>
             </h1>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', width: isMobile ? '100%' : 'auto' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', width: mobile ? '100%' : 'auto' }}>
              {unreadCount > 0 && (
                <button 
                  onClick={() => markAsRead('all')}
@@ -117,7 +146,7 @@ export default function UserNotificationsPage() {
         <div style={{ 
           display: 'flex', 
           gap: '0.4rem', 
-          marginTop: isMobile ? '1.5rem' : '2.5rem', 
+          marginTop: mobile ? '1.5rem' : '2.5rem', 
           padding: '0.3rem', 
           background: 'var(--bg-2)', 
           borderRadius: '14px', 
@@ -165,48 +194,102 @@ export default function UserNotificationsPage() {
           filteredNotifications.map((n, idx) => (
             <div 
               key={n.id} 
-              className="group"
+              className="group anim-fade-up"
               style={{ 
-                position: 'relative', padding: isMobile ? '1rem' : '1.25rem', borderRadius: '20px', transition: 'all 0.3s', animationDelay: `${idx * 0.05}s`,
-                background: n.isRead ? 'var(--surface)' : 'linear-gradient(to right, var(--surface), rgba(99,102,241,0.02))',
-                border: n.isRead ? '1px solid var(--border)' : '1px solid rgba(99,102,241,0.15)',
+                position: 'relative', 
+                padding: mobile ? '1.25rem' : '1.5rem', 
+                borderRadius: '24px', 
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', 
+                animationDelay: `${idx * 0.05}s`,
+                background: n.isRead ? '#1e293b' : '#0f172a',
+                border: n.isRead ? '1px solid #334155' : '1px solid #6366f133',
+                boxShadow: n.isRead ? 'none' : '0 10px 30px -10px rgba(99,102,241,0.15)',
               }}
             >
-              <div style={{ display: 'flex', gap: isMobile ? '0.75rem' : '1.25rem' }}>
+              <div style={{ display: 'flex', gap: mobile ? '1rem' : '1.5rem' }}>
                 {getIcon(n.type, n.isRead)}
                 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-                    <h4 style={{ fontSize: isMobile ? '0.95rem' : '1.05rem', fontWeight: '800', color: n.isRead ? 'var(--text)' : 'var(--primary-light)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+                    <h4 style={{ 
+                      fontSize: mobile ? '1rem' : '1.15rem', 
+                      fontWeight: '800', 
+                      color: n.isRead ? '#94a3b8' : '#fff', 
+                      margin: 0, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.6rem',
+                      letterSpacing: '-0.01em'
+                    }}>
                       {n.title}
-                      {!n.isRead && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--primary)' }} />}
+                      {!n.isRead && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#6366f1', boxShadow: '0 0 10px #6366f1' }} />}
                     </h4>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
-                      {format(new Date(n.createdAt), isMobile ? 'MMM dd' : 'MMM dd, hh:mm a')}
+                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap', marginLeft: '1rem', background: '#0f172a80', padding: '0.3rem 0.6rem', borderRadius: '8px', border: '1px solid #33415544' }}>
+                      <Clock size={12} />
+                      {mounted ? format(new Date(n.createdAt), mobile ? 'hh:mm a' : 'MMM dd, hh:mm a') : ''}
                     </span>
                   </div>
                   
-                  <p style={{ color: 'var(--text-2)', fontSize: isMobile ? '0.85rem' : '0.92rem', lineHeight: '1.5', margin: '0 0 0.85rem 0' }}>
+                  <p style={{ 
+                    color: n.isRead ? '#64748b' : '#cbd5e1', 
+                    fontSize: mobile ? '0.88rem' : '0.95rem', 
+                    lineHeight: '1.6', 
+                    margin: '0 0 1rem 0',
+                    fontWeight: 500
+                  }}>
                     {n.message}
                   </p>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    {n.link && (
-                      <a 
-                        href={n.link} 
-                        className="btn btn-ghost btn-sm"
-                        style={{ padding: 0, height: 'auto', background: 'transparent', color: 'var(--primary-light)', fontWeight: '700', fontSize: '0.8rem', gap: '0.3rem' }}
-                      >
-                        View <ArrowRight size={12} />
-                      </a>
-                    )}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                      {n.link && (
+                        <a 
+                          href={n.link} 
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.4rem', 
+                            color: '#818cf8', 
+                            fontWeight: '700', 
+                            fontSize: '0.85rem', 
+                            textDecoration: 'none',
+                            transition: 'color 0.2s'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.color = '#a5b4fc'}
+                          onMouseOut={e => e.currentTarget.style.color = '#818cf8'}
+                        >
+                          Action Required <ArrowRight size={14} />
+                        </a>
+                      )}
+                    </div>
+                    
                     {!n.isRead && (
                       <button 
                         onClick={() => markAsRead(n.id)}
-                        className="text-xs font-bold text-success flex items-center gap-1 hover:underline cursor-pointer"
-                        style={{ background: 'none', border: 'none', padding: 0, fontSize: '0.75rem' }}
+                        style={{ 
+                          background: '#10b98115', 
+                          border: '1px solid #10b98133', 
+                          color: '#10b981', 
+                          padding: '0.4rem 0.8rem', 
+                          borderRadius: '10px', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '800', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => {
+                          e.currentTarget.style.background = '#10b98125';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseOut={e => {
+                          e.currentTarget.style.background = '#10b98115';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
                       >
-                        <ShieldCheck size={12} /> Mark read
+                        <Check size={14} /> Mark as Read
                       </button>
                     )}
                   </div>

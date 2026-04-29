@@ -28,7 +28,7 @@ export default async function AdminContactMessages() {
           <div className="card card-p-lg" style={{ textAlign: 'center', opacity: 0.8 }}>
             <MessageSquare size={48} style={{ color: 'var(--text-3)', margin: '0 auto 1rem', opacity: 0.5 }} />
             <h3 style={{ marginBottom: '0.5rem' }}>No Messages Yet</h3>
-            <p style={{ color: 'var(--text-3)' }}>You haven't received any contact form submissions.</p>
+            <p style={{ color: 'var(--text-3)' }}>You haven&apos;t received any contact form submissions.</p>
           </div>
         ) : (
           <div className="grid-2" style={{ gap: '1.5rem', alignItems: 'stretch' }}>
