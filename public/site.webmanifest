@@ -1,0 +1,21 @@
+{
+  "name": "JobAdda.in",
+  "short_name": "JobAdda",
+  "description": "India's fastest growing job portal.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/logosq.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logosq.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -39,13 +39,13 @@ export default function Navbar() {
             setUnreadCount(data.filter((n: any) => !n.isRead).length);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
 
       // Fetch profile image for navbar avatar
       fetch('/api/profile')
         .then(res => res.json())
         .then(data => { if (data?.profileImage) setNavProfileImage(data.profileImage); })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [status]);
 
@@ -62,8 +62,8 @@ export default function Navbar() {
   const dashboardLink = user?.role === 'COMPANY'
     ? '/company/dashboard'
     : user?.role === 'ADMIN'
-    ? '/admin/dashboard'
-    : '/user/dashboard';
+      ? '/admin/dashboard'
+      : '/user/dashboard';
 
   return (
     <>
@@ -177,8 +177,8 @@ export default function Navbar() {
             {session ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
-                  <a 
-                    href="/user/profile" 
+                  <a
+                    href="/user/profile"
                     onClick={() => setMobileOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit', flex: 1 }}
                   >

@@ -5,6 +5,7 @@ import Providers from "@/components/Providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://jobadda.in'),
   title: "JobAdda.in | Find Your Dream Job in India",
   description: "India's fastest growing job portal. Search 50,000+ jobs, build a professional ats optimized resume, and refer friends to earn money. Connect with top companies on JobAdda.in.",
   keywords: ["jobs in india", "job search", "job portal", "naukri", "hiring", "recruitment", "JobAdda", "resume",
@@ -13,13 +14,13 @@ export const metadata: Metadata = {
     "jobs in mumbai", "jobs in pune", "jobs in bangalore",
     "jobs in hyderabad", "jobs in chennai",
     "jobs in lucknow", "jobs in kanpur", "jobs in varanasi",
-    "jobs in meerut", "jobs in agra",
-    "jobs in lucknow", "jobs in kanpur", "jobs in varanasi",
     "jobs in meerut", "jobs in agra"],
 
-    openGraph: {
+  openGraph: {
+    type: "website",
+    url: "https://jobadda.in",
     title: "JobAdda.in | Find Your Dream Job in India",
-    description: "India's fastest growing job portal. Search 50,000+ jobs, build a professional ats optimized resume, and refer friends to earn money. Connect with top companies on JobAdda.in.",
+    description: "India's fastest growing job portal. Search 50,000+ jobs, build a professional ats optimized resume, and refer friends to earn money.",
     siteName: "JobAdda.in",
     images: [
       {
@@ -31,9 +32,29 @@ export const metadata: Metadata = {
     ],
   },
 
-  icons: { 
-    icon: "/logosq.png",
-    apple: "/logosq.png",
+  twitter: {
+    card: "summary_large_image",
+    title: "JobAdda.in | Find Your Dream Job in India",
+    description: "India's fastest growing job portal. Search 50,000+ jobs and refer friends to earn money.",
+    images: ["/logosq.png"],
+  },
+
+  icons: {
+    icon: [
+      { url: "/logosq.png" },
+      { url: "/logosq.png", sizes: "32x32", type: "image/png" },
+      { url: "/logosq.png", sizes: "192x192", type: "image/png" },
+      { url: "/logosq.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/logosq.png",
+    apple: [
+      { url: "/logosq.png" },
+      { url: "/logosq.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
+  other: {
+    "theme-color": "#6366f1",
   },
 };
 
