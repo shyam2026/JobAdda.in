@@ -289,7 +289,7 @@ model AdminUser {
 }
 
 model CompanyUser {
-  id          String   @id @default(cuid())
+  id          String   @id
   email       String   @unique
   password    String
   name        String?

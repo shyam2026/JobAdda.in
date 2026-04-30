@@ -86,9 +86,9 @@ export default function StudentDashboard() {
   const user = session?.user as any;
   const stats = [
     { label: 'Wallet Balance', value: `₹${(data?.walletBalance || 0).toFixed(0)}`, icon: Wallet, color: '#10b981', sub: 'Refer to earn more' },
-    { label: 'Applications', value: String(data?.totalApplications || 0), icon: Briefcase, color: '#6366f1', sub: 'Active jobs track' },
-    { label: 'Profile Score', value: `${data?.profileScore || 0}%`, icon: Star, color: '#f59e0b', sub: 'Target 100% to apply' },
-    { label: 'Total Referrals', value: String(data?.totalReferrals || 0), icon: Share2, color: '#ec4899', sub: `Successful credits` },
+    { label: 'Job Applications', value: String(data?.totalApplications || 0), icon: Briefcase, color: '#6366f1', sub: 'Active jobs track' },
+    { label: 'Profile Completion Score', value: `${data?.profileScore || 0}%`, icon: Star, color: '#f59e0b', sub: 'Target 100% to apply' },
+    { label: 'Successful Referrals', value: String(data?.totalReferrals || 0), icon: Share2, color: '#ec4899', sub: `Successful credits` },
   ];
 
   return (
@@ -156,12 +156,12 @@ export default function StudentDashboard() {
         {/* Refer & Earn Mini Widget */}
         <div className="card card-p" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))', border: '1px solid rgba(99,102,241,0.15)' }}>
           <h4 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Share2 size={18} /> Invite & Earn</h4>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-2)', marginBottom: '1.5rem' }}>Earn ₹50 for every friend who joins JobAdda.in using your link.</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-2)', marginBottom: '1.5rem' }}>Earn Upto ₹50 for every friend who joins JobAdda.in using your link.</p>
           
           <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-2)', padding: '0.4rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <div style={{ flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.75rem', color: 'var(--primary-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', alignSelf: 'center' }}>
               {data?.referralStats.link || 'Loading...'}
-            </div>
+            </div> 
             <button 
               onClick={handleCopy} 
               className={`btn btn-sm ${copied ? 'btn-success' : 'btn-primary'}`}

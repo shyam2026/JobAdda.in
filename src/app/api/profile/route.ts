@@ -213,6 +213,48 @@ export async function PUT(req: Request) {
       }
     }
 
+    // Referral Progress Notification
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { studentProfile: true, educations: true } as any
+      });
+      
+      if (user?.referredBy) {
+        const u = user as any;
+        const hasBasic = u.studentProfile?.bio && u.studentProfile?.phone && u.studentProfile?.location && u.studentProfile?.linkedin && u.studentProfile?.github;
+        const hasEdu = u.educations?.some((e: any) => e.school && e.degree && e.grade && e.description);
+        
+        if (hasBasic && hasEdu) {
+          const referrer = await prisma.user.findFirst({ where: { referralCode: user.referredBy } });
+          if (referrer) {
+            // Check if we already notified about this "Ready" stage
+            const existingNote = await (prisma as any).notification.findFirst({
+              where: {
+                userId: referrer.id,
+                type: "REFERRAL",
+                message: { contains: `${user.name || 'Your friend'} has completed their profile` }
+              }
+            });
+
+            if (!existingNote) {
+              await (prisma as any).notification.create({
+                data: {
+                  userId: referrer.id,
+                  title: "🚀 Referral Milestone!",
+                  message: `${user.name || 'Your friend'} has completed their profile! Your bonus will be credited once they apply for their first job.`,
+                  type: "REFERRAL",
+                  link: "/user/refer"
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("REFERRAL_PROGRESS_NOTIFICATION_ERROR", e);
+    }
+
     return NextResponse.json({ message: "Profile updated successfully" });
   } catch (error) {
     console.error("PROFILE_UPDATE_ERROR", error);

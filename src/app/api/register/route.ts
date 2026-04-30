@@ -53,6 +53,48 @@ export async function POST(req: Request) {
       }
     });
 
+    // Notify Referrer (if not default)
+    if (referredBy) {
+      try {
+        const referrer = await prisma.user.findUnique({
+          where: { referralCode: referredBy }
+        });
+
+        if (referrer) {
+          await (prisma as any).notification.create({
+            data: {
+              userId: referrer.id,
+              title: "🎉 New Referral Join!",
+              message: `${name} just joined JobAdda using your link! You'll earn a bonus once they complete their profile and apply for their first job.`,
+              type: "REFERRAL",
+              link: "/user/refer"
+            }
+          });
+        }
+      } catch (e) {
+        console.error("REFERRAL_JOIN_NOTIFICATION_ERROR", e);
+      }
+
+    }
+
+    // Notify Joining User (Conditional message)
+    try {
+      const isReferral = !!referredBy;
+      await (prisma as any).notification.create({
+        data: {
+          userId: user.id,
+          title: "👋 Welcome to JobAdda!",
+          message: isReferral 
+            ? `You joined via a referral link. Complete your profile and apply for your first job to help your friend earn a bonus!`
+            : `We're excited to have you here! Complete your profile to get personalized job recommendations and start applying.`,
+          type: "SYSTEM",
+          link: "/user/profile"
+        }
+      });
+    } catch (e) {
+      console.error("WELCOME_NOTIFICATION_ERROR", e);
+    }
+
     return NextResponse.json({ 
       message: "User created successfully", 
       referralCode: user.referralCode 

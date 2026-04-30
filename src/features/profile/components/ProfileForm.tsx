@@ -237,24 +237,55 @@ export function ProfileForm({ standalone = true }: { standalone?: boolean }) {
 
   const FormContent = (
     <>
-      <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Scrollable Tabs Slider (Top) */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '0.5rem', 
+        marginBottom: '1.5rem', 
+        overflowX: 'auto', 
+        paddingBottom: '0.5rem',
+        WebkitOverflowScrolling: 'touch',
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none',
+        width: '100%',
+        borderBottom: '1px solid var(--border)',
+        paddingLeft: '0.2rem'
+      }}>
+        <style>{`
+          div::-webkit-scrollbar { display: none; }
+        `}</style>
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={`tag ${activeTab === t.id ? 'active' : ''}`}
+            style={{ 
+              whiteSpace: 'nowrap', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.4rem',
+              flexShrink: 0,
+              padding: '0.5rem 1rem',
+              borderRadius: '12px'
+            }}
+          >
+            <t.icon size={14} />{t.label}
+          </button>
+        ))}
+      </div>
+
+      <header style={{ 
+        marginBottom: '2rem', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-start', 
+        gap: '1.5rem' 
+      }}>
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id)}
-                className={`tag ${activeTab === t.id ? 'active' : ''}`}
-                style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-              >
-                <t.icon size={14} />{t.label}
-              </button>
-            ))}
-          </div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>
+          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
             {TABS.find(t => t.id === activeTab)?.label}
           </h2>
-          <p style={{ color: 'var(--text-3)', margin: 0, fontSize: '0.85rem' }}>
+          <p style={{ color: 'var(--text-3)', margin: 0, fontSize: '0.9rem', lineHeight: '1.5' }}>
             {activeTab === 'basic' && "This information appears on your public profile and resumes."}
             {activeTab === 'portfolio' && "Connect your professional profiles and personal showcase."}
             {activeTab === 'education' && "Add your academic background to strengthen your profile."}
@@ -263,7 +294,8 @@ export function ProfileForm({ standalone = true }: { standalone?: boolean }) {
             {activeTab === 'certificates' && "Highlight your certifications and achievements."}
           </p>
         </div>
-        <div style={{ minWidth: '120px' }}>
+
+        <div style={{ minWidth: '130px', textAlign: 'right' }}>
           {saveError && <p style={{ fontSize: '0.75rem', color: 'var(--danger)', marginBottom: '0.5rem' }}>{saveError}</p>}
           <Button
             onClick={handleSave}
@@ -601,7 +633,7 @@ export function ProfileForm({ standalone = true }: { standalone?: boolean }) {
                         </div>
                       </div>
                   </div>
-                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', width: '100%' }}>
                     <input
                       type="checkbox"
                       id={`current-${i}`}
@@ -724,7 +756,7 @@ export function ProfileForm({ standalone = true }: { standalone?: boolean }) {
                       </div>
                     )}
                   </div>
-                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', width: '100%' }}>
                     <input 
                       type="checkbox" 
                       id={`proj-current-${i}`}

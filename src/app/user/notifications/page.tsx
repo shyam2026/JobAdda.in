@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Check, Zap, Briefcase, Info, Clock, ExternalLink, User, Filter, ShieldCheck, MoreHorizontal, ArrowRight, CheckCircle, AlertTriangle, CreditCard } from 'lucide-react';
+import { Bell, Check, Zap, Briefcase, Info, Clock, ExternalLink, User, Filter, ShieldCheck, MoreHorizontal, ArrowRight, CheckCircle, AlertTriangle, CreditCard, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Notification {
@@ -59,6 +59,21 @@ export default function UserNotificationsPage() {
           setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         } else {
           setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteNotification = async (id: string | 'all') => {
+    try {
+      const res = await fetch(`/api/user/notifications?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        if (id === 'all') {
+          setNotifications([]);
+        } else {
+          setNotifications(prev => prev.filter(n => n.id !== id));
         }
       }
     } catch (e) {
@@ -139,6 +154,22 @@ export default function UserNotificationsPage() {
                  <Check size={16} /> <span style={{ fontSize: '0.85rem' }}>Mark all read</span>
                </button>
              )}
+             {notifications.length > 0 && (
+               <button
+                 onClick={() => deleteNotification('all')}
+                 style={{
+                   display: 'flex', alignItems: 'center', gap: '0.5rem',
+                   padding: '0.6rem 1rem', borderRadius: '12px',
+                   background: '#ff444415', border: '1px solid #ff444430',
+                   color: '#ff6b6b', fontWeight: '700', fontSize: '0.85rem',
+                   cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s'
+                 }}
+                 onMouseOver={e => { e.currentTarget.style.background = '#ff444425'; }}
+                 onMouseOut={e => { e.currentTarget.style.background = '#ff444415'; }}
+               >
+                 <Trash2 size={14} /> <span>Clear All</span>
+               </button>
+             )}
           </div>
         </div>
 
@@ -206,91 +237,114 @@ export default function UserNotificationsPage() {
                 boxShadow: n.isRead ? 'none' : '0 10px 30px -10px rgba(99,102,241,0.15)',
               }}
             >
-              <div style={{ display: 'flex', gap: mobile ? '1rem' : '1.5rem' }}>
+              <div style={{ display: 'flex', gap: mobile ? '1rem' : '1.5rem', alignItems: 'center' }}>
                 {getIcon(n.type, n.isRead)}
                 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', gap: '1rem' }}>
                     <h4 style={{ 
-                      fontSize: mobile ? '1rem' : '1.15rem', 
+                      fontSize: mobile ? '1.05rem' : '1.15rem', 
                       fontWeight: '800', 
                       color: n.isRead ? '#94a3b8' : '#fff', 
                       margin: 0, 
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '0.6rem',
-                      letterSpacing: '-0.01em'
+                      letterSpacing: '-0.01em',
+                      flex: 1
                     }}>
                       {n.title}
-                      {!n.isRead && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#6366f1', boxShadow: '0 0 10px #6366f1' }} />}
+                      {!n.isRead && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#6366f1', boxShadow: '0 0 10px #6366f1', flexShrink: 0 }} />}
                     </h4>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap', marginLeft: '1rem', background: '#0f172a80', padding: '0.3rem 0.6rem', borderRadius: '8px', border: '1px solid #33415544' }}>
-                      <Clock size={12} />
-                      {mounted ? format(new Date(n.createdAt), mobile ? 'hh:mm a' : 'MMM dd, hh:mm a') : ''}
-                    </span>
+
+                    {/* Actions Group (Top Right) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                      <span style={{ 
+                        fontSize: '0.72rem', color: '#64748b', fontWeight: '600', 
+                        display: 'flex', alignItems: 'center', gap: '0.3rem', 
+                        whiteSpace: 'nowrap', background: '#0f172a80', 
+                        padding: '0.3rem 0.6rem', borderRadius: '8px', 
+                        border: '1px solid #33415544',
+                        marginRight: '0.25rem'
+                      }}>
+                        <Clock size={11} />
+                        {mounted ? format(new Date(n.createdAt), mobile ? 'hh:mm a' : 'MMM dd, hh:mm a') : ''}
+                      </span>
+
+                      {!n.isRead && (
+                        <button 
+                          onClick={() => markAsRead(n.id)}
+                          title="Mark as read"
+                          style={{ 
+                            background: '#10b98115', border: '1px solid #10b98133', color: '#10b981', 
+                            width: '32px', height: '32px', borderRadius: '8px', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', transition: 'all 0.2s'
+                          }}
+                          onMouseOver={e => { e.currentTarget.style.background = '#10b98125'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                          onMouseOut={e => { e.currentTarget.style.background = '#10b98115'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                        >
+                          <Check size={14} strokeWidth={3} />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => deleteNotification(n.id)}
+                        title="Delete notification"
+                        style={{
+                          width: '32px', height: '32px', borderRadius: '8px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'transparent', border: '1px solid transparent',
+                          color: '#475569', cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => {
+                          e.currentTarget.style.background = '#ff444420';
+                          e.currentTarget.style.color = '#ff6b6b';
+                          e.currentTarget.style.borderColor = '#ff444440';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseOut={e => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#475569';
+                          e.currentTarget.style.borderColor = 'transparent';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                   
                   <p style={{ 
                     color: n.isRead ? '#64748b' : '#cbd5e1', 
                     fontSize: mobile ? '0.88rem' : '0.95rem', 
                     lineHeight: '1.6', 
-                    margin: '0 0 1rem 0',
-                    fontWeight: 500
+                    margin: '0 0 0.8rem 0',
+                    fontWeight: 500,
+                    maxWidth: '90%' // Give space for right actions on wrap
                   }}>
                     {n.message}
                   </p>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                      {n.link && (
-                        <a 
-                          href={n.link} 
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '0.4rem', 
-                            color: '#818cf8', 
-                            fontWeight: '700', 
-                            fontSize: '0.85rem', 
-                            textDecoration: 'none',
-                            transition: 'color 0.2s'
-                          }}
-                          onMouseOver={e => e.currentTarget.style.color = '#a5b4fc'}
-                          onMouseOut={e => e.currentTarget.style.color = '#818cf8'}
-                        >
-                          Action Required <ArrowRight size={14} />
-                        </a>
-                      )}
-                    </div>
-                    
-                    {!n.isRead && (
-                      <button 
-                        onClick={() => markAsRead(n.id)}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                    {n.link && (
+                      <a 
+                        href={n.link} 
                         style={{ 
-                          background: '#10b98115', 
-                          border: '1px solid #10b98133', 
-                          color: '#10b981', 
-                          padding: '0.4rem 0.8rem', 
-                          borderRadius: '10px', 
-                          fontSize: '0.75rem', 
-                          fontWeight: '800', 
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.4rem',
-                          transition: 'all 0.2s'
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '0.4rem', 
+                          color: '#818cf8', 
+                          fontWeight: '700', 
+                          fontSize: '0.85rem', 
+                          textDecoration: 'none',
+                          transition: 'color 0.2s'
                         }}
-                        onMouseOver={e => {
-                          e.currentTarget.style.background = '#10b98125';
-                          e.currentTarget.style.transform = 'translateY(-1px)';
-                        }}
-                        onMouseOut={e => {
-                          e.currentTarget.style.background = '#10b98115';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                        }}
+                        onMouseOver={e => e.currentTarget.style.color = '#a5b4fc'}
+                        onMouseOut={e => e.currentTarget.style.color = '#818cf8'}
                       >
-                        <Check size={14} /> Mark as Read
-                      </button>
+                        View Details <ArrowRight size={14} />
+                      </a>
                     )}
                   </div>
                 </div>

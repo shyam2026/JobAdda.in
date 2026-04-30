@@ -36,7 +36,10 @@ export async function GET(req: Request) {
     const [jobs, total] = await Promise.all([
       prisma.job.findMany({
         where,
-        include: { company: { select: { id: true, name: true } } },
+        include: {
+          company: { select: { id: true, name: true, logo: true } },
+          _count: { select: { applications: true } },
+        },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,

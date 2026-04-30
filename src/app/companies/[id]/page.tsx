@@ -13,6 +13,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     include: {
       jobs: {
         where: { status: 'OPEN' },
+        select: { id: true, title: true, location: true, salary: true, type: true, category: true, externalLink: true, createdAt: true },
         orderBy: { createdAt: 'desc' }
       }
     }

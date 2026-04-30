@@ -1,20 +1,19 @@
 import React from 'react';
-import { Briefcase, Clock, MapPin, Star } from 'lucide-react';
+import { Briefcase, Clock, MapPin, IndianRupee, Users } from 'lucide-react';
 
 export interface Job {
   id: string;
   title: string;
-  company: string | { name: string; id: string };
+  company: string | { id: string; name: string; logo?: string | null };
   location: string;
   salary?: string | null;
   type: string;
-  experience?: string;
-  logo?: string;
   category?: string;
   posted?: string;
   tags?: string[];
   featured?: boolean;
   createdAt?: string;
+  _count?: { applications?: number };
 }
 
 interface JobCardProps {
@@ -28,8 +27,14 @@ function getCompanyName(company: Job['company']): string {
   return company.name || 'Company';
 }
 
-function getCompanyInitial(company: Job['company']): string {
-  return getCompanyName(company)?.[0]?.toUpperCase() || 'C';
+function getCompanyId(company: Job['company']): string | null {
+  if (!company || typeof company === 'string') return null;
+  return company.id || null;
+}
+
+function getCompanyLogo(company: Job['company']): string | null {
+  if (!company || typeof company === 'string') return null;
+  return (company as any).logo || null;
 }
 
 function formatDate(createdAt?: string): string {
@@ -39,52 +44,130 @@ function formatDate(createdAt?: string): string {
   if (days === 0) return 'Today';
   if (days === 1) return '1 day ago';
   if (days < 7) return `${days} days ago`;
-  if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
   return new Date(createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
+const TYPE_COLOR: Record<string, string> = {
+  'Full-time': '#10b981',
+  'Remote': '#6366f1',
+  'Hybrid': '#f59e0b',
+  'Part-time': '#8b5cf6',
+  'Internship': '#ec4899',
+  'INTERNAL': '#10b981',
+  'EXTERNAL': '#f59e0b',
+};
+
 export function JobCard({ job, index = 0 }: JobCardProps) {
   const companyName = getCompanyName(job.company);
-  const initial = job.logo || getCompanyInitial(job.company);
+  const companyId = getCompanyId(job.company);
+  const logo = getCompanyLogo(job.company);
   const dateStr = job.createdAt ? formatDate(job.createdAt) : (job.posted || 'Recently');
+  const applicants = job._count?.applications ?? 0;
+  const typeColor = TYPE_COLOR[job.type] || 'var(--primary)';
+  const initial = companyName[0]?.toUpperCase() || 'C';
 
   return (
     <a
       href={`/jobs/${job.id}`}
       className="card job-card"
-      style={{ textDecoration: 'none', animationDelay: `${index * 0.05}s`, display: 'block', position: 'relative' }}
+      style={{
+        textDecoration: 'none',
+        animationDelay: `${index * 0.04}s`,
+        display: 'block',
+        position: 'relative',
+        padding: '1.5rem',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+      }}
     >
       {job.featured && (
-        <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
-          <span className="badge badge-warning" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <Star size={10} fill="currentColor" /> Featured
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+          <span className="badge badge-warning" style={{ fontSize: '0.72rem', padding: '0.2rem 0.6rem' }}>
+            ⭐ Featured
           </span>
         </div>
       )}
-      <div className="job-card-header" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-        <div className="company-logo" style={{ width: '48px', height: '48px', borderRadius: 'var(--radius)', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', border: '1px solid var(--border)', flexShrink: 0 }}>
-          {initial}
+
+      {/* Header */}
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'flex-start' }}>
+        {/* Logo */}
+        <div style={{
+          width: '52px', height: '52px', borderRadius: '12px',
+          background: logo ? 'transparent' : `${typeColor}18`,
+          border: `1px solid ${typeColor}30`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: '900', fontSize: '1.25rem', color: typeColor,
+          flexShrink: 0, overflow: 'hidden',
+        }}>
+          {logo
+            ? <img src={logo} alt={companyName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : initial
+          }
         </div>
+
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="job-title" style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.title}</div>
-          <div className="company-name" style={{ fontSize: '0.88rem', color: 'var(--text-3)' }}>{companyName}</div>
+          <div style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text)' }}>
+            {job.title}
+          </div>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            {companyId
+              ? <span style={{ color: 'var(--primary-light)', fontWeight: '600' }}>{companyName}</span>
+              : companyName
+            }
+          </div>
         </div>
       </div>
-      <div className="job-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem', fontSize: '0.82rem', color: 'var(--text-2)' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><MapPin size={12} />{job.location}</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Briefcase size={12} />{job.type}</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={12} />{dateStr}</span>
+
+      {/* Meta row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--text-3)' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <MapPin size={12} /> {job.location}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <Clock size={12} /> {dateStr}
+        </span>
+        {applicants > 0 && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <Users size={12} /> {applicants} applied
+          </span>
+        )}
       </div>
-      {job.tags && job.tags.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
-          {job.tags.slice(0, 4).map(t => (
-            <span key={t} className="tag" style={{ fontSize: '0.74rem', padding: '0.2rem 0.65rem' }}>{t}</span>
-          ))}
-        </div>
-      )}
-      <div className="job-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-        <span style={{ fontWeight: '700', color: 'var(--success)', fontSize: '0.95rem' }}>{job.salary || 'Competitive Pay'}</span>
-        <span className="btn btn-primary btn-sm">Apply Now →</span>
+
+      {/* Tags row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
+        <span style={{
+          background: `${typeColor}15`, color: typeColor,
+          border: `1px solid ${typeColor}30`,
+          borderRadius: '2rem', fontSize: '0.74rem', fontWeight: '700',
+          padding: '0.2rem 0.7rem',
+        }}>{job.type}</span>
+        {job.category && job.category !== 'Other' && (
+          <span style={{
+            background: 'var(--surface)', color: 'var(--text-3)',
+            border: '1px solid var(--border)',
+            borderRadius: '2rem', fontSize: '0.74rem', fontWeight: '600',
+            padding: '0.2rem 0.7rem',
+          }}>{job.category}</span>
+        )}
+        {job.tags?.slice(0, 2).map(t => (
+          <span key={t} style={{
+            background: 'var(--surface)', color: 'var(--text-3)',
+            border: '1px solid var(--border)',
+            borderRadius: '2rem', fontSize: '0.74rem',
+            padding: '0.2rem 0.7rem',
+          }}>{t}</span>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: '800', color: 'var(--success)', fontSize: '0.95rem' }}>
+          <IndianRupee size={14} />
+          {job.salary ? job.salary.replace('₹', '') : 'Competitive'}
+        </span>
+        <span className="btn btn-primary btn-sm" style={{ fontSize: '0.8rem', padding: '0.4rem 1rem' }}>
+          Apply Now →
+        </span>
       </div>
     </a>
   );

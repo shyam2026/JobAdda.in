@@ -45,31 +45,58 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "A company with this email already exists" }, { status: 400 });
     }
 
-    // Generate a 6-digit numeric unique ID (expanding to 7 if full)
-    const digits = '0123456789';
-    let idLength = 6;
-    let customCompanyId = '';
+    // Generate a unique Brand Slug from company name
+    const slugify = (text: string) => text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const getDomainSlug = (url: string) => {
+      try {
+        const domain = url.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+        return slugify(domain.replace(/\./g, '-'));
+      } catch {
+        return '';
+      }
+    };
+
+    let baseSlug = slugify(companyName) || 'company';
+    let customCompanyId = baseSlug;
     let company = null;
     let attempts = 0;
 
-    while (!company) {
-      customCompanyId = '';
-      for (let i = 0; i < idLength; i++) {
-        customCompanyId += digits.charAt(Math.floor(Math.random() * digits.length));
-      }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Proactively check if ID exists
+    while (!company) {
+      // Check if ID exists
       const idExists = await (prisma as any).companyUser.findUnique({ where: { id: customCompanyId } });
+      
       if (idExists) {
         attempts++;
-        if (attempts >= 5) {
-          idLength++; // Increase length if collisions are frequent
-          attempts = 0;
+        
+        if (attempts === 1 && website) {
+          // Attempt 1: Try using the domain as a differentiator
+          const domainSlug = getDomainSlug(website);
+          if (domainSlug) {
+            customCompanyId = `${baseSlug}-${domainSlug}`;
+            continue;
+          }
+        }
+
+        // Attempt 2+: Use random suffix
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let suffix = '';
+        for (let i = 0; i < 3; i++) suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+        customCompanyId = `${baseSlug}-${suffix}`;
+        
+        if (attempts >= 10) {
+          // Absolute fallback
+          customCompanyId = `${baseSlug}-${Date.now().toString().slice(-4)}`;
         }
         continue;
       }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
 
       try {
         company = await (prisma as any).companyUser.create({
@@ -93,11 +120,9 @@ export async function POST(req: Request) {
         });
       } catch (e: any) {
         if (e.code === 'P2002') {
+          // Database level unique constraint fail (should be caught by findUnique, but just in case)
           attempts++;
-          if (attempts >= 5) {
-            idLength++;
-            attempts = 0;
-          }
+          continue;
         } else {
           throw e;
         }
