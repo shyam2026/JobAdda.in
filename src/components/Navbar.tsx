@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import { Bell, ChevronDown, LogOut, User, LayoutDashboard, Briefcase, Menu, X, DollarSign, Gift, Building2, Search, FileText, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -24,10 +26,11 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Close mobile menu on route change
+  // Close mobile menu and profile dropdown on route change
   useEffect(() => {
-    setTimeout(() => setMobileOpen(false), 0);
-  }, []);
+    setMobileOpen(false);
+    setProfileOpen(false);
+  }, [pathname]);
 
   // Fetch unread notifications count
   useEffect(() => {
@@ -59,15 +62,9 @@ export default function Navbar() {
 
   const user = session?.user as { name?: string | null; email?: string | null; role?: string } | undefined;
 
-  const dashboardLink = user?.role === 'COMPANY'
-    ? '/company/dashboard'
-    : user?.role === 'ADMIN'
-      ? '/admin/dashboard'
-      : '/user/dashboard';
-
   return (
     <>
-      <nav className="navbar">
+      <nav className="navbar" style={{ zIndex: 1100 }}>
         <div className="container nav-inner">
           {/* Logo */}
           <Link href="/" className="nav-logo">
@@ -77,7 +74,7 @@ export default function Navbar() {
           {/* Desktop Links */}
           <div className="nav-links hide-mobile">
             {navLinks.map(l => (
-              <a key={l.href} href={l.href} className="nav-link">{l.label}</a>
+              <Link key={l.href} href={l.href} className="nav-link">{l.label}</Link>
             ))}
           </div>
 
@@ -87,12 +84,12 @@ export default function Navbar() {
               <div className="hide-mobile" style={{ width: '120px', height: '36px', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }} />
             ) : session ? (
               <>
-                <a href="/user/notifications" className="btn btn-ghost btn-icon hide-mobile" style={{ position: 'relative' }} aria-label="Notifications">
+                <Link href="/user/notifications" className="btn btn-ghost btn-icon hide-mobile" style={{ position: 'relative' }} aria-label="Notifications">
                   <Bell size={20} />
                   {unreadCount > 0 && (
                     <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%', border: '2px solid var(--bg-2)' }} />
                   )}
-                </a>
+                </Link>
                 {/* Profile Dropdown */}
                 <div style={{ position: 'relative' }} className="hide-mobile" ref={dropdownRef}>
                   <button
@@ -111,7 +108,7 @@ export default function Navbar() {
                   </button>
                   {profileOpen && (
                     <div
-                      style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '0.5rem', minWidth: '210px', zIndex: 1100, boxShadow: 'var(--shadow)' }}
+                      style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '0.5rem', minWidth: '210px', zIndex: 1200, boxShadow: 'var(--shadow)' }}
                       role="menu"
                     >
                       {/* User Info */}
@@ -119,11 +116,11 @@ export default function Navbar() {
                         <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{user?.name}</div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', wordBreak: 'break-all' }}>{user?.email}</div>
                       </div>
-                      <a href="/user/dashboard" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><LayoutDashboard size={16} />Dashboard</a>
-                      <a href="/user/profile" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><User size={16} />My Profile</a>
-                      <a href="/user/applied-jobs" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><Briefcase size={16} />Applied Jobs</a>
-                      <a href="/user/resume" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><FileText size={16} />Resume Builder</a>
-                      <a href="/user/refer" className="sidebar-item" style={{ width: '100%' }} onClick={() => setProfileOpen(false)}><Share2 size={16} />Refer & Earn</a>
+                      <Link href="/user/dashboard" className="sidebar-item" style={{ width: '100%' }}><LayoutDashboard size={16} />Dashboard</Link>
+                      <Link href="/user/profile" className="sidebar-item" style={{ width: '100%' }}><User size={16} />My Profile</Link>
+                      <Link href="/user/applied-jobs" className="sidebar-item" style={{ width: '100%' }}><Briefcase size={16} />Applied Jobs</Link>
+                      <Link href="/user/resume" className="sidebar-item" style={{ width: '100%' }}><FileText size={16} />Resume Builder</Link>
+                      <Link href="/user/refer" className="sidebar-item" style={{ width: '100%' }}><Share2 size={16} />Refer & Earn</Link>
                       <div style={{ height: '1px', background: 'var(--border)', margin: '0.4rem 0.5rem' }} />
                       <button
                         onClick={() => { setProfileOpen(false); signOut({ callbackUrl: '/' }); }}
@@ -138,8 +135,8 @@ export default function Navbar() {
               </>
             ) : (
               <div className="hide-mobile" style={{ display: 'flex', gap: '0.75rem' }}>
-                <a href="/login" className="btn btn-ghost" style={{ fontSize: '0.9rem' }}>Login</a>
-                <a href="/register" className="btn btn-primary btn-sm">Get Started</a>
+                <Link href="/login" className="btn btn-ghost" style={{ fontSize: '0.9rem' }}>Login</Link>
+                <Link href="/register" className="btn btn-primary btn-sm">Get Started</Link>
               </div>
             )}
 
@@ -148,8 +145,9 @@ export default function Navbar() {
               onClick={() => setMobileOpen(!mobileOpen)}
               className="btn btn-ghost btn-icon show-mobile"
               aria-label="Toggle menu"
+              style={{ position: 'relative', zIndex: 2100 }}
             >
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
@@ -159,16 +157,26 @@ export default function Navbar() {
       {mobileOpen && (
         <div
           className="show-mobile"
-          style={{ position: 'fixed', inset: 0, top: 'var(--nav-height)', background: 'var(--bg)', zIndex: 1000, padding: '1.5rem', overflowY: 'auto' }}
+          style={{ 
+            position: 'fixed', 
+            inset: 0, 
+            top: 0, 
+            paddingTop: 'var(--nav-height)',
+            background: 'var(--bg)', 
+            zIndex: 2000, 
+            padding: '1.5rem', 
+            overflowY: 'auto',
+            animation: 'fadeIn 0.2s ease'
+          }}
           onClick={e => { if (e.target === e.currentTarget) setMobileOpen(false); }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               {navLinks.map(l => (
-                <a key={l.href} href={l.href} className="sidebar-item" style={{ fontSize: '1rem', padding: '0.9rem 1rem' }} onClick={() => setMobileOpen(false)}>
-                  <l.icon size={20} /> {l.label}
-                </a>
+                <Link key={l.href} href={l.href} className="sidebar-item" style={{ fontSize: '1.1rem', padding: '1rem' }}>
+                  <l.icon size={22} style={{ color: 'var(--primary-light)' }} /> {l.label}
+                </Link>
               ))}
             </div>
 
@@ -177,10 +185,9 @@ export default function Navbar() {
             {session ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
-                  <a
+                  <Link
                     href="/user/profile"
-                    onClick={() => setMobileOpen(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit', flex: 1 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit', flex: 1, minWidth: 0 }}
                   >
                     {navProfileImage ? (
                       <img src={navProfileImage} alt="profile" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', display: 'block', flexShrink: 0 }} />
@@ -191,20 +198,24 @@ export default function Navbar() {
                       <div style={{ fontWeight: '700', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
                       <div style={{ color: 'var(--text-3)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
                     </div>
-                  </a>
+                  </Link>
                   <button
                     onClick={() => { setMobileOpen(false); signOut({ callbackUrl: '/' }); }}
-                    style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: 'var(--danger)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', display: 'flex' }}
+                    style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: 'var(--danger)', padding: '0.7rem', borderRadius: '50%', cursor: 'pointer', display: 'flex' }}
                     title="Sign Out"
                   >
                     <LogOut size={20} />
                   </button>
                 </div>
+                
+                <Link href="/user/dashboard" className="btn btn-primary btn-lg" style={{ justifyContent: 'center' }}>
+                  <LayoutDashboard size={20} /> Go to Dashboard
+                </Link>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <a href="/login" className="btn btn-outline btn-lg" style={{ justifyContent: 'center' }} onClick={() => setMobileOpen(false)}>Login to Account</a>
-                <a href="/register" className="btn btn-primary btn-lg" style={{ justifyContent: 'center' }} onClick={() => setMobileOpen(false)}>Create Free Account</a>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <Link href="/login" className="btn btn-outline btn-lg" style={{ justifyContent: 'center' }}>Login to Account</Link>
+                <Link href="/register" className="btn btn-primary btn-lg" style={{ justifyContent: 'center' }}>Create Free Account</Link>
               </div>
             )}
           </div>
