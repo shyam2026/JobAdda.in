@@ -8,12 +8,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const job = await prisma.job.findUnique({
+    const job = await (prisma.job as any).findUnique({
       where: { id },
       include: {
         company: {
           select: {
             id: true,
+            slug: true,
             name: true,
             email: true,
             logo: true,
@@ -61,7 +62,7 @@ export async function PATCH(
       where.companyId = user.id;
     }
 
-    const job = await prisma.job.update({
+    const job = await (prisma.job as any).update({
       where,
       data: body
     });

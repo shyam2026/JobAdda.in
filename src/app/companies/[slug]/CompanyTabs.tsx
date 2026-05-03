@@ -16,7 +16,7 @@ interface Job {
 
 interface CompanyTabsProps {
   bio: string | null;
-  moreDetails: Array<{ title: string; value: string }> | null;
+  moreDetails: string | null;
   jobs: Job[];
 }
 
@@ -58,7 +58,7 @@ export function CompanyTabs({ bio, moreDetails, jobs }: CompanyTabsProps) {
   return (
     <div>
       {/* Tab Headers */}
-      <div style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid var(--border)', marginBottom: '2rem' }}>
+      <div className="tab-headers" style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid var(--border)', marginBottom: '2rem', flexWrap: 'wrap' }}>
         <button onClick={() => setActiveTab('overview')} style={tabStyle(activeTab === 'overview')}>
           <Info size={17} /> Overview
         </button>
@@ -86,18 +86,11 @@ export function CompanyTabs({ bio, moreDetails, jobs }: CompanyTabsProps) {
             </section>
 
             {/* More Details */}
-            {moreDetails && moreDetails.length > 0 && (
-              <section>
-                <h3 style={{ marginBottom: '1.25rem' }}>More Details</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
-                  {moreDetails.map((detail, idx) => (
-                    <div key={idx} className="card" style={{ padding: '1.25rem', background: 'var(--surface-light)' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginBottom: '0.4rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {detail.title}
-                      </div>
-                      <div style={{ fontWeight: '600', color: 'var(--text)' }}>{detail.value}</div>
-                    </div>
-                  ))}
+            {moreDetails && (
+              <section style={{ marginBottom: '2rem' }}>
+                <h3 style={{ marginBottom: '1rem' }}>Additional Information</h3>
+                <div style={{ color: 'var(--text-2)', lineHeight: '1.8', whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
+                  {moreDetails}
                 </div>
               </section>
             )}

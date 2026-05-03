@@ -28,9 +28,9 @@ interface FormState {
 }
 
 /* ─── shared token ─── */
-const ACCENT = '#38bdf8';
-const ACCENT_DIM = 'rgba(56,189,248,0.2)';
-const LEFT_BG = 'linear-gradient(160deg, #082f49 0%, #0c4a6e 60%, #082f49 100%)';
+const ACCENT = '#818cf8';
+const ACCENT_DIM = 'rgba(129,140,248,0.2)';
+const LEFT_BG = 'linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)';
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -79,7 +79,7 @@ export default function CompanyRegisterPage() {
 
   /* ── Success screen ── */
   if (success) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#082f49', flexDirection: 'column', gap: '1.5rem', textAlign: 'center', padding: '2rem' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0f172a', flexDirection: 'column', gap: '1.5rem', textAlign: 'center', padding: '2rem' }}>
       <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: ACCENT_DIM, border: `2px solid ${ACCENT}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <CheckCircle size={44} style={{ color: ACCENT }} />
       </div>
@@ -95,10 +95,10 @@ export default function CompanyRegisterPage() {
     <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
 
       {/* ══════════ LEFT PANEL ══════════ */}
-      <div className="hide-mobile" style={{ position: 'relative', background: '#082f49', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', padding: '6.5rem 4rem 4rem', overflow: 'hidden' }}>
+      <div className="hide-mobile" style={{ position: 'relative', background: '#0f172a', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', padding: '6.5rem 4rem 4rem', overflow: 'hidden' }}>
         {/* blobs */}
-        <div style={{ position: 'absolute', top: '-20%', left: '-20%', width: '700px', height: '700px', background: `radial-gradient(circle, rgba(14,165,233,0.15) 0%, transparent 60%)`, borderRadius: '50%', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-10%', right: '-20%', width: '600px', height: '600px', background: `radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 60%)`, borderRadius: '50%', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '-20%', left: '-20%', width: '700px', height: '700px', background: `radial-gradient(circle, rgba(129,140,248,0.15) 0%, transparent 60%)`, borderRadius: '50%', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', right: '-20%', width: '600px', height: '600px', background: `radial-gradient(circle, rgba(52,211,153,0.1) 0%, transparent 60%)`, borderRadius: '50%', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '40px 40px', pointerEvents: 'none' }} />
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '100%', maxWidth: '460px' }}>
@@ -151,7 +151,7 @@ export default function CompanyRegisterPage() {
               return (
                 <div key={s.n} style={{ display: 'flex', alignItems: 'center', flex: i < 2 ? 1 : 0 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: active ? ACCENT : 'rgba(255,255,255,0.06)', border: `2px solid ${active ? ACCENT : 'rgba(255,255,255,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: active ? '#082f49' : 'rgba(255,255,255,0.4)', boxShadow: current ? `0 0 0 4px ${ACCENT_DIM}` : 'none', transition: 'all 0.3s', fontWeight: '700' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: active ? ACCENT : 'rgba(255,255,255,0.06)', border: `2px solid ${active ? ACCENT : 'rgba(255,255,255,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: active ? '#0f172a' : 'rgba(255,255,255,0.4)', boxShadow: current ? `0 0 0 4px ${ACCENT_DIM}` : 'none', transition: 'all 0.3s', fontWeight: '700' }}>
                       {step > s.n ? <CheckCircle size={18} /> : <Icon size={16} strokeWidth={2.5} />}
                     </div>
                     <span style={{ fontSize: '0.7rem', fontWeight: active ? '700' : '500', color: active ? '#fff' : 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>{s.label}</span>
@@ -193,7 +193,7 @@ export default function CompanyRegisterPage() {
                   </div>
                 ))}
 
-                <button type="button" onClick={() => setStep(2)} style={{ width: '100%', padding: '0.9rem', background: ACCENT, color: '#082f49', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
+                <button type="button" onClick={() => setStep(2)} style={{ width: '100%', padding: '0.9rem', background: ACCENT, color: '#0f172a', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
                   Continue <ArrowRight size={18} />
                 </button>
               </div>
@@ -272,7 +272,7 @@ export default function CompanyRegisterPage() {
                   <button type="button" onClick={() => setStep(1)} style={{ flex: 1, padding: '0.9rem', background: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: '700', fontSize: '0.95rem', cursor: 'pointer' }}>
                     Back
                   </button>
-                  <button type="button" onClick={() => setStep(3)} style={{ flex: 2, padding: '0.9rem', background: ACCENT, color: '#082f49', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                  <button type="button" onClick={() => setStep(3)} style={{ flex: 2, padding: '0.9rem', background: ACCENT, color: '#0f172a', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                     Review <ChevronRight size={16} />
                   </button>
                 </div>
@@ -320,7 +320,7 @@ export default function CompanyRegisterPage() {
                   <button type="button" onClick={() => setStep(2)} style={{ flex: 1, padding: '0.9rem', background: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: '700', fontSize: '0.95rem', cursor: 'pointer' }}>
                     Back
                   </button>
-                  <button type="submit" disabled={loading} style={{ flex: 2, padding: '0.9rem', background: ACCENT, color: '#082f49', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.75 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                  <button type="submit" disabled={loading} style={{ flex: 2, padding: '0.9rem', background: ACCENT, color: '#0f172a', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.75 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                     {loading ? 'Submitting…' : <><span> Submit & Register</span></>}
                   </button>
                 </div>

@@ -4,7 +4,7 @@ import { Briefcase, Clock, MapPin, IndianRupee, Users } from 'lucide-react';
 export interface Job {
   id: string;
   title: string;
-  company: string | { id: string; name: string; logo?: string | null };
+  company: string | { id: string; slug?: string | null; name: string; logo?: string | null };
   location: string;
   salary?: string | null;
   type: string;
@@ -27,9 +27,9 @@ function getCompanyName(company: Job['company']): string {
   return company.name || 'Company';
 }
 
-function getCompanyId(company: Job['company']): string | null {
+function getCompanySlugOrId(company: Job['company']): string | null {
   if (!company || typeof company === 'string') return null;
-  return company.id || null;
+  return company.slug || company.id || null;
 }
 
 function getCompanyLogo(company: Job['company']): string | null {
@@ -60,7 +60,7 @@ const TYPE_COLOR: Record<string, string> = {
 
 export function JobCard({ job, index = 0 }: JobCardProps) {
   const companyName = getCompanyName(job.company);
-  const companyId = getCompanyId(job.company);
+  const companySlugOrId = getCompanySlugOrId(job.company);
   const logo = getCompanyLogo(job.company);
   const dateStr = job.createdAt ? formatDate(job.createdAt) : (job.posted || 'Recently');
   const applicants = job._count?.applications ?? 0;
@@ -110,8 +110,8 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
             {job.title}
           </div>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            {companyId
-              ? <span style={{ color: 'var(--primary-light)', fontWeight: '600' }}>{companyName}</span>
+            {companySlugOrId
+              ? <a href={`/companies/${companySlugOrId}`} onClick={e => e.stopPropagation()} style={{ color: 'var(--primary-light)', fontWeight: '600', textDecoration: 'none' }}>{companyName}</a>
               : companyName
             }
           </div>

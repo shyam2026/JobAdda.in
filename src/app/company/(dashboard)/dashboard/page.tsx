@@ -19,42 +19,54 @@ export default async function CompanyDashboardPage() {
 
   if (!companyUser) return null;
 
+  const applications = await prisma.application.findMany({
+    where: { job: { companyId: companyUser.id } },
+    include: {
+      student: { select: { name: true } },
+      job: { select: { title: true } }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const totalApplicants = applications.length;
+  const interviewingCount = applications.filter(a => a.status === 'REVIEWING' || a.status === 'INTERVIEW').length;
+  const hiredCount = applications.filter(a => a.status === 'HIRED').length;
+
   const stats = [
-    { label: 'Active Jobs', value: companyUser._count.jobs, icon: Briefcase, color: '#0ea5e9' },
-    { label: 'Total Applicants', value: '0', icon: Users, color: '#10b981' },
-    { label: 'Interviews Scheduled', value: '0', icon: Clock, color: '#f59e0b' },
-    { label: 'Hired This Month', value: '0', icon: CheckCircle, color: '#8b5cf6' },
+    { label: 'Active Jobs', value: companyUser._count.jobs, icon: Briefcase, color: '#38bdf8' },
+    { label: 'Total Applicants', value: totalApplicants, icon: Users, color: '#34d399' },
+    { label: 'In Review / Interviewing', value: interviewingCount, icon: Clock, color: '#fbbf24' },
+    { label: 'Hired Candidates', value: hiredCount, icon: CheckCircle, color: '#818cf8' },
   ];
 
   return (
     <div className="company-page anim-fade-up">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <div>
-          <h2 style={{ marginBottom: '0.25rem', color: '#0f172a' }}>Recruiter Dashboard</h2>
-          <p style={{ margin: 0, color: '#64748b' }}>Manage your hiring pipeline on JobAdda.in</p>
+          <h2 style={{ marginBottom: '0.4rem', color: '#f8fafc', fontSize: '2rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Recruiter Dashboard</h2>
+          <p style={{ margin: 0, color: '#94a3b8', fontSize: '1.05rem' }}>Manage your hiring pipeline on JobAdda.in</p>
         </div>
-        <Link href="/company/jobs/create" className="btn btn-primary btn-lg" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <Link href="/company/jobs/create" className="btn btn-primary btn-lg" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '12px' }}>
           <Plus size={18} /> Post a Job
         </Link>
       </div>
 
-      <div className="grid-4" style={{ marginBottom: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
         {stats.map((s, i) => (
-          <div key={i} className="card card-p-sm" style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderTop: `3px solid ${s.color}` }}>
-            <div style={{ width: '46px', height: '46px', borderRadius: 'var(--radius)', background: `${s.color}15`, color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <s.icon size={20} />
+          <div key={i} className="card card-p" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', borderTop: `4px solid ${s.color}`, padding: '1.5rem', borderRadius: '16px' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: `${s.color}15`, color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <s.icon size={26} />
             </div>
             <div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '800', lineHeight: 1, color: '#0f172a' }}>{s.value}</div>
-              <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.2rem', fontWeight: '500' }}>{s.label}</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: '900', lineHeight: 1.1, color: '#f8fafc' }}>{s.value}</div>
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.3rem', fontWeight: '600' }}>{s.label}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-        <h4 style={{ marginBottom: '1rem', color: '#0f172a' }}>Applicant Tracking System</h4>
-        <KanbanBoard />
+      <div style={{ marginBottom: '2rem' }}>
+        <KanbanBoard applications={applications} />
       </div>
     </div>
   );

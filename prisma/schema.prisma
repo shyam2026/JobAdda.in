@@ -25,43 +25,43 @@ model User {
   experiences      Experience[]
   receivedMessages Message[]       @relation("ReceivedMessages")
   sentMessages     Message[]       @relation("SentMessages")
+  notifications    Notification[]
+  projects         Project[]
   purchases        Purchase[]
+  resumeConfig     ResumeConfig?
   skills           Skill[]
   studentProfile   StudentProfile?
   transactions     Transaction[]
-  projects         Project[]
-  notifications    Notification[]
-  resumeConfig     ResumeConfig?
 }
 
 model ResumeConfig {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  showBio      Boolean  @default(true)
-  showPhone    Boolean  @default(true)
-  showEmail    Boolean  @default(true)
-  showSkills   Boolean  @default(true)
-  showEdu      Boolean  @default(true)
-  showExp      Boolean  @default(true)
-  showProjects Boolean  @default(true)
-  showSocials  Boolean  @default(true)
-  selectedTemplate String @default("T1")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  showBio          Boolean  @default(true)
+  showPhone        Boolean  @default(true)
+  showEmail        Boolean  @default(true)
+  showSkills       Boolean  @default(true)
+  showEdu          Boolean  @default(true)
+  showExp          Boolean  @default(true)
+  showProjects     Boolean  @default(true)
+  showSocials      Boolean  @default(true)
+  selectedTemplate String   @default("T1")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   title     String
-  message   String   @db.Text
-  type      String   // REFERRAL, JOB_STATUS, SYSTEM
+  message   String    @db.Text
+  type      String
   link      String?
-  isRead    Boolean  @default(false)
+  isRead    Boolean   @default(false)
+  createdAt DateTime  @default(now())
   expiresAt DateTime?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -90,10 +90,10 @@ model StudentProfile {
   location     String?
   github       String?
   linkedin     String?
-  website      String?
-  profileImage String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  website      String?
+  profileImage String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -206,11 +206,11 @@ model Purchase {
   templateId String
   amount     Float
   status     String         @default("COMPLETED")
-  couponCode String?
-  orderId    String?        // Razorpay Order ID
-  paymentId  String?        // Razorpay Payment ID
-  refId      String?        // Short human-readable reference ID
   createdAt  DateTime       @default(now())
+  couponCode String?
+  orderId    String?
+  paymentId  String?
+  refId      String?
   template   ResumeTemplate @relation(fields: [templateId], references: [id])
   user       User           @relation(fields: [userId], references: [id])
 
@@ -221,8 +221,8 @@ model Purchase {
 model Coupon {
   id         String    @id @default(cuid())
   code       String    @unique
-  type       String    // "PERCENT" | "FREE"
-  discount   Int?      // e.g. 20 = 20% off (only for PERCENT)
+  type       String
+  discount   Int?
   usageLimit Int       @default(100)
   usedCount  Int       @default(0)
   expiresAt  DateTime?
@@ -246,11 +246,11 @@ model Message {
 model Transaction {
   id            String   @id @default(cuid())
   userId        String
-  triggeredById String?
   amount        Float
   type          String
   status        String   @default("PENDING")
   createdAt     DateTime @default(now())
+  triggeredById String?
   user          User     @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "Transaction_userId_fkey")
@@ -290,22 +290,24 @@ model AdminUser {
 
 model CompanyUser {
   id          String   @id
-  email       String   @unique
-  password    String
+  slug        String?  @unique
+  email       String?  @unique
+  password    String?
   name        String?
   companyName String
   contactNo   String?
   role        String   @default("ADMIN")
-  logo        String?
-  type        String?
-  founded     String?
-  size        String?
-  hq          String?
-  website     String?
-  bio         String?  @db.Text
-  moreDetails Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  bio         String?  @db.Text
+  founded     String?
+  hq          String?
+  logo        String?
+  moreDetails String?  @db.LongText
+  size        String?
+  type        String?
+  industry    String?
+  website     String?
   jobs        Job[]    @relation("CompanyUserJobs")
 }
 

@@ -34,17 +34,17 @@ export async function GET(req: Request) {
     };
 
     const [jobs, total] = await Promise.all([
-      prisma.job.findMany({
+      (prisma.job as any).findMany({
         where,
         include: {
-          company: { select: { id: true, name: true, logo: true } },
+          company: { select: { id: true, slug: true as any, companyName: true, logo: true } },
           _count: { select: { applications: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.job.count({ where })
+      (prisma.job as any).count({ where })
     ]);
 
     return NextResponse.json({ jobs, total, pages: Math.ceil(total / limit), page });
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       }
 
       // Proactively check if ID exists to handle collisions before creation
-      const exists = await prisma.job.findUnique({ where: { id: customJobId } });
+      const exists = await (prisma.job as any).findUnique({ where: { id: customJobId } });
       if (exists) {
         attempts++;
         if (attempts >= 5) {
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
       }
 
       try {
-        job = await prisma.job.create({
+        job = await (prisma.job as any).create({
           data: {
             id: customJobId,
             companyId: user.id,
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
             externalLink: externalLink || null,
             category: category || 'Other',
             status: 'OPEN',
-          } as any
+          }
         });
       } catch (e: any) {
         if (e.code === 'P2002') {

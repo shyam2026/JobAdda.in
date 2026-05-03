@@ -1,55 +1,72 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 
+// POST: Create a new job
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    // Verify it's an admin
-    if (!session || (session.user as any).portalType !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const user = session?.user as any;
+    if (user?.portalType !== 'admin') {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const admin = await (prisma as any).adminUser.findUnique({
-      where: { email: session?.user?.email as string }
-    });
+    const body = await req.json();
+    const { 
+      companyId, 
+      title, 
+      description, 
+      location, 
+      salary, 
+      requirements, 
+      type, 
+      category,
+      externalLink 
+    } = body;
 
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!companyId || !title || !description || !location) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Admins need access to 'jobs' or 'all' to post
-    let allowedModules: string[] = [];
-    try { allowedModules = admin.modules ? JSON.parse(admin.modules) : []; } catch (e) {}
-    
-    if (admin.role !== 'SUPERADMIN' && !allowedModules.includes('all') && !allowedModules.includes('jobs')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const data = await req.json();
-    
-    if (!data.companyId || !data.title || !data.location || !data.description) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    // Create job assigned to the selected company
     const job = await prisma.job.create({
       data: {
-        companyId: data.companyId,
-        title: data.title,
-        location: data.location,
-        salary: data.salary || null,
-        type: data.type === 'Internal' ? 'INTERNAL' : 'EXTERNAL', 
-        description: data.description,
-        requirements: data.requirements || null,
-        status: 'OPEN',
-        category: data.category || 'Other'
-      } as any
+        companyId,
+        title,
+        description,
+        location,
+        salary,
+        requirements,
+        type: type || 'INTERNAL',
+        category: category || 'Other',
+        externalLink,
+        status: 'OPEN'
+      }
     });
 
-    return NextResponse.json({ success: true, job });
+    return NextResponse.json({ message: "Job posted successfully", job });
+  } catch (error: any) {
+    console.error("CREATE_JOB_ERROR", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  }
+}
+
+// GET: List all jobs (for admin view)
+export async function GET() {
+  try {
+    const session = await auth();
+    const user = session?.user as any;
+    if (user?.portalType !== 'admin') {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const jobs = await (prisma.job as any).findMany({
+      include: {
+        company: { select: { companyName: true, slug: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    return NextResponse.json(jobs);
   } catch (error) {
-    console.error('Failed to create job:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch jobs" }, { status: 500 });
   }
 }

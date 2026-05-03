@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 interface CompanyInfo {
   id: string;
+  slug?: string | null;
   name: string;
   email: string;
   logo?: string | null;
@@ -166,7 +167,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h2 style={{ marginBottom: '0.3rem', lineHeight: 1.2 }}>{job.title}</h2>
                   <Link
-                    href={`/companies/${job.company?.id}`}
+                    href={`/companies/${job.company?.slug || job.company?.id}`}
                     style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--primary-light)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                   >
                     {companyName} →
@@ -271,7 +272,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 )}
               </div>
 
-              <Link href={`/companies/${job.company?.id}`} className="btn btn-outline btn-sm" style={{ gap: '0.4rem' }}>
+              <Link href={`/companies/${job.company?.slug || job.company?.id}`} className="btn btn-outline btn-sm" style={{ gap: '0.4rem' }}>
                 <Building size={14} /> View Company Profile
               </Link>
             </div>

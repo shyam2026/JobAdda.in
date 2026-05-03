@@ -68,8 +68,9 @@ export default function StudentDashboard() {
   }, []);
 
   const handleCopy = () => {
-    if (!data?.referralStats.link) return;
-    navigator.clipboard.writeText(data.referralStats.link);
+    if (!data?.referralCode) return;
+    const link = `${window.location.origin}/register?ref=${data.referralCode}`;
+    navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -160,7 +161,7 @@ export default function StudentDashboard() {
           
           <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-2)', padding: '0.4rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <div style={{ flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.75rem', color: 'var(--primary-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', alignSelf: 'center' }}>
-              {data?.referralStats.link || 'Loading...'}
+              {data ? `${window.location.origin}/register?ref=${data.referralCode}` : 'Loading...'}
             </div> 
             <button 
               onClick={handleCopy} 
