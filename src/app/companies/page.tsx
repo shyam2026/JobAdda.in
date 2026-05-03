@@ -10,19 +10,25 @@ export default async function CompaniesPage({
 }) {
   const { q = '', industry = 'All' } = await searchParams;
 
-  const allCompanies = await (prisma as any).companyUser.findMany({
-    where: {
-      AND: [
-        q ? { companyName: { contains: q } } : {}
-      ]
-    },
-    include: {
-      _count: {
-        select: { jobs: { where: { status: 'OPEN' } } }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  let allCompanies: any[] = [];
+  try {
+    allCompanies = await prisma.companyUser.findMany({
+      where: {
+        AND: [
+          q ? { companyName: { contains: q } } : {}
+        ]
+      },
+      include: {
+        _count: {
+          select: { jobs: { where: { status: 'OPEN' } } }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.error("Prisma Error in CompaniesPage:", error);
+    allCompanies = [];
+  }
 
   const companies = industry !== 'All'
     ? allCompanies.filter((c: any) => c.industry === industry || c.type === industry)

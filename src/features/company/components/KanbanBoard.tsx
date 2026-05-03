@@ -10,18 +10,20 @@ interface KanbanBoardProps {
 const STAGE_COLORS: Record<string, string> = {
   Applied: '#64748b',
   Reviewing: '#6366f1',
+  Interviewing: '#fbbf24',
   Hired: '#22c55e',
 };
 
 const STATUS_MAP: Record<string, string> = {
   PENDING: 'Applied',
   REVIEWING: 'Reviewing',
+  INTERVIEW: 'Interviewing',
   HIRED: 'Hired',
 };
 
 export function KanbanBoard({ applications = [] }: KanbanBoardProps) {
   // Group applications by stage
-  const columns = ['Applied', 'Reviewing', 'Hired'].map(label => {
+  const columns = ['Applied', 'Reviewing', 'Interviewing', 'Hired'].map(label => {
     const appsInStage = applications.filter(app => STATUS_MAP[app.status] === label);
     return { label, count: appsInStage.length, items: appsInStage };
   });
