@@ -71,7 +71,7 @@ const TEMPLATES = [
   },
   {
     id: 'TPL_3',
-    name: 'Executive',
+    name: 'Premium',
     subtitle: 'Dark Sidebar · Gold Accents · Premium',
     price: 25,
     oldPrice: 50,
@@ -81,7 +81,7 @@ const TEMPLATES = [
     accentColor: '#f59e0b',
     glowColor: 'rgba(245,158,11,0.15)',
     popular: false,
-    features: ['Dark sidebar design', 'Gold accent system', 'Executive typography', 'No watermark', 'Instant download'],
+    features: ['Dark sidebar design', 'Gold accent system', 'Premium typography', 'No watermark', 'Instant download'],
     featureIcons: [Crown, Star, Zap, Eye, Download],
     highlight: 'Designed for senior & leadership roles',
     Component: Template3,
