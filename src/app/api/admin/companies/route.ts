@@ -116,7 +116,8 @@ export async function POST(req: Request) {
         founded,
         moreDetails,
         logo: logoPath,
-        role: 'COMPANY'
+        role: 'COMPANY',
+        createdByAdminId: user?.id || null,
       }
     });
 

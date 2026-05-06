@@ -174,6 +174,18 @@ export default function JobsPage() {
     }
   }, []);
 
+  // Auto-close mobile filters when resizing to desktop view
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => {
+      if (window.innerWidth > 860) {
+        setMobileSidebar(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const activeCount = countActiveFilters(filters);
   const hasAnyFilter = !!(query || location || activeCount);
 
@@ -181,7 +193,7 @@ export default function JobsPage() {
     <aside style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-        <span style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--text)' }}>Filters</span>
+        <span className="desktop-filters-header" style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--text)' }}>Filters</span>
         {activeCount > 0 && (
           <button
             onClick={() => { setFilters(EMPTY_FILTERS); setPage(1); }}
@@ -458,7 +470,7 @@ export default function JobsPage() {
 
       {/* ── MOBILE SIDEBAR OVERLAY ── */}
       {mobileSidebar && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1500, display: 'flex' }}>
           <div onClick={() => setMobileSidebar(false)} style={{ flex: 1, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
           <div style={{
             width: 'min(320px, 90vw)', background: 'var(--bg-2)',
@@ -546,6 +558,7 @@ export default function JobsPage() {
           .container { grid-template-columns: 1fr !important; }
           .jobs-sidebar-panel { display: none; }
           .jobs-filter-toggle { display: flex !important; }
+          .desktop-filters-header { display: none !important; }
         }
 
         @media (max-width: 560px) {

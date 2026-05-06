@@ -48,7 +48,8 @@ export async function POST(req: Request) {
         education,
         experience,
         skills,
-        status: 'OPEN'
+        status: 'OPEN',
+        createdByAdminId: user?.id || null,
       } as any
     });
 

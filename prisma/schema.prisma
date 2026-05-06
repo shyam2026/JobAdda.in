@@ -159,26 +159,27 @@ model Certificate {
 }
 
 model Job {
-  id           String        @id @default(cuid())
-  companyId    String
-  title        String
-  description  String        @db.Text
-  location     String
-  salary       String?
-  requirements String?       @db.Text
-  type         JobType       @default(INTERNAL)
-  externalLink String?
-  status       String        @default("OPEN")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  category       String        @default("Other")
-  employmentType String?       @default("Full-time")
-  openings       Int?          @default(1)
-  education      String?
-  experience     String?
-  skills         String?       @db.Text
+  id                String        @id @default(cuid())
+  companyId         String
+  title             String
+  description       String        @db.Text
+  location          String
+  salary            String?
+  requirements      String?       @db.Text
+  type              JobType       @default(INTERNAL)
+  externalLink      String?
+  status            String        @default("OPEN")
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  category          String        @default("Other")
+  employmentType    String?       @default("Full-time")
+  openings          Int?          @default(1)
+  education         String?
+  experience        String?
+  skills            String?       @db.Text
+  createdByAdminId  String?
   applications Application[]
-  company      CompanyUser   @relation("CompanyUserJobs", fields: [companyId], references: [id])
+  company           CompanyUser   @relation("CompanyUserJobs", fields: [companyId], references: [id])
 
   @@index([companyId], map: "Job_companyId_fkey")
 }
@@ -295,26 +296,27 @@ model AdminUser {
 }
 
 model CompanyUser {
-  id          String   @id
-  slug        String?  @unique
-  email       String?  @unique
-  password    String?
-  name        String?
-  companyName String
-  contactNo   String?
-  role        String   @default("ADMIN")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  bio         String?  @db.Text
-  founded     String?
-  hq          String?
-  logo        String?
-  moreDetails String?  @db.LongText
-  size        String?
-  type        String?
-  industry    String?
-  website     String?
-  jobs        Job[]    @relation("CompanyUserJobs")
+  id               String   @id
+  slug             String?  @unique
+  email            String?  @unique
+  password         String?
+  name             String?
+  companyName      String
+  contactNo        String?
+  role             String   @default("ADMIN")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  bio              String?  @db.Text
+  founded          String?
+  hq               String?
+  logo             String?
+  moreDetails      String?  @db.LongText
+  size             String?
+  type             String?
+  industry         String?
+  website          String?
+  createdByAdminId String?
+  jobs             Job[]    @relation("CompanyUserJobs")
 }
 
 enum Role {

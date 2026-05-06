@@ -64,12 +64,21 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="navbar" style={{ zIndex: 1100 }}>
+      <nav className="navbar" style={{ 
+        zIndex: mobileOpen ? 2100 : 1100,
+        background: mobileOpen ? 'transparent' : undefined,
+        borderBottom: mobileOpen ? 'none' : undefined,
+        boxShadow: mobileOpen ? 'none' : undefined
+      }}>
         <div className="container nav-inner">
           {/* Logo */}
-          <Link href="/" className="nav-logo">
-            <span>JobAdda<span style={{ color: 'var(--primary-light)', fontWeight: '700' }}>.in</span></span>
-          </Link>
+          {mobileOpen ? (
+            <div />
+          ) : (
+            <Link href="/" className="nav-logo">
+              <span>JobAdda<span style={{ color: 'var(--primary-light)', fontWeight: '700' }}>.in</span></span>
+            </Link>
+          )}
 
           {/* Desktop Links */}
           <div className="nav-links hide-mobile">
