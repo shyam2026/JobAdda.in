@@ -93,14 +93,14 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
         {/* Logo */}
         <div style={{
           width: '52px', height: '52px', borderRadius: '12px',
-          background: logo ? 'transparent' : `${typeColor}18`,
+          background: `${typeColor}18`,
           border: `1px solid ${typeColor}30`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontWeight: '900', fontSize: '1.25rem', color: typeColor,
-          flexShrink: 0, overflow: 'hidden',
+          flexShrink: 0, overflow: 'hidden', padding: logo ? '6px' : '0'
         }}>
           {logo
-            ? <img src={logo} alt={companyName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <img src={logo} alt={companyName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
             : initial
           }
         </div>

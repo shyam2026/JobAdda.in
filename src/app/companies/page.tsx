@@ -35,7 +35,15 @@ export default async function CompaniesPage({
     : allCompanies;
 
   const totalJobs = allCompanies.reduce((sum: number, c: any) => sum + (c._count?.jobs || 0), 0);
-  const INDUSTRIES = ['All', 'Information Technology', 'E-Commerce', 'Finance & Banking', 'Healthcare', 'Education', 'Manufacturing', 'MNC', 'Startup'];
+  const INDUSTRIES = [
+    'All', 'Information Technology', 'Software', 'SaaS', 'E-Commerce', 'EdTech', 'Finance', 'Banking', 'FinTech',
+    'Healthcare', 'Pharmaceuticals', 'Education', 'Manufacturing', 'Industrial', 'Media', 'Entertainment',
+    'FMCG', 'Consumer Goods', 'Retail', 'Apparel', 'Real Estate', 'Construction', 'Telecommunications',
+    'Logistics', 'Supply Chain', 'Hospitality', 'Tourism', 'Automobile', 'Agriculture', 'Food Processing',
+    'Energy', 'Utilities', 'Consulting', 'Human Resources', 'Legal Services', 'Advertising', 'Marketing',
+    'Aerospace', 'Defense', 'Fashion', 'Lifestyle', 'Gems & Jewelry', 'Insurance', 'Mining', 'Oil & Gas',
+    'NGO', 'Non-Profit', 'Government', 'Public Sector', 'Other'
+  ];
 
   return (
     <div style={{ background: '#0f172a', minHeight: '100vh', color: '#f8fafc' }}>
@@ -60,18 +68,6 @@ export default async function CompaniesPage({
             Connecting ambitious professionals with the most respected companies in India. Start your career journey today.
           </p>
 
-          <form action="/companies" method="GET" style={{ display: 'flex', gap: '1rem', maxWidth: '650px', margin: '0 auto 3rem' }}>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem', background: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '0.5rem 1.5rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
-              <Search size={20} style={{ color: '#64748b' }} />
-              <input
-                name="q"
-                defaultValue={q}
-                placeholder="Find a specific company..."
-                style={{ height: '54px', border: 'none', background: 'none', width: '100%', outline: 'none', color: 'white', fontSize: '1rem' }}
-              />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ height: '64px', padding: '0 2rem', borderRadius: '16px' }}>Search</button>
-          </form>
 
           {/* Real-time Stats */}
           <div style={{ display: 'flex', gap: '4rem', justifyContent: 'center' }}>
@@ -88,31 +84,77 @@ export default async function CompaniesPage({
         </div>
       </div>
 
-      <div className="container" style={{ padding: '4rem 1.5rem' }}>
-        {/* Industry Filter Section */}
-        <div style={{ marginBottom: '3rem' }}>
-          <h4 style={{ marginBottom: '1.25rem', fontSize: '0.9rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Filter by Sector</h4>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            {INDUSTRIES.map(ind => (
-              <Link
-                key={ind}
-                href={`/companies?industry=${ind}${q ? `&q=${q}` : ''}`}
+      <div className="container" style={{ padding: '2rem 1.5rem 4rem' }}>
+        {/* Smart Filter Bar */}
+        <div style={{ 
+          background: '#1e293b', 
+          border: '1px solid #334155', 
+          borderRadius: '24px', 
+          padding: '1.25rem', 
+          marginBottom: '3rem',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          marginTop: '-4rem',
+          position: 'relative',
+          zIndex: 10
+        }}>
+          <form action="/companies" method="GET" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            {/* Search Input */}
+            <div style={{ flex: '2 1 300px', display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#0f172a', border: '1px solid #334155', borderRadius: '16px', padding: '0 1.25rem' }}>
+              <Search size={18} style={{ color: '#64748b' }} />
+              <input
+                name="q"
+                defaultValue={q}
+                placeholder="Search company name..."
+                style={{ height: '54px', border: 'none', background: 'none', width: '100%', outline: 'none', color: 'white', fontSize: '0.95rem' }}
+              />
+            </div>
+
+            {/* Industry Dropdown */}
+            <div style={{ flex: '1 1 200px', position: 'relative' }}>
+              <select 
+                name="industry"
+                defaultValue={industry}
                 style={{ 
-                  textDecoration: 'none',
-                  padding: '0.65rem 1.25rem',
-                  borderRadius: '12px',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  transition: 'all 0.2s',
-                  background: industry === ind ? 'rgba(99, 102, 241, 0.1)' : '#1e293b',
-                  color: industry === ind ? '#818cf8' : '#94a3b8',
-                  border: `1px solid ${industry === ind ? '#4f46e5' : '#334155'}`
+                  width: '100%', 
+                  height: '56px', 
+                  background: '#0f172a', 
+                  border: '1px solid #334155', 
+                  borderRadius: '16px', 
+                  color: 'white', 
+                  padding: '0 1.25rem', 
+                  fontSize: '0.95rem',
+                  appearance: 'none',
+                  cursor: 'pointer',
+                  outline: 'none'
                 }}
               >
-                {ind}
+                {INDUSTRIES.map(ind => (
+                  <option key={ind} value={ind} style={{ background: '#0f172a' }}>{ind === 'All' ? 'All Industries' : ind}</option>
+                ))}
+              </select>
+              <div style={{ position: 'absolute', right: '1.25rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b' }}>
+                <ChevronRight size={18} style={{ transform: 'rotate(90deg)' }} />
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-primary" style={{ padding: '0 2.5rem', borderRadius: '16px', height: '56px', fontWeight: '700' }}>
+              Apply Filters
+            </button>
+
+            {(q || industry !== 'All') && (
+              <Link href="/companies" style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                padding: '0 1rem', 
+                color: '#ef4444', 
+                textDecoration: 'none', 
+                fontSize: '0.85rem', 
+                fontWeight: '600' 
+              }}>
+                Clear All
               </Link>
-            ))}
-          </div>
+            )}
+          </form>
         </div>
 
         {/* Dynamic Company Grid */}
@@ -149,9 +191,9 @@ export default async function CompaniesPage({
                       border: '1px solid #334155',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: '800', fontSize: '1.5rem', color: '#818cf8',
-                      overflow: 'hidden', flexShrink: 0
+                      overflow: 'hidden', flexShrink: 0, padding: c.logo ? '8px' : '0'
                     }}>
-                      {c.logo ? <img src={c.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : c.companyName[0]}
+                      {c.logo ? <img src={c.logo} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : c.companyName[0]}
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <h4 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -196,6 +238,7 @@ export default async function CompaniesPage({
 
       <style>{`
         .card-hover:hover { transform: translateY(-8px); border-color: #4f46e5 !important; background: #1e293b !important; }
+        input:focus, select:focus { outline: none !important; box-shadow: none !important; }
         @media (max-width: 640px) {
           h1 { font-size: 2.25rem !important; }
           .container { padding: 0 1rem; }

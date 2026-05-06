@@ -208,8 +208,8 @@ export default function AdminCompaniesPage() {
           {filtered.map(c => (
             <div key={c.id} className="card card-p" style={{ border: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary-light)' }}>
-                  {c.logo ? <img src={c.logo} alt="" style={{ width: '100%', height: '100%', borderRadius: '12px', objectFit: 'cover' }} /> : c.companyName?.[0]}
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary-light)', padding: c.logo ? '4px' : '0', overflow: 'hidden' }}>
+                  {c.logo ? <img src={c.logo} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : c.companyName?.[0]}
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <h4 style={{ margin: 0, fontSize: '1.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.companyName}</h4>
@@ -263,8 +263,8 @@ export default function AdminCompaniesPage() {
                 <tr key={c.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: '800' }}>
-                        {c.logo ? <img src={c.logo} alt="" style={{ width: '100%', height: '100%', borderRadius: '8px', objectFit: 'cover' }} /> : c.companyName?.[0]}
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: '800', padding: c.logo ? '2px' : '0', overflow: 'hidden' }}>
+                        {c.logo ? <img src={c.logo} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : c.companyName?.[0]}
                       </div>
                       <span style={{ fontWeight: '600', color: 'var(--text)' }}>{c.companyName}</span>
                     </div>
@@ -290,8 +290,14 @@ export default function AdminCompaniesPage() {
 
       {/* Add Company Modal */}
       {showAddModal && (
-        <div className="modal-overlay anim-fade-up" style={{ marginTop: '3rem' }}>
-          <div className="modal" style={{ maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div className="modal-overlay anim-fade-up" style={{ alignItems: 'flex-start', paddingTop: '2rem', overflowY: 'auto' }}>
+          <div className="modal" style={{ maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+            <button 
+              onClick={() => setShowAddModal(false)}
+              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <X size={24} />
+            </button>
             <h3 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.5rem', fontWeight: '800' }}>Register Company</h3>
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '2rem' }}>Fill the details to start.</p>
             
@@ -391,15 +397,53 @@ export default function AdminCompaniesPage() {
                   <select value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
                     <option value="">Select Sector</option>
                     <option value="Information Technology">Information Technology</option>
+                    <option value="Software">Software</option>
+                    <option value="SaaS">SaaS</option>
                     <option value="E-Commerce">E-Commerce</option>
-                    <option value="Finance & Banking">Finance & Banking</option>
+                    <option value="EdTech">EdTech</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Banking">Banking</option>
+                    <option value="FinTech">FinTech</option>
                     <option value="Healthcare">Healthcare</option>
+                    <option value="Pharmaceuticals">Pharmaceuticals</option>
                     <option value="Education">Education</option>
                     <option value="Manufacturing">Manufacturing</option>
-                    <option value="Media & Entertainment">Media & Entertainment</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Media">Media</option>
+                    <option value="Entertainment">Entertainment</option>
                     <option value="FMCG">FMCG</option>
+                    <option value="Consumer Goods">Consumer Goods</option>
                     <option value="Retail">Retail</option>
+                    <option value="Apparel">Apparel</option>
                     <option value="Real Estate">Real Estate</option>
+                    <option value="Construction">Construction</option>
+                    <option value="Telecommunications">Telecommunications</option>
+                    <option value="Logistics">Logistics</option>
+                    <option value="Supply Chain">Supply Chain</option>
+                    <option value="Hospitality">Hospitality</option>
+                    <option value="Tourism">Tourism</option>
+                    <option value="Automobile">Automobile</option>
+                    <option value="Agriculture">Agriculture</option>
+                    <option value="Food Processing">Food Processing</option>
+                    <option value="Energy">Energy</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Consulting">Consulting</option>
+                    <option value="Human Resources">Human Resources</option>
+                    <option value="Legal Services">Legal Services</option>
+                    <option value="Advertising">Advertising</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Aerospace">Aerospace</option>
+                    <option value="Defense">Defense</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Lifestyle">Lifestyle</option>
+                    <option value="Gems & Jewelry">Gems & Jewelry</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Mining">Mining</option>
+                    <option value="Oil & Gas">Oil & Gas</option>
+                    <option value="NGO">NGO</option>
+                    <option value="Non-Profit">Non-Profit</option>
+                    <option value="Government">Government</option>
+                    <option value="Public Sector">Public Sector</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -445,8 +489,14 @@ export default function AdminCompaniesPage() {
 
       {/* Edit Company Modal */}
       {showEditModal && (
-        <div className="modal-overlay">
-          <div className="modal" style={{ maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div className="modal-overlay" style={{ alignItems: 'flex-start', paddingTop: '2rem', overflowY: 'auto' }}>
+          <div className="modal" style={{ maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+            <button 
+              onClick={() => setShowEditModal(false)}
+              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <X size={24} />
+            </button>
             <h3 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.5rem', fontWeight: '800' }}>Edit Company Profile</h3>
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '2rem' }}>Update information for {editCompany?.companyName}.</p>
             
@@ -545,15 +595,31 @@ export default function AdminCompaniesPage() {
                   <select value={editFormData.industry} onChange={e => setEditFormData({...editFormData, industry: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
                     <option value="">Select Sector</option>
                     <option value="Information Technology">Information Technology</option>
-                    <option value="E-Commerce">E-Commerce</option>
-                    <option value="Finance & Banking">Finance & Banking</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Education">Education</option>
-                    <option value="Manufacturing">Manufacturing</option>
-                    <option value="Media & Entertainment">Media & Entertainment</option>
-                    <option value="FMCG">FMCG</option>
-                    <option value="Retail">Retail</option>
-                    <option value="Real Estate">Real Estate</option>
+                    <option value="Software / SaaS">Software / SaaS</option>
+                    <option value="E-Commerce / EdTech">E-Commerce / EdTech</option>
+                    <option value="Finance / Banking / FinTech">Finance / Banking / FinTech</option>
+                    <option value="Healthcare / Pharma">Healthcare / Pharma</option>
+                    <option value="Education / EdTech">Education / EdTech</option>
+                    <option value="Manufacturing / Industrial">Manufacturing / Industrial</option>
+                    <option value="Media / Entertainment">Media / Entertainment</option>
+                    <option value="FMCG / Consumer Goods">FMCG / Consumer Goods</option>
+                    <option value="Retail / Apparel">Retail / Apparel</option>
+                    <option value="Real Estate / Construction">Real Estate / Construction</option>
+                    <option value="Telecommunications">Telecommunications</option>
+                    <option value="Logistics / Supply Chain">Logistics / Supply Chain</option>
+                    <option value="Hospitality / Tourism">Hospitality / Tourism</option>
+                    <option value="Automobile">Automobile</option>
+                    <option value="Agriculture / Food">Agriculture / Food</option>
+                    <option value="Energy / Utilities">Energy / Utilities</option>
+                    <option value="Consulting / HR">Consulting / HR</option>
+                    <option value="Legal Services">Legal Services</option>
+                    <option value="Advertising / Marketing">Advertising / Marketing</option>
+                    <option value="Aerospace / Defense">Aerospace / Defense</option>
+                    <option value="Fashion / Lifestyle">Fashion / Lifestyle</option>
+                    <option value="Gems / Jewelry">Gems / Jewelry</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Mining / Oil / Gas">Mining / Oil / Gas</option>
+                    <option value="NGO / Non-Profit">NGO / Non-Profit</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>

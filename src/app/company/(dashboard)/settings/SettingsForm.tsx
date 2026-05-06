@@ -5,9 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Building2, Globe, Users, MapPin, Loader2, CheckCircle, AlertCircle, Mail, Lock, User, Phone, Calendar, Info, Upload } from 'lucide-react';
 
 const INDUSTRIES = [
-  'Information Technology', 'E-Commerce', 'Finance & Banking', 'Healthcare',
-  'Education', 'Manufacturing', 'Media & Entertainment', 'FMCG', 'Retail',
-  'Real Estate', 'Other'
+  'Information Technology', 'Software', 'SaaS', 'E-Commerce', 'EdTech', 'Finance', 'Banking', 'FinTech',
+  'Healthcare', 'Pharmaceuticals', 'Education', 'Manufacturing', 'Industrial', 'Media', 'Entertainment',
+  'FMCG', 'Consumer Goods', 'Retail', 'Apparel', 'Real Estate', 'Construction', 'Telecommunications',
+  'Logistics', 'Supply Chain', 'Hospitality', 'Tourism', 'Automobile', 'Agriculture', 'Food Processing',
+  'Energy', 'Utilities', 'Consulting', 'Human Resources', 'Legal Services', 'Advertising', 'Marketing',
+  'Aerospace', 'Defense', 'Fashion', 'Lifestyle', 'Gems & Jewelry', 'Insurance', 'Mining', 'Oil & Gas',
+  'NGO', 'Non-Profit', 'Government', 'Public Sector', 'Other'
 ];
 const SIZES = ['1-10', '11-50', '51-200', '201-500', '500-1000', '1000+'];
 

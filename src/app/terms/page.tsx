@@ -33,6 +33,11 @@ export default function TermsPage() {
       icon: <RefreshCcw size={20} />, 
       title: 'Changes to Terms', 
       content: 'We may update these terms from time to time to reflect changes in our services or legal requirements. Continued use of JobAdda.in after such updates constitutes your acceptance of the revised terms.' 
+    },
+    { 
+      icon: <Ban size={20} />, 
+      title: 'Refund & Purchase Policy', 
+      content: 'All payments made for resume purchases or any other digital products on JobAdda.in are strictly non-refundable. Each purchase of a resume template or builder service is valid for a single instance; users must buy the service again for every new purchase or update as per the product guidelines.' 
     }
   ];
 
@@ -48,7 +53,7 @@ export default function TermsPage() {
           <div className="text-center" style={{ marginBottom: '4rem' }}>
             <div className="badge badge-primary" style={{ marginBottom: '1.25rem' }}>Service Guidelines</div>
             <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', marginBottom: '1rem' }}>Terms of <span className="text-gradient">Service</span></h1>
-            <p style={{ color: 'var(--text-3)', fontSize: '1.05rem' }}>Last updated: April 27, 2026</p>
+            <p style={{ color: 'var(--text-3)', fontSize: '1.05rem' }}>Last updated: May 06, 2026</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '5rem' }}>

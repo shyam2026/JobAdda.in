@@ -28,6 +28,11 @@ export default function PrivacyPage() {
       icon: <Shield size={20} />, 
       title: 'Your Data Rights', 
       content: 'You have the right to access, update, or delete your data at any time. You can request full account deletion through your dashboard or by contacting our support team.' 
+    },
+    { 
+      icon: <Lock size={20} />, 
+      title: 'Payment & Purchase History', 
+      content: 'We store records of your purchases for accounting and access verification. Please note that all digital product sales, including resume services, are final. No refunds are provided, and repeat usage requires a new transaction.' 
     }
   ];
 
@@ -43,7 +48,7 @@ export default function PrivacyPage() {
           <div className="text-center" style={{ marginBottom: '4rem' }}>
             <div className="badge badge-primary" style={{ marginBottom: '1.25rem' }}>Legal Transparency</div>
             <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', marginBottom: '1rem' }}>Privacy <span className="text-gradient">Policy</span></h1>
-            <p style={{ color: 'var(--text-3)', fontSize: '1.05rem' }}>Last updated: April 27, 2026</p>
+            <p style={{ color: 'var(--text-3)', fontSize: '1.05rem' }}>Last updated: May 06, 2026</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '5rem' }}>
