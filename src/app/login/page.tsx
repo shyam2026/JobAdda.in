@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { LoginForm } from '@/features/auth/components/LoginForm';
 
 export default function LoginPage() {
@@ -36,7 +36,16 @@ export default function LoginPage() {
 
       {/* Right — Form */}
       <div className="auth-form-wrap">
-        <LoginForm />
+        <Suspense fallback={
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', width: '100%', maxWidth: '420px' }}>
+            <div style={{ height: '28px', background: 'var(--border)', borderRadius: '4px', width: '60%' }} className="skeleton" />
+            <div style={{ height: '14px', background: 'var(--border)', borderRadius: '4px', width: '40%', marginBottom: '1.5rem' }} className="skeleton" />
+            <div style={{ height: '48px', background: 'var(--border)', borderRadius: 'var(--radius)' }} className="skeleton" />
+            <div style={{ height: '48px', background: 'var(--border)', borderRadius: 'var(--radius)' }} className="skeleton" />
+          </div>
+        }>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );
