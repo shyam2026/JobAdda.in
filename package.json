@@ -11,6 +11,14 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@tiptap/extension-bullet-list": "^3.22.5",
+    "@tiptap/extension-link": "^3.22.5",
+    "@tiptap/extension-list-item": "^3.22.5",
+    "@tiptap/extension-ordered-list": "^3.22.5",
+    "@tiptap/extension-placeholder": "^3.22.5",
+    "@tiptap/extension-underline": "^3.22.5",
+    "@tiptap/react": "^3.22.5",
+    "@tiptap/starter-kit": "^3.22.5",
     "@types/nodemailer": "^8.0.0",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
@@ -25,13 +33,13 @@
     "razorpay": "^2.9.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-quill-new": "^3.8.3",
     "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "typescript": "^6.0.3"

@@ -20,15 +20,15 @@ export default function CompanyLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
-      const res = await signIn('credentials', { 
-        email, 
-        password, 
-        portalType: 'company', 
-        redirect: false 
+      const res = await signIn('credentials', {
+        email,
+        password,
+        portalType: 'company',
+        redirect: false
       });
-      
+
       if (res?.error) {
         setError('Invalid credentials. Please check your employer email and password.');
       } else {
@@ -53,8 +53,8 @@ export default function CompanyLoginPage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginBottom: '3rem' }}>
             <span style={{ fontSize: '2rem', fontWeight: '900', letterSpacing: '-0.02em', color: '#f8fafc' }}>JobAdda<span style={{ color: '#818cf8' }}>.in</span></span>
           </div>
-          
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', lineHeight: '1.2', color: '#f8fafc', fontWeight: '900', letterSpacing: '-0.02em' }}>Hire the <br/><span style={{ color: '#818cf8' }}>Best Talent Faster</span></h2>
+
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', lineHeight: '1.2', color: '#f8fafc', fontWeight: '900', letterSpacing: '-0.02em' }}>Hire the <br /><span style={{ color: '#818cf8' }}>Best Talent Faster</span></h2>
           <p style={{ fontSize: '1.1rem', color: '#94a3b8', lineHeight: '1.6', marginBottom: '3rem' }}>
             Access our database of over 500,000 verified professionals and streamline your hiring process.
           </p>
@@ -104,7 +104,7 @@ export default function CompanyLoginPage() {
                 style={{ background: '#0f172a', border: '1px solid #334155', color: '#f8fafc' }}
               />
             </div>
-            
+
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 600, color: '#cbd5e1' }}>Password</label>
@@ -117,9 +117,9 @@ export default function CompanyLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ background: '#0f172a', border: '1px solid #334155', color: '#f8fafc' }}
                 rightIcon={
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPwd(!showPwd)} 
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd(!showPwd)}
                     style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex' }}
                   >
                     {showPwd ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -132,7 +132,7 @@ export default function CompanyLoginPage() {
               Access Dashboard
             </Button>
           </form>
-          
+
           <div style={{ marginTop: '2.5rem', textAlign: 'center' }}>
             <Link href="/" style={{ color: '#64748b', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}>
               ← Back to main site

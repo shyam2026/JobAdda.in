@@ -22,16 +22,56 @@ export async function GET(req: Request) {
     const location = searchParams.get('location') || '';
     const type = searchParams.get('type') || '';
     const category = searchParams.get('category') || '';
+    const education = searchParams.get('education') || '';
+    const workMode = searchParams.get('workMode') || '';
+    const postedDate = searchParams.get('postedDate') || '';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '12', 10);
 
-    const where: any = {
-      status: 'OPEN',
-      ...(q && { OR: [{ title: { contains: q } }, { description: { contains: q } }] }),
-      ...(location && { location: { contains: location } }),
-      ...(type && { type }),
-      ...(category && { category }),
-    };
+    const where: any = { status: 'OPEN' };
+
+    if (q) where.OR = [{ title: { contains: q } }, { description: { contains: q } }, { location: { contains: q } }];
+    if (location) where.location = { contains: location };
+    if (category) where.category = category;
+    if (education) where.education = { contains: education };
+
+    if (type) {
+      if (type === 'INTERNAL' || type === 'EXTERNAL') {
+        where.type = type;
+      } else {
+        where.employmentType = { contains: type };
+      }
+    }
+
+    if (workMode) {
+      const workModeMap: Record<string, string[]> = {
+        'Remote': ['Remote', 'Full-time (WFH)', 'Part-time (WFH)', 'Contract (WFH)'],
+        'Hybrid': ['Hybrid'],
+        'On-site': ['Full-time', 'Part-time', 'Contract', 'Internship'],
+      };
+      const modes = workModeMap[workMode];
+      if (modes && !type) where.employmentType = { in: modes };
+    }
+
+    if (postedDate) {
+      const now = new Date();
+      let fromDate: Date | null = null;
+      if (postedDate === 'today') {
+        fromDate = new Date(); fromDate.setHours(0,0,0,0);
+      } else if (postedDate === '3days') {
+        fromDate = new Date(Date.now() - 3 * 86400000);
+      } else if (postedDate === '7days') {
+        fromDate = new Date(Date.now() - 7 * 86400000);
+      } else if (postedDate === '14days') {
+        fromDate = new Date(Date.now() - 14 * 86400000);
+      } else if (postedDate === '30days') {
+        fromDate = new Date(Date.now() - 30 * 86400000);
+      } else if (postedDate.includes('|')) {
+        const [from, to] = postedDate.split('|');
+        where.createdAt = { gte: new Date(from), lte: new Date(to + 'T23:59:59Z') };
+      }
+      if (fromDate) where.createdAt = { gte: fromDate };
+    }
 
     const [jobs, total] = await Promise.all([
       (prisma.job as any).findMany({

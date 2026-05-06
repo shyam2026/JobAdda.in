@@ -1,7 +1,70 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Building2, Plus, Search, Globe, MapPin, Mail, Loader2, X, CheckCircle, ExternalLink, LayoutGrid, List, Edit2, Trash2, Phone, User, Calendar, Users, Info, Upload, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Building2, Plus, Search, Globe, MapPin, Mail, Loader2, X, CheckCircle, ExternalLink, LayoutGrid, List, Edit2, Trash2, Phone, User, Calendar, Users, Info, Upload, Eye, EyeOff, Bold, Italic, Underline as UnderlineIcon, ListOrdered, RotateCcw, RotateCw } from 'lucide-react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import Placeholder from '@tiptap/extension-placeholder';
+
+const MenuBar = ({ editor }: { editor: any }) => {
+  if (!editor) return null;
+  return (
+    <div className="tiptap-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', padding: '0.5rem', background: 'var(--bg-3)', border: '1px solid var(--border)', borderBottom: 'none', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+      <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`btn-tool ${editor.isActive('bold') ? 'active' : ''}`}><Bold size={16} /></button>
+      <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`btn-tool ${editor.isActive('italic') ? 'active' : ''}`}><Italic size={16} /></button>
+      <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`btn-tool ${editor.isActive('underline') ? 'active' : ''}`}><UnderlineIcon size={16} /></button>
+      <div style={{ width: '1px', background: 'var(--border)', margin: '0 0.25rem' }} />
+      <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`btn-tool ${editor.isActive('bulletList') ? 'active' : ''}`}><List size={16} /></button>
+      <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`btn-tool ${editor.isActive('orderedList') ? 'active' : ''}`}><ListOrdered size={16} /></button>
+      <div style={{ width: '1px', background: 'var(--border)', margin: '0 0.25rem' }} />
+      <button type="button" onClick={() => editor.chain().focus().undo().run()} className="btn-tool"><RotateCcw size={16} /></button>
+      <button type="button" onClick={() => editor.chain().focus().redo().run()} className="btn-tool"><RotateCw size={16} /></button>
+    </div>
+  );
+};
+
+const Tiptap = ({ value, onChange, placeholder }: { value: string, onChange: (content: string) => void, placeholder: string }) => {
+  const extensions = useMemo(() => [
+    StarterKit.configure(),
+    Underline.configure(),
+    Placeholder.configure({ placeholder }),
+  ], [placeholder]);
+
+  const editor = useEditor({
+    extensions,
+    content: value,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+    immediatelyRender: false,
+  });
+
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+    }
+  }, [value, editor]);
+
+  return (
+    <div className="tiptap-container">
+      <MenuBar editor={editor} />
+      <EditorContent editor={editor} className="tiptap-editor-content" style={{ 
+        minHeight: '120px', 
+        maxHeight: '300px', 
+        overflowY: 'auto',
+        background: 'var(--bg-2)', 
+        border: '1px solid var(--border)', 
+        padding: '1rem', 
+        borderBottomLeftRadius: '8px', 
+        borderBottomRightRadius: '8px',
+        color: 'var(--text-2)',
+        outline: 'none'
+      }} />
+    </div>
+  );
+};
 
 export default function AdminCompaniesPage() {
   const [companies, setCompanies] = useState<any[]>([]);
@@ -14,8 +77,17 @@ export default function AdminCompaniesPage() {
   const [editCompany, setEditCompany] = useState<any>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [otherType, setOtherType] = useState('');
+  const [otherIndustry, setOtherIndustry] = useState('');
+  const [editOtherType, setEditOtherType] = useState('');
+  const [editOtherIndustry, setEditOtherIndustry] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+ 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Form States
   const [formData, setFormData] = useState<any>({
@@ -29,6 +101,14 @@ export default function AdminCompaniesPage() {
     website: '', hq: '', bio: '', size: '', type: '', industry: '', founded: '', moreDetails: '',
     password: '', logo: null
   });
+
+  const cleanUrl = (url: string) => {
+    if (!url) return '';
+    return url
+      .trim()
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '');
+  };
 
   useEffect(() => {
     fetchCompanies();
@@ -69,7 +149,13 @@ export default function AdminCompaniesPage() {
     try {
       const data = new FormData();
       Object.keys(formData).forEach(key => {
-        if (formData[key] !== null) data.append(key, formData[key]);
+        if (key === 'type' && formData[key] === 'Other') {
+          data.append('type', otherType);
+        } else if (key === 'industry' && formData[key] === 'Other') {
+          data.append('industry', otherIndustry);
+        } else if (formData[key] !== null) {
+          data.append(key, formData[key]);
+        }
       });
 
       const res = await fetch('/api/admin/companies', {
@@ -78,13 +164,15 @@ export default function AdminCompaniesPage() {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error);
-      
+
       setShowAddModal(false);
       setFormData({
         companyName: '', email: '', password: '', name: '', contactNo: '',
         website: '', hq: '', bio: '', size: '', type: '', industry: '', founded: '', moreDetails: '',
         logo: null
       });
+      setOtherType('');
+      setOtherIndustry('');
       fetchCompanies();
     } catch (err: any) {
       alert(err.message);
@@ -111,6 +199,24 @@ export default function AdminCompaniesPage() {
       password: '',
       logo: null
     });
+
+    // Check if current type/industry are custom
+    const standardTypes = ['Private', 'Public', 'Government', 'Private (OPC)', 'Partnership', 'Proprietorship', 'MNC', 'Startup', 'NGO'];
+    if (company.type && !standardTypes.includes(company.type)) {
+      setEditFormData((prev: any) => ({ ...prev, type: 'Other' }));
+      setEditOtherType(company.type);
+    } else {
+      setEditOtherType('');
+    }
+
+    const standardIndustries = ['Information Technology', 'Software / SaaS', 'E-Commerce / EdTech', 'Finance / Banking / FinTech', 'Healthcare / Pharma', 'Education / EdTech', 'Manufacturing / Industrial', 'Media / Entertainment', 'FMCG / Consumer Goods', 'Retail / Apparel', 'Real Estate / Construction', 'Telecommunications', 'Logistics / Supply Chain', 'Hospitality / Tourism', 'Automobile', 'Agriculture / Food', 'Energy / Utilities', 'Consulting / HR', 'Legal Services', 'Advertising / Marketing', 'Aerospace / Defense', 'Fashion / Lifestyle', 'Gems / Jewelry', 'Insurance', 'Mining / Oil / Gas', 'NGO / Non-Profit', 'Government / Public Sector'];
+    if (company.industry && !standardIndustries.includes(company.industry)) {
+      setEditFormData((prev: any) => ({ ...prev, industry: 'Other' }));
+      setEditOtherIndustry(company.industry);
+    } else {
+      setEditOtherIndustry('');
+    }
+
     setShowEditModal(true);
   };
 
@@ -122,7 +228,13 @@ export default function AdminCompaniesPage() {
       Object.keys(editFormData).forEach(key => {
         if (editFormData[key] !== null) {
           if (key === 'password' && !editFormData[key]) return;
-          data.append(key, editFormData[key]);
+          if (key === 'type' && editFormData[key] === 'Other') {
+            data.append('type', editOtherType);
+          } else if (key === 'industry' && editFormData[key] === 'Other') {
+            data.append('industry', editOtherIndustry);
+          } else {
+            data.append(key, editFormData[key]);
+          }
         }
       });
 
@@ -132,7 +244,7 @@ export default function AdminCompaniesPage() {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error);
-      
+
       setShowEditModal(false);
       fetchCompanies();
     } catch (err: any) {
@@ -152,7 +264,7 @@ export default function AdminCompaniesPage() {
     }
   };
 
-  const filtered = (Array.isArray(companies) ? companies : []).filter(c => 
+  const filtered = (Array.isArray(companies) ? companies : []).filter(c =>
     c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -174,13 +286,13 @@ export default function AdminCompaniesPage() {
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <div className="view-toggle" style={{ display: 'flex', background: 'var(--bg-2)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-            <button 
+            <button
               onClick={() => setViewMode('grid')}
               style={{ padding: '8px', borderRadius: '8px', border: 'none', background: viewMode === 'grid' ? 'var(--bg-3)' : 'transparent', color: viewMode === 'grid' ? 'var(--primary-light)' : 'var(--text-3)', cursor: 'pointer' }}
             >
               <LayoutGrid size={18} />
             </button>
-            <button 
+            <button
               onClick={() => setViewMode('list')}
               style={{ padding: '8px', borderRadius: '8px', border: 'none', background: viewMode === 'list' ? 'var(--bg-3)' : 'transparent', color: viewMode === 'list' ? 'var(--primary-light)' : 'var(--text-3)', cursor: 'pointer' }}
             >
@@ -195,8 +307,8 @@ export default function AdminCompaniesPage() {
 
       <div style={{ position: 'relative', marginBottom: '2rem' }}>
         <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-        <input 
-          placeholder="Search by company name or email..." 
+        <input
+          placeholder="Search by company name or email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ paddingLeft: '3.25rem', height: '52px', borderRadius: '14px' }}
@@ -224,7 +336,7 @@ export default function AdminCompaniesPage() {
                   <MapPin size={14} className="text-muted" /> {c.hq || 'Location Not Set'}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-3)', padding: '4px 8px', borderRadius: '6px', width: 'fit-content' }}>
-                   {c.industry || 'No Sector'} • {c.type || 'Private'}
+                  {c.industry || 'No Sector'} • {c.type || 'Private'}
                 </div>
                 {c.website && (
                   <a href={c.website.startsWith('http') ? c.website : `https://${c.website}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary-light)', display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
@@ -232,7 +344,7 @@ export default function AdminCompaniesPage() {
                   </a>
                 )}
               </div>
-              
+
               <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: '700' }}>ID: {c.id}</span>
@@ -288,11 +400,11 @@ export default function AdminCompaniesPage() {
         </div>
       )}
 
-      {/* Add Company Modal */}
-      {showAddModal && (
-        <div className="modal-overlay anim-fade-up" style={{ alignItems: 'flex-start', paddingTop: '2rem', overflowY: 'auto' }}>
-          <div className="modal" style={{ maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
-            <button 
+      {/* Add Company Modal - Portaled to Body */}
+      {showAddModal && mounted && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 999999, background: 'rgba(5, 8, 20, 0.92)', backdropFilter: 'blur(10px)', padding: '4rem 1rem', overflowY: 'auto' }}>
+          <div className="anim-fade-up" style={{ width: '100%', maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '28px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', padding: '2.5rem', marginBottom: '4rem' }}>
+            <button
               onClick={() => setShowAddModal(false)}
               style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
@@ -300,36 +412,36 @@ export default function AdminCompaniesPage() {
             </button>
             <h3 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.5rem', fontWeight: '800' }}>Register Company</h3>
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '2rem' }}>Fill the details to start.</p>
-            
+
             <form onSubmit={handleAddCompany} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><Building2 size={14} /> Company Name *</label>
-                  <input required value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} placeholder="e.g. Google" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                  <input required value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} placeholder="e.g. Google" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
                 </div>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><User size={14} /> Contact Person Name</label>
-                  <input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full name" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                  <input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Full name" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><Mail size={14} /> Official Email</label>
-                  <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="hr@company.com" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                  <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="hr@company.com" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
                 </div>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}>Create Password</label>
                   <div style={{ position: 'relative' }}>
-                    <input 
-                      type={showPassword ? "text" : "password"} 
-                      value={formData.password} 
-                      onChange={e => setFormData({...formData, password: e.target.value})} 
-                      placeholder="Min 6 characters" 
-                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', paddingRight: '2.5rem' }} 
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={e => setFormData({ ...formData, password: e.target.value })}
+                      placeholder="Min 6 characters"
+                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', paddingRight: '2.5rem' }}
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                     >
@@ -342,29 +454,35 @@ export default function AdminCompaniesPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><Phone size={14} /> Contact No</label>
-                  <input value={formData.contactNo} onChange={e => setFormData({...formData, contactNo: e.target.value})} placeholder="+91 ..." style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                  <input value={formData.contactNo} onChange={e => setFormData({ ...formData, contactNo: e.target.value })} placeholder="+91 ..." style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
                 </div>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><Globe size={14} /> Website</label>
-                  <input value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://..." style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                  <input 
+                    value={formData.website} 
+                    onChange={e => setFormData({...formData, website: e.target.value})} 
+                    onBlur={e => setFormData({...formData, website: cleanUrl(e.target.value)})}
+                    placeholder="e.g. google.com" 
+                    style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} 
+                  />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><MapPin size={14} /> Headquarters</label>
-                  <input value={formData.hq} onChange={e => setFormData({...formData, hq: e.target.value})} placeholder="City, Country" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                  <input value={formData.hq} onChange={e => setFormData({ ...formData, hq: e.target.value })} placeholder="City, Country" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
                 </div>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><Calendar size={14} /> Founded Year</label>
-                  <input value={formData.founded} onChange={e => setFormData({...formData, founded: e.target.value})} placeholder="e.g. 1998" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                  <input value={formData.founded} onChange={e => setFormData({ ...formData, founded: e.target.value })} placeholder="e.g. 1998" style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}><Users size={14} /> Company Size</label>
-                  <select value={formData.size} onChange={e => setFormData({...formData, size: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
+                  <select value={formData.size} onChange={e => setFormData({ ...formData, size: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
                     <option value="">Select Size</option>
                     <option value="1-10">1-10 employees</option>
                     <option value="11-50">11-50 employees</option>
@@ -376,7 +494,7 @@ export default function AdminCompaniesPage() {
                 </div>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}>Industry Type</label>
-                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
+                  <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
                     <option value="">Select Type</option>
                     <option value="Private">Private</option>
                     <option value="Public">Public</option>
@@ -387,212 +505,24 @@ export default function AdminCompaniesPage() {
                     <option value="MNC">MNC / Multinational</option>
                     <option value="Startup">Startup</option>
                     <option value="NGO">NGO / Non-Profit</option>
+                    <option value="Other">Other (Type below)</option>
                   </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Industry Sector</label>
-                  <select value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
-                    <option value="">Select Sector</option>
-                    <option value="Information Technology">Information Technology</option>
-                    <option value="Software">Software</option>
-                    <option value="SaaS">SaaS</option>
-                    <option value="E-Commerce">E-Commerce</option>
-                    <option value="EdTech">EdTech</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Banking">Banking</option>
-                    <option value="FinTech">FinTech</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Pharmaceuticals">Pharmaceuticals</option>
-                    <option value="Education">Education</option>
-                    <option value="Manufacturing">Manufacturing</option>
-                    <option value="Industrial">Industrial</option>
-                    <option value="Media">Media</option>
-                    <option value="Entertainment">Entertainment</option>
-                    <option value="FMCG">FMCG</option>
-                    <option value="Consumer Goods">Consumer Goods</option>
-                    <option value="Retail">Retail</option>
-                    <option value="Apparel">Apparel</option>
-                    <option value="Real Estate">Real Estate</option>
-                    <option value="Construction">Construction</option>
-                    <option value="Telecommunications">Telecommunications</option>
-                    <option value="Logistics">Logistics</option>
-                    <option value="Supply Chain">Supply Chain</option>
-                    <option value="Hospitality">Hospitality</option>
-                    <option value="Tourism">Tourism</option>
-                    <option value="Automobile">Automobile</option>
-                    <option value="Agriculture">Agriculture</option>
-                    <option value="Food Processing">Food Processing</option>
-                    <option value="Energy">Energy</option>
-                    <option value="Utilities">Utilities</option>
-                    <option value="Consulting">Consulting</option>
-                    <option value="Human Resources">Human Resources</option>
-                    <option value="Legal Services">Legal Services</option>
-                    <option value="Advertising">Advertising</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Aerospace">Aerospace</option>
-                    <option value="Defense">Defense</option>
-                    <option value="Fashion">Fashion</option>
-                    <option value="Lifestyle">Lifestyle</option>
-                    <option value="Gems & Jewelry">Gems & Jewelry</option>
-                    <option value="Insurance">Insurance</option>
-                    <option value="Mining">Mining</option>
-                    <option value="Oil & Gas">Oil & Gas</option>
-                    <option value="NGO">NGO</option>
-                    <option value="Non-Profit">Non-Profit</option>
-                    <option value="Government">Government</option>
-                    <option value="Public Sector">Public Sector</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className="input-group" style={{ opacity: 0, pointerEvents: 'none' }}>
-                  <label className="label">Placeholder</label>
-                  <input readOnly />
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label className="label" style={{ color: '#cbd5e1' }}><Info size={14} /> Short Bio</label>
-                <textarea rows={2} value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} placeholder="A brief overview of the company..." style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.75rem', borderRadius: '8px' }} />
-              </div>
-
-              <div className="input-group">
-                <label className="label" style={{ color: '#cbd5e1' }}>More Details (HTML or Plain Text)</label>
-                <textarea rows={3} value={formData.moreDetails} onChange={e => setFormData({...formData, moreDetails: e.target.value})} placeholder="Detailed company information, culture, benefits, etc." style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.75rem', borderRadius: '8px' }} />
-              </div>
-
-              <div className="input-group">
-                <label className="label" style={{ color: '#cbd5e1' }}><Upload size={14} /> Company Logo (JPG/PNG, max 500kb)</label>
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{ border: '2px dashed #334155', borderRadius: '10px', padding: '1.5rem', textAlign: 'center', cursor: 'pointer', background: '#1e293b', color: '#94a3b8' }}
-                >
-                  {formData.logo ? (
-                    <div style={{ color: 'var(--primary-light)', fontWeight: '600' }}>{formData.logo.name} selected</div>
-                  ) : (
-                    <>Click to upload or drag & drop</>
-                  )}
-                  <input type="file" ref={fileInputRef} hidden accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleFileChange(e, 'add')} />
-                </div>
-              </div>
-
-              <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
-                <button type="button" onClick={() => setShowAddModal(false)} className="btn btn-outline" style={{ flex: 1, borderColor: '#334155' }}>Cancel</button>
-                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ flex: 2 }}>{submitting ? 'Registering...' : 'Complete Registration'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Company Modal */}
-      {showEditModal && (
-        <div className="modal-overlay" style={{ alignItems: 'flex-start', paddingTop: '2rem', overflowY: 'auto' }}>
-          <div className="modal" style={{ maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
-            <button 
-              onClick={() => setShowEditModal(false)}
-              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <X size={24} />
-            </button>
-            <h3 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.5rem', fontWeight: '800' }}>Edit Company Profile</h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '2rem' }}>Update information for {editCompany?.companyName}.</p>
-            
-            <form onSubmit={handleUpdateCompany} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Company Name *</label>
-                  <input required value={editFormData.companyName} onChange={e => setEditFormData({...editFormData, companyName: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
-                </div>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Contact Person</label>
-                  <input value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Official Email</label>
-                  <input type="email" value={editFormData.email} onChange={e => setEditFormData({...editFormData, email: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
-                </div>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>New Password (Leave blank)</label>
-                  <div style={{ position: 'relative' }}>
+                  {formData.type === 'Other' && (
                     <input 
-                      type={showEditPassword ? "text" : "password"} 
-                      value={editFormData.password} 
-                      onChange={e => setEditFormData({...editFormData, password: e.target.value})} 
-                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', paddingRight: '2.5rem' }} 
+                      className="anim-fade-up"
+                      value={otherType}
+                      onChange={e => setOtherType(e.target.value)}
+                      placeholder="Enter custom industry type"
+                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', marginTop: '0.5rem' }}
                     />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowEditPassword(!showEditPassword)}
-                      style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                    >
-                      {showEditPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Contact No</label>
-                  <input value={editFormData.contactNo} onChange={e => setEditFormData({...editFormData, contactNo: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
-                </div>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Website</label>
-                  <input value={editFormData.website} onChange={e => setEditFormData({...editFormData, website: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Headquarters</label>
-                  <input value={editFormData.hq} onChange={e => setEditFormData({...editFormData, hq: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
-                </div>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Founded Year</label>
-                  <input value={editFormData.founded} onChange={e => setEditFormData({...editFormData, founded: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Company Size</label>
-                  <select value={editFormData.size} onChange={e => setEditFormData({...editFormData, size: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
-                    <option value="">Select Size</option>
-                    <option value="1-10">1-10 employees</option>
-                    <option value="11-50">11-50 employees</option>
-                    <option value="51-200">51-200 employees</option>
-                    <option value="201-500">201-500 employees</option>
-                    <option value="501-1000">501-1000 employees</option>
-                    <option value="1000+">1000+ employees</option>
-                  </select>
-                </div>
-                <div className="input-group">
-                  <label className="label" style={{ color: '#cbd5e1' }}>Industry Type</label>
-                  <select value={editFormData.type} onChange={e => setEditFormData({...editFormData, type: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
-                    <option value="">Select Type</option>
-                    <option value="Private">Private</option>
-                    <option value="Public">Public</option>
-                    <option value="Government">Government</option>
-                    <option value="Private (OPC)">Private (OPC)</option>
-                    <option value="Partnership">Partnership</option>
-                    <option value="Proprietorship">Proprietorship</option>
-                    <option value="MNC">MNC / Multinational</option>
-                    <option value="Startup">Startup</option>
-                    <option value="NGO">NGO / Non-Profit</option>
-                  </select>
+                  )}
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div className="input-group">
                   <label className="label" style={{ color: '#cbd5e1' }}>Industry Sector</label>
-                  <select value={editFormData.industry} onChange={e => setEditFormData({...editFormData, industry: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
+                  <select value={formData.industry} onChange={e => setFormData({ ...formData, industry: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
                     <option value="">Select Sector</option>
                     <option value="Information Technology">Information Technology</option>
                     <option value="Software / SaaS">Software / SaaS</option>
@@ -620,8 +550,221 @@ export default function AdminCompaniesPage() {
                     <option value="Insurance">Insurance</option>
                     <option value="Mining / Oil / Gas">Mining / Oil / Gas</option>
                     <option value="NGO / Non-Profit">NGO / Non-Profit</option>
-                    <option value="Other">Other</option>
+                    <option value="Government / Public Sector">Government / Public Sector</option>
+                    <option value="Other">Other (Type below)</option>
                   </select>
+                  {formData.industry === 'Other' && (
+                    <input 
+                      className="anim-fade-up"
+                      value={otherIndustry}
+                      onChange={e => setOtherIndustry(e.target.value)}
+                      placeholder="Enter custom industry sector"
+                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', marginTop: '0.5rem' }}
+                    />
+                  )}
+                </div>
+                <div className="input-group" style={{ opacity: 0, pointerEvents: 'none' }}>
+                  <label className="label">Placeholder</label>
+                  <input readOnly />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="label" style={{ color: '#cbd5e1' }}><Info size={14} /> Short Bio</label>
+                <Tiptap value={formData.bio} onChange={c => setFormData({ ...formData, bio: c })} placeholder="A brief overview of the company..." />
+              </div>
+
+              <div className="input-group">
+                <label className="label" style={{ color: '#cbd5e1' }}>More Details</label>
+                <Tiptap value={formData.moreDetails} onChange={c => setFormData({ ...formData, moreDetails: c })} placeholder="Detailed company information, culture, benefits, etc." />
+              </div>
+
+              <div className="input-group">
+                <label className="label" style={{ color: '#cbd5e1' }}><Upload size={14} /> Company Logo (JPG/PNG, max 500kb)</label>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ border: '2px dashed #334155', borderRadius: '10px', padding: '1.5rem', textAlign: 'center', cursor: 'pointer', background: '#1e293b', color: '#94a3b8' }}
+                >
+                  {formData.logo ? (
+                    <div style={{ color: 'var(--primary-light)', fontWeight: '600' }}>{formData.logo.name} selected</div>
+                  ) : (
+                    <>Click to upload or drag & drop</>
+                  )}
+                  <input type="file" ref={fileInputRef} hidden accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleFileChange(e, 'add')} />
+                </div>
+              </div>
+
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
+                <button type="button" onClick={() => setShowAddModal(false)} className="btn btn-outline" style={{ flex: 1, borderColor: '#334155' }}>Cancel</button>
+                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ flex: 2 }}>{submitting ? 'Registering...' : 'Complete Registration'}</button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Edit Company Modal - Portaled to Body */}
+      {showEditModal && mounted && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 999999, background: 'rgba(5, 8, 20, 0.92)', backdropFilter: 'blur(10px)', padding: '4rem 1rem', overflowY: 'auto' }}>
+          <div className="anim-fade-up" style={{ width: '100%', maxWidth: '700px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '28px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', padding: '2.5rem', marginBottom: '4rem' }}>
+            <button
+              onClick={() => setShowEditModal(false)}
+              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ marginBottom: '0.5rem', color: 'white', fontSize: '1.5rem', fontWeight: '800' }}>Edit Company Profile</h3>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '2rem' }}>Update information for {editCompany?.companyName}.</p>
+
+            <form onSubmit={handleUpdateCompany} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Company Name *</label>
+                  <input required value={editFormData.companyName} onChange={e => setEditFormData({ ...editFormData, companyName: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                </div>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Contact Person</label>
+                  <input value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Official Email</label>
+                  <input type="email" value={editFormData.email} onChange={e => setEditFormData({ ...editFormData, email: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                </div>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>New Password (Leave blank)</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showEditPassword ? "text" : "password"}
+                      value={editFormData.password}
+                      onChange={e => setEditFormData({ ...editFormData, password: e.target.value })}
+                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowEditPassword(!showEditPassword)}
+                      style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                      {showEditPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Contact No</label>
+                  <input value={editFormData.contactNo} onChange={e => setEditFormData({ ...editFormData, contactNo: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                </div>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Website</label>
+                  <input 
+                    value={editFormData.website} 
+                    onChange={e => setEditFormData({...editFormData, website: e.target.value})} 
+                    onBlur={e => setEditFormData({...editFormData, website: cleanUrl(e.target.value)})}
+                    placeholder="e.g. google.com"
+                    style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} 
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Headquarters</label>
+                  <input value={editFormData.hq} onChange={e => setEditFormData({ ...editFormData, hq: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                </div>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Founded Year</label>
+                  <input value={editFormData.founded} onChange={e => setEditFormData({ ...editFormData, founded: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Company Size</label>
+                  <select value={editFormData.size} onChange={e => setEditFormData({ ...editFormData, size: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
+                    <option value="">Select Size</option>
+                    <option value="1-10">1-10 employees</option>
+                    <option value="11-50">11-50 employees</option>
+                    <option value="51-200">51-200 employees</option>
+                    <option value="201-500">201-500 employees</option>
+                    <option value="501-1000">501-1000 employees</option>
+                    <option value="1000+">1000+ employees</option>
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Industry Type</label>
+                  <select value={editFormData.type} onChange={e => setEditFormData({ ...editFormData, type: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
+                    <option value="">Select Type</option>
+                    <option value="Private">Private</option>
+                    <option value="Public">Public</option>
+                    <option value="Government">Government</option>
+                    <option value="Private (OPC)">Private (OPC)</option>
+                    <option value="Partnership">Partnership</option>
+                    <option value="Proprietorship">Proprietorship</option>
+                    <option value="MNC">MNC / Multinational</option>
+                    <option value="Startup">Startup</option>
+                    <option value="NGO">NGO / Non-Profit</option>
+                    <option value="Other">Other (Type below)</option>
+                  </select>
+                  {editFormData.type === 'Other' && (
+                    <input 
+                      className="anim-fade-up"
+                      value={editOtherType}
+                      onChange={e => setEditOtherType(e.target.value)}
+                      placeholder="Enter custom industry type"
+                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', marginTop: '0.5rem' }}
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ color: '#cbd5e1' }}>Industry Sector</label>
+                  <select value={editFormData.industry} onChange={e => setEditFormData({ ...editFormData, industry: e.target.value })} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.65rem', borderRadius: '8px' }}>
+                    <option value="">Select Sector</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Software / SaaS">Software / SaaS</option>
+                    <option value="E-Commerce / EdTech">E-Commerce / EdTech</option>
+                    <option value="Finance / Banking / FinTech">Finance / Banking / FinTech</option>
+                    <option value="Healthcare / Pharma">Healthcare / Pharma</option>
+                    <option value="Education / EdTech">Education / EdTech</option>
+                    <option value="Manufacturing / Industrial">Manufacturing / Industrial</option>
+                    <option value="Media / Entertainment">Media / Entertainment</option>
+                    <option value="FMCG / Consumer Goods">FMCG / Consumer Goods</option>
+                    <option value="Retail / Apparel">Retail / Apparel</option>
+                    <option value="Real Estate / Construction">Real Estate / Construction</option>
+                    <option value="Telecommunications">Telecommunications</option>
+                    <option value="Logistics / Supply Chain">Logistics / Supply Chain</option>
+                    <option value="Hospitality / Tourism">Hospitality / Tourism</option>
+                    <option value="Automobile">Automobile</option>
+                    <option value="Agriculture / Food">Agriculture / Food</option>
+                    <option value="Energy / Utilities">Energy / Utilities</option>
+                    <option value="Consulting / HR">Consulting / HR</option>
+                    <option value="Legal Services">Legal Services</option>
+                    <option value="Advertising / Marketing">Advertising / Marketing</option>
+                    <option value="Aerospace / Defense">Aerospace / Defense</option>
+                    <option value="Fashion / Lifestyle">Fashion / Lifestyle</option>
+                    <option value="Gems / Jewelry">Gems / Jewelry</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Mining / Oil / Gas">Mining / Oil / Gas</option>
+                    <option value="NGO / Non-Profit">NGO / Non-Profit</option>
+                    <option value="Government / Public Sector">Government / Public Sector</option>
+                    <option value="Other">Other (Type below)</option>
+                  </select>
+                  {editFormData.industry === 'Other' && (
+                    <input 
+                      className="anim-fade-up"
+                      value={editOtherIndustry}
+                      onChange={e => setEditOtherIndustry(e.target.value)}
+                      placeholder="Enter custom industry sector"
+                      style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', marginTop: '0.5rem' }}
+                    />
+                  )}
                 </div>
                 <div className="input-group" style={{ opacity: 0, pointerEvents: 'none' }}>
                   <label className="label">Placeholder</label>
@@ -631,17 +774,17 @@ export default function AdminCompaniesPage() {
 
               <div className="input-group">
                 <label className="label" style={{ color: '#cbd5e1' }}>Short Bio</label>
-                <textarea rows={2} value={editFormData.bio} onChange={e => setEditFormData({...editFormData, bio: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.75rem', borderRadius: '8px' }} />
+                <Tiptap value={editFormData.bio} onChange={c => setEditFormData({ ...editFormData, bio: c })} placeholder="A brief overview of the company..." />
               </div>
 
               <div className="input-group">
                 <label className="label" style={{ color: '#cbd5e1' }}>More Details</label>
-                <textarea rows={3} value={editFormData.moreDetails} onChange={e => setEditFormData({...editFormData, moreDetails: e.target.value})} style={{ background: '#1e293b', border: '1px solid #334155', color: 'white', width: '100%', padding: '0.75rem', borderRadius: '8px' }} />
+                <Tiptap value={editFormData.moreDetails} onChange={c => setEditFormData({ ...editFormData, moreDetails: c })} placeholder="Detailed company information, culture, benefits, etc." />
               </div>
 
               <div className="input-group">
                 <label className="label" style={{ color: '#cbd5e1' }}>Update Logo (JPG/PNG, max 500kb)</label>
-                <div 
+                <div
                   onClick={() => editFileInputRef.current?.click()}
                   style={{ border: '2px dashed #334155', borderRadius: '10px', padding: '1rem', textAlign: 'center', cursor: 'pointer', background: '#1e293b', color: '#94a3b8' }}
                 >
@@ -660,14 +803,47 @@ export default function AdminCompaniesPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-      
+
       <style>{`
         .text-gradient { background: linear-gradient(135deg, var(--primary-light), #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .text-danger { color: #ef4444 !important; }
         table th { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; border-bottom: 1px solid var(--border); }
         .label { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.88rem; }
+        
+        .btn-tool {
+          display: flex; align-items: center; justify-content: center;
+          width: 32px; height: 32px; border-radius: 6px;
+          background: transparent; border: none; color: var(--text-3);
+          cursor: pointer; transition: all 0.2s;
+        }
+        .btn-tool:hover { background: var(--bg-2); color: var(--text); }
+        .btn-tool.active { background: var(--success); color: white; }
+        
+        .tiptap-editor-content:focus-within {
+          border-color: var(--success) !important;
+          box-shadow: 0 0 0 1px var(--success);
+        }
+
+        .tiptap-editor-content .ProseMirror {
+          outline: none;
+          min-height: 120px;
+        }
+
+        .tiptap-editor-content .ProseMirror p.is-editor-empty:first-child::before {
+          content: attr(data-placeholder);
+          float: left;
+          color: var(--text-3);
+          pointer-events: none;
+          height: 0;
+        }
+
+        /* Ensure portals don't interfere with main layout */
+        body > div[style*="fixed"] {
+          font-family: 'Outfit', sans-serif;
+        }
       `}</style>
     </div>
   );

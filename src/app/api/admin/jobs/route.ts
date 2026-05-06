@@ -21,7 +21,11 @@ export async function POST(req: Request) {
       requirements, 
       type, 
       category,
-      externalLink 
+      externalLink,
+      openings,
+      education,
+      experience,
+      skills
     } = body;
 
     if (!companyId || !title || !description || !location) {
@@ -38,9 +42,14 @@ export async function POST(req: Request) {
         requirements,
         type: type || 'INTERNAL',
         category: category || 'Other',
+        employmentType: body.employmentType || 'Full-time',
         externalLink,
+        openings: openings ? parseInt(openings, 10) : 1,
+        education,
+        experience,
+        skills,
         status: 'OPEN'
-      }
+      } as any
     });
 
     return NextResponse.json({ message: "Job posted successfully", job });

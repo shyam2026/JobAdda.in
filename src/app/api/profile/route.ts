@@ -68,6 +68,13 @@ export async function GET() {
         endDate: p.endDate ? new Date(p.endDate).toISOString().slice(0, 7) : '',
         isCurrent: p.current || false,
       })) || [],
+      completion: Math.min(100, Math.round(
+        (u.studentProfile?.bio ? 20 : 0) + 
+        ((u.skills?.length > 0) ? 20 : 0) +
+        (u.educations?.some((e: any) => e.school) ? 20 : 0) +
+        (u.experiences?.some((e: any) => e.company) ? 20 : 0) +
+        (u.projects?.some((p: any) => p.title) ? 20 : 0)
+      ))
     });
   } catch (error) {
     console.error("PROFILE_GET_ERROR", error);

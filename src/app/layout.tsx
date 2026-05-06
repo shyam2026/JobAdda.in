@@ -1,8 +1,21 @@
 import React from "react";
 import type { Metadata } from "next";
+import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://jobadda.in'),
@@ -60,8 +73,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${outfit.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }} suppressHydrationWarning>
         <Providers>
           <LayoutWrapper>
             {children}

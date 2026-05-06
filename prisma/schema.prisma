@@ -171,7 +171,12 @@ model Job {
   status       String        @default("OPEN")
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  category     String        @default("Other")
+  category       String        @default("Other")
+  employmentType String?       @default("Full-time")
+  openings       Int?          @default(1)
+  education      String?
+  experience     String?
+  skills         String?       @db.Text
   applications Application[]
   company      CompanyUser   @relation("CompanyUserJobs", fields: [companyId], references: [id])
 

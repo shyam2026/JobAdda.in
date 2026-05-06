@@ -5,19 +5,20 @@ import prisma from '@/lib/prisma';
 import { LayoutDashboard, Users, Building, Briefcase, IndianRupee, ShieldAlert, LogOut, ShieldCheck, ChevronDown, Plus, Ticket, FileText, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
-const ALL_MODULES = [
+interface Module {
+  id: string;
+  label: string;
+  href?: string;
+  icon: any;
+  reqSuper?: boolean;
+  submodules?: { label: string; href: string }[];
+}
+
+const ALL_MODULES: Module[] = [
   { id: 'dashboard', label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
   { id: 'users', label: 'Students', href: '/admin/users', icon: Users },
   { id: 'companies', label: 'Companies', href: '/admin/companies', icon: Building },
-  { 
-    id: 'jobs', 
-    label: 'Jobs', 
-    icon: Briefcase,
-    submodules: [
-      { label: 'All Jobs', href: '/admin/jobs' },
-      { label: 'Post Job (Company)', href: '/admin/jobs/create' },
-    ]
-  },
+  { id: 'jobs', label: 'Jobs', href: '/admin/jobs', icon: Briefcase },
   { id: 'transactions', label: 'Transactions', href: '/admin/transactions', icon: IndianRupee },
   { id: 'coupons', label: 'Coupons', href: '/admin/coupons', icon: Ticket },
   { id: 'resume-data', label: 'Resume Data', href: '/admin/resume-data', icon: FileText },
@@ -100,7 +101,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                     <item.icon size={17} style={{ color: 'var(--success)' }} /> {item.label}
                   </div>
                   <div style={{ paddingLeft: '2rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', marginTop: '0.2rem' }}>
-                    {item.submodules.map(sub => (
+                    {item.submodules.map((sub: { label: string; href: string }) => (
                       <Link key={sub.href} href={sub.href} className="sidebar-item" style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: 'var(--text-3)' }}>
                         {sub.label}
                       </Link>
@@ -108,7 +109,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   </div>
                 </div>
               ) : (
-                <Link href={item.href} className="sidebar-item" style={{ color: 'var(--text-2)' }}>
+                <Link href={item.href || '#'} className="sidebar-item" style={{ color: 'var(--text-2)' }}>
                   <item.icon size={17} style={{ color: 'var(--success)' }} /> {item.label}
                 </Link>
               )}

@@ -21,7 +21,7 @@ interface Application {
 const STATUS_CONFIG = {
   PENDING: { label: 'Applied', cls: 'badge-muted', icon: Clock, color: '#6b7280' },
   REVIEWING: { label: 'Shortlisted', cls: 'badge-warning', icon: AlertCircle, color: '#f59e0b' },
-  HIRED: { label: 'Hired! 🎉', cls: 'badge-success', icon: CheckCircle, color: '#10b981' },
+  HIRED: { label: 'Hired!', cls: 'badge-success', icon: CheckCircle, color: '#10b981' },
   REJECTED: { label: 'Rejected', cls: 'badge-danger', icon: XCircle, color: '#ef4444' },
 };
 
@@ -72,10 +72,27 @@ export default function UserApplicationsPage() {
     <div className="anim-fade-up">
       <header style={{ marginBottom: '2rem' }}>
         <h2 style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <TrendingUp size={24} /> My Applications
+         My Applications
         </h2>
         <p style={{ margin: 0, color: 'var(--text-3)' }}>Track your progress with {applications.length} applications</p>
       </header>
+
+      {/* Informational Note */}
+      <div className="card" style={{ 
+        padding: '1rem 1rem', 
+        marginBottom: '1rem', 
+        background: 'rgba(59, 130, 246, 0.05)', 
+        border: '1px solid rgba(59, 130, 246, 0.2)',
+        borderRadius: '12px',
+        display: 'flex',
+        gap: '1rem',
+        alignItems: 'flex-start'
+      }}>
+        <AlertCircle size={20} style={{ color: '#60a5fa', marginTop: '2px', flexShrink: 0 }} />
+        <div style={{ fontSize: '0.700rem', color: '#93c5fd', lineHeight: '1.5' }}>
+          <strong>Note:</strong> Real-time status updates are only available for applications processed directly through <strong>JobAdda.in</strong>. For jobs where you applied on an external company page, you will receive updates directly from the company via their portal, email, or WhatsApp/SMS.
+        </div>
+      </div> 
 
       {/* Filter Tabs */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', overflowX: 'auto', paddingBottom: '0.5rem', scrollbarWidth: 'none' }}>

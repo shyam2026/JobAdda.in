@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
-
 /* ─── DESIGN TOKENS ─────────────────────────────────── */
 :root {
   --primary:        #6366f1;
@@ -41,7 +39,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: var(--font-outfit), var(--font-inter), sans-serif;
   background-color: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -709,9 +707,6 @@ tbody tr:hover { background: rgba(255,255,255,0.025); }
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (min-width: 769px) {
-  .show-mobile { display: none !important; }
-  .mobile-menu-toggle { display: none !important; }
-}
+/* Consolidation: Removed redundant show-mobile/media queries from the end of the file */
 
 
