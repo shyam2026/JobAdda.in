@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     }
 
     // Use transaction to ensure balance is deducted and record created safely
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const user = await tx.user.findUnique({
         where: { id: userSession.id },
         select: { walletBalance: true }

@@ -34,7 +34,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Transaction is already processed" }, { status: 400 });
     }
 
-    const updatedTransaction = await prisma.$transaction(async (tx) => {
+    const updatedTransaction = await prisma.$transaction(async (tx: any) => {
       // If rejected, refund the balance to the user
       if (status === 'REJECTED' && transaction.type === 'WITHDRAWAL') {
         await tx.user.update({
