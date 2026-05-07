@@ -266,13 +266,13 @@ export default function JobsPage() {
               type="date"
               value={filters.customFrom}
               onChange={e => { setFilters(f => ({ ...f, customFrom: e.target.value })); setPage(1); }}
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0.5rem', padding: '0.4rem 0.6rem', fontSize: '0.78rem', color: 'var(--text)', width: '100%' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0.5rem', padding: '0.4rem 0.6rem', fontSize: '0.78rem', color: 'var(--text)', width: '100%', colorScheme: 'dark' }}
             />
             <input
               type="date"
               value={filters.customTo}
               onChange={e => { setFilters(f => ({ ...f, customTo: e.target.value })); setPage(1); }}
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0.5rem', padding: '0.4rem 0.6rem', fontSize: '0.78rem', color: 'var(--text)', width: '100%' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0.5rem', padding: '0.4rem 0.6rem', fontSize: '0.78rem', color: 'var(--text)', width: '100%', colorScheme: 'dark' }}
             />
           </div>
         )}

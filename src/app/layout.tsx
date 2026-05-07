@@ -74,6 +74,22 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        {/* Prevent flash of unstyled content: force dark background before any CSS loads */}
+        <meta name="color-scheme" content="dark" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  document.documentElement.style.backgroundColor = '#0a0f1e';
+                  document.documentElement.style.color = '#f8fafc';
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }} suppressHydrationWarning>
         <Providers>
           <LayoutWrapper>

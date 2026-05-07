@@ -1,5 +1,6 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { auth, signOut } from '@/auth';
 import prisma from '@/lib/prisma';
 import { LayoutDashboard, Users, Building, Briefcase, IndianRupee, ShieldAlert, LogOut, ShieldCheck, ChevronDown, Plus, Ticket, FileText, MessageSquare } from 'lucide-react';
@@ -55,6 +56,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     if (isSuper || allowedModules.includes('all')) return true;
     return allowedModules.includes(m.id);
   });
+
+  const headersList = await headers();
+  const pathname = headersList.get('x-url') || '';
+  const currentModule = ALL_MODULES.find(m => pathname === m.href || pathname.startsWith(m.href + '/'));
+  const hasAccess = !currentModule || (
+    isSuper || 
+    allowedModules.includes('all') || 
+    allowedModules.includes(currentModule.id)
+  );
+
+  if (!hasAccess && visibleModules.length > 0) {
+    const firstAllowedModule = visibleModules[0];
+    if (firstAllowedModule && firstAllowedModule.href) {
+      redirect(firstAllowedModule.href);
+    }
+  }
 
   return (
     <div className="dashboard-layout" style={{ '--primary': 'var(--success)', '--primary-light': '#34d399', '--primary-dark': '#059669' } as React.CSSProperties}>
@@ -139,7 +156,36 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Content */}
       <main className="dashboard-content" style={{ background: 'var(--bg)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-          {children}
+          {hasAccess ? children : (
+            <div className="admin-page anim-fade-up" style={{ padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+              <div className="card" style={{ maxWidth: '480px', width: '100%', padding: '2.5rem 2rem', borderRadius: '1rem', textAlign: 'center', border: '1px solid var(--border)', background: 'var(--bg-2)' }}>
+                <div style={{ display: 'inline-flex', padding: '1rem', borderRadius: '50%', background: 'rgba(239,68,68,0.1)', color: 'var(--danger)', marginBottom: '1.25rem' }}>
+                  <ShieldAlert size={36} />
+                </div>
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.4rem', color: 'var(--text)' }}>Access Blocked</h3>
+                <p style={{ margin: '0 0 2rem 0', fontSize: '0.88rem', color: 'var(--text-3)', lineHeight: '1.5' }}>
+                  You do not have administrative access to the <strong style={{ color: 'var(--text-2)' }}>{currentModule?.label || 'requested'}</strong> module. Please contact your system administrator to request access.
+                </p>
+                <Link
+                  href={visibleModules[0]?.href || "/admin/dashboard"}
+                  style={{
+                    display: 'inline-block',
+                    background: 'var(--success)',
+                    color: 'white',
+                    padding: '0.65rem 1.75rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    transition: 'var(--transition)',
+                  }}
+                  className="btn btn-primary"
+                >
+                  Return to Allowed Module
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

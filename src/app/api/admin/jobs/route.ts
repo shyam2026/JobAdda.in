@@ -69,7 +69,13 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const where: any = {};
+    if (user?.role === 'SUBADMIN') {
+      where.createdByAdminId = user.id;
+    }
+
     const jobs = await (prisma.job as any).findMany({
+      where,
       include: {
         company: { select: { companyName: true, slug: true } }
       },

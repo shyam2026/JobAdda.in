@@ -25,6 +25,7 @@ export async function GET(
           type: true,
           website: true,
           bio: true,
+          isActive: true,
         }
       },
       _count: {
@@ -44,7 +45,7 @@ export async function GET(
       include
     });
 
-    if (!job) {
+    if (!job || job.company?.isActive === false) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
@@ -79,6 +80,15 @@ export async function PATCH(
     }
 
     const body = await req.json();
+    
+    const existingJob = await (prisma.job as any).findUnique({ where: { id } });
+    if (!existingJob) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    if (body.status !== undefined && body.status !== existingJob.status && user.portalType === 'admin' && user.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: "Only Super Admins can change active/inactive status of jobs" }, { status: 403 });
+    }
     
     // Sanitize update payload to ensure strict prisma type safety
     const updateData: any = {};
@@ -127,11 +137,15 @@ export async function PATCH(
   try {
     const { id } = await params;
     const session = await auth();
-    const user = session?.user as { id: string; role: string } | undefined;
+    const user = session?.user as any;
 
     const allowedRoles = ['ADMIN', 'SUBADMIN', 'SUPERADMIN'];
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (user?.portalType === 'admin' && user?.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: "Only Super Admins can delete jobs" }, { status: 403 });
     }
 
     const where: any = { id };

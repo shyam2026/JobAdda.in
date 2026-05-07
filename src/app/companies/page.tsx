@@ -14,6 +14,7 @@ export default async function CompaniesPage({
   try {
     allCompanies = await prisma.companyUser.findMany({
       where: {
+        isActive: true,
         AND: [
           q ? { companyName: { contains: q } } : {}
         ]

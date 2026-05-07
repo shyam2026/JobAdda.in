@@ -27,10 +27,28 @@ interface ActivityData {
   companies: { id: string; slug: string | null; companyName: string; industry: string | null; createdAt: string }[];
 }
 
-function ActivityDrawer({ adminId, adminName, onClose }: { adminId: string; adminName: string; onClose: () => void }) {
+function ActivityDrawer({ adminId, adminName, adminCreatedAt, onClose }: { adminId: string; adminName: string; adminCreatedAt?: string; onClose: () => void }) {
   const [data, setData] = useState<ActivityData | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'jobs' | 'companies'>('jobs');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  const filteredData = React.useMemo(() => {
+    if (!data) return { jobs: [], companies: [] };
+    const from = dateFrom ? new Date(dateFrom).getTime() : null;
+    const to = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null;
+
+    const filterItem = (createdAtStr: string) => {
+      const t = new Date(createdAtStr).getTime();
+      return (!from || t >= from) && (!to || t <= to);
+    };
+
+    return {
+      jobs: data.jobs.filter(j => filterItem(j.createdAt)),
+      companies: data.companies.filter(c => filterItem(c.createdAt)),
+    };
+  }, [data, dateFrom, dateTo]);
 
   React.useEffect(() => {
     fetch(`/api/admin/team/activity?adminId=${adminId}`)
@@ -40,22 +58,16 @@ function ActivityDrawer({ adminId, adminName, onClose }: { adminId: string; admi
   }, [adminId]);
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex' }}>
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{ flex: 1, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-      />
-
-      {/* Drawer */}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex', background: 'var(--bg)' }}>
+      {/* Full Screen Activity Card */}
       <div style={{
-        width: 'min(520px, 95vw)',
-        background: 'var(--bg-2)',
-        borderLeft: '1px solid var(--border)',
+        width: '100vw',
+        height: '100vh',
+        background: 'var(--bg)',
         display: 'flex',
         flexDirection: 'column',
-        overflowY: 'auto',
-        animation: 'slideInRight 0.22s ease',
+        overflowY: 'hidden',
+        animation: 'fadeIn 0.18s ease',
       }}>
         {/* Header */}
         <div style={{
@@ -74,6 +86,11 @@ function ActivityDrawer({ adminId, adminName, onClose }: { adminId: string; admi
             </div>
             <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-3)' }}>
               Created by <strong style={{ color: 'var(--text-2)' }}>{adminName}</strong>
+              {adminCreatedAt && (
+                <span style={{ marginLeft: '0.4rem', color: 'var(--text-3)', opacity: 0.85 }}>
+                  • Joined {formatDate(adminCreatedAt)}
+                </span>
+              )}
             </p>
           </div>
           <button
@@ -109,15 +126,84 @@ function ActivityDrawer({ adminId, adminName, onClose }: { adminId: string; admi
                   borderRadius: '2rem', fontSize: '0.68rem', fontWeight: '800',
                   padding: '0.1rem 0.45rem',
                 }}>
-                  {t === 'jobs' ? data.jobs.length : data.companies.length}
+                  {t === 'jobs' ? filteredData.jobs.length : filteredData.companies.length}
                 </span>
               )}
             </button>
           ))}
         </div>
 
-        {/* Content */}
-        <div style={{ flex: 1, padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        {/* Date Filter Panel */}
+        <div style={{
+          background: 'var(--bg-2)',
+          borderBottom: '1px solid var(--border)',
+          padding: '1rem 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-3)', fontWeight: '600' }}>Filter Date:</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>From</span>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              style={{
+                background: 'var(--bg-3)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                padding: '0.35rem 0.65rem',
+                fontSize: '0.8rem',
+                color: 'var(--text)',
+                outline: 'none',
+                colorScheme: 'dark',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>To</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              style={{
+                background: 'var(--bg-3)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                padding: '0.35rem 0.65rem',
+                fontSize: '0.8rem',
+                color: 'var(--text)',
+                outline: 'none',
+                colorScheme: 'dark',
+              }}
+            />
+          </div>
+          {(dateFrom || dateTo) && (
+            <button
+              onClick={() => { setDateFrom(''); setDateTo(''); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--danger)',
+                fontSize: '0.78rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+              }}
+            >
+              <X size={12} /> Clear dates
+            </button>
+          )}
+        </div>
+
+        {/* Content - Dedicated Scrollable List Area */}
+        <div style={{ flex: 1, padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', overflowY: 'auto' }}>
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '3rem', color: 'var(--text-3)' }}>
               <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
@@ -125,12 +211,12 @@ function ActivityDrawer({ adminId, adminName, onClose }: { adminId: string; admi
           ) : !data ? (
             <p style={{ color: 'var(--danger)', textAlign: 'center', padding: '2rem' }}>Failed to load activity.</p>
           ) : tab === 'jobs' ? (
-            data.jobs.length === 0 ? (
+            filteredData.jobs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-3)' }}>
                 <Briefcase size={36} style={{ opacity: 0.25, marginBottom: '0.75rem' }} />
-                <p style={{ margin: 0, fontSize: '0.88rem' }}>No jobs created yet</p>
+                <p style={{ margin: 0, fontSize: '0.88rem' }}>No matching jobs found</p>
               </div>
-            ) : data.jobs.map(job => (
+            ) : filteredData.jobs.map(job => (
               <div key={job.id} style={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
@@ -182,12 +268,12 @@ function ActivityDrawer({ adminId, adminName, onClose }: { adminId: string; admi
               </div>
             ))
           ) : (
-            data.companies.length === 0 ? (
+            filteredData.companies.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-3)' }}>
                 <Building2 size={36} style={{ opacity: 0.25, marginBottom: '0.75rem' }} />
-                <p style={{ margin: 0, fontSize: '0.88rem' }}>No companies created yet</p>
+                <p style={{ margin: 0, fontSize: '0.88rem' }}>No matching companies found</p>
               </div>
-            ) : data.companies.map(company => (
+            ) : filteredData.companies.map(company => (
               <div key={company.id} style={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
@@ -249,7 +335,7 @@ export function AdminTeamManager({ initialAdmins }: { initialAdmins: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [activityAdmin, setActivityAdmin] = useState<{ id: string; name: string } | null>(null);
+  const [activityAdmin, setActivityAdmin] = useState<{ id: string; name: string; createdAt?: string } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -405,7 +491,7 @@ export function AdminTeamManager({ initialAdmins }: { initialAdmins: any[] }) {
                   {a.role !== 'SUPERADMIN' && (
                     <button
                       className="btn btn-outline btn-sm"
-                      onClick={() => setActivityAdmin({ id: a.id, name: a.name || a.email })}
+                      onClick={() => setActivityAdmin({ id: a.id, name: a.name || a.email, createdAt: a.createdAt })}
                       style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                     >
                       <Activity size={12} /> Activity
@@ -436,6 +522,7 @@ export function AdminTeamManager({ initialAdmins }: { initialAdmins: any[] }) {
         <ActivityDrawer
           adminId={activityAdmin.id}
           adminName={activityAdmin.name}
+          adminCreatedAt={activityAdmin.createdAt}
           onClose={() => setActivityAdmin(null)}
         />
       )}

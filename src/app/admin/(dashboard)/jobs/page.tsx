@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import { createPortal } from 'react-dom';
-import { Briefcase, Plus, Search, MapPin, IndianRupee, Clock, X, Loader2, Building2, ExternalLink, ChevronDown, Filter, Info, Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, RotateCcw, RotateCw, Trash2 } from 'lucide-react';
+import { Briefcase, Plus, Search, MapPin, IndianRupee, Clock, X, Loader2, Building2, ExternalLink, ChevronDown, Filter, Info, Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, RotateCcw, RotateCw, Trash2, Edit2 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -72,6 +73,9 @@ const Tiptap = ({ value, onChange, placeholder }: { value: string, onChange: (co
 };
 
 export default function AdminJobsPage() {
+  const { data: session } = useSession();
+  const isSuperAdmin = (session?.user as any)?.role === 'SUPERADMIN';
+
   const [jobs, setJobs] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -354,28 +358,45 @@ export default function AdminJobsPage() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div 
-                onClick={() => handleToggleStatus(j.id, j.status)}
-                style={{ 
-                  width: '42px', height: '22px', borderRadius: '20px', 
-                  background: j.status === 'OPEN' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                  border: `1px solid ${j.status === 'OPEN' ? '#10b981' : '#ef4444'}`,
-                  position: 'relative', cursor: 'pointer', transition: 'all 0.3s'
-                }}
-                title={j.status === 'OPEN' ? "Click to Close Job" : "Click to Open Job"}
-              >
-                <div style={{ 
-                  position: 'absolute', top: '2px', left: j.status === 'OPEN' ? '22px' : '2px',
-                  width: '16px', height: '16px', borderRadius: '50%',
-                  background: j.status === 'OPEN' ? '#10b981' : '#ef4444',
-                  transition: 'all 0.3s'
-                }} />
-              </div>
+              {isSuperAdmin ? (
+                <div 
+                  onClick={() => handleToggleStatus(j.id, j.status)}
+                  style={{ 
+                    width: '42px', height: '22px', borderRadius: '20px', 
+                    background: j.status === 'OPEN' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                    border: `1px solid ${j.status === 'OPEN' ? '#10b981' : '#ef4444'}`,
+                    position: 'relative', cursor: 'pointer', transition: 'all 0.3s'
+                  }}
+                  title={j.status === 'OPEN' ? "Click to Close Job" : "Click to Open Job"}
+                >
+                  <div style={{ 
+                    position: 'absolute', top: '2px', left: j.status === 'OPEN' ? '22px' : '2px',
+                    width: '16px', height: '16px', borderRadius: '50%',
+                    background: j.status === 'OPEN' ? '#10b981' : '#ef4444',
+                    transition: 'all 0.3s'
+                  }} />
+                </div>
+              ) : (
+                <span style={{ 
+                  fontSize: '0.65rem', 
+                  padding: '3px 10px', 
+                  background: j.status === 'OPEN' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
+                  color: j.status === 'OPEN' ? '#10b981' : '#ef4444', 
+                  borderRadius: '6px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  border: `1px solid ${j.status === 'OPEN' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`
+                }}>
+                  {j.status}
+                </span>
+              )}
             </div>
 
-            <div style={{ textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <button onClick={() => handleOpenEdit(j)} className="btn btn-ghost btn-sm" title="Edit">Edit</button>
-              <button onClick={() => handleDeleteJob(j.id)} className="btn btn-ghost btn-sm" style={{ color: '#ef4444' }} title="Delete"><Trash2 size={16} /></button>
+            <div style={{ textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <button onClick={() => handleOpenEdit(j)} className="btn btn-ghost btn-sm" style={{ padding: '0.4rem' }} title="Edit"><Edit2 size={15} /></button>
+              {isSuperAdmin && (
+                <button onClick={() => handleDeleteJob(j.id)} className="btn btn-ghost btn-sm" style={{ color: '#ef4444', padding: '0.4rem' }} title="Delete"><Trash2 size={15} /></button>
+              )}
             </div>
           </div>
         ))}

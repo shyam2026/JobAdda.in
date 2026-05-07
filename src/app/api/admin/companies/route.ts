@@ -15,7 +15,13 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const where: any = {};
+    if (user?.role === 'SUBADMIN') {
+      where.createdByAdminId = user.id;
+    }
+
     const companies = await (prisma.companyUser as any).findMany({
+      where,
       orderBy: { createdAt: 'desc' }
     });
     return NextResponse.json(companies);

@@ -1,5 +1,6 @@
 /* ─── DESIGN TOKENS ─────────────────────────────────── */
 :root {
+  color-scheme: dark;
   --primary:        #6366f1;
   --primary-light:  #818cf8;
   --primary-dark:   #4f46e5;

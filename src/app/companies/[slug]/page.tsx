@@ -41,7 +41,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     }
   }
 
-  if (!company) {
+  if (!company || company.isActive === false) {
     return notFound();
   }
 

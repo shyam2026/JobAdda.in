@@ -20,17 +20,25 @@ const nextConfig = {
     return []
   },
 
-  // Security headers
+  // Security and Caching headers
   async headers() {
     return [
       {
-        source: '/(.*)',
+        // Apply security headers to all pages, excluding static files, APIs, and next assets
+        source: '/((?!_next|api|static|favicon.ico).*)',
         headers: [
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
         ],
       },
+      {
+        // Enforce revalidation on pages to prevent browsers caching old static HTML pointing to deleted CSS
+        source: '/((?!_next|api|static|.*\\..*).*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+        ],
+      }
     ]
   },
 }

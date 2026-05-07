@@ -23,7 +23,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const inputId = id || Math.random().toString(36).substring(7);
+    const uniqueId = React.useId();
+    const inputId = id || uniqueId;
 
     return (
       <div className={`${styles.wrapper} ${className || ''}`}>

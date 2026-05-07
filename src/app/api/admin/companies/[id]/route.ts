@@ -48,6 +48,18 @@ export async function PATCH(
     if (formData.has("industry")) data.industry = (formData.get("industry") as string) || null;
     if (formData.has("founded")) data.founded = (formData.get("founded") as string) || null;
     if (formData.has("moreDetails")) data.moreDetails = (formData.get("moreDetails") as string) || null;
+    const existing = await (prisma.companyUser as any).findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Company not found" }, { status: 404 });
+    }
+
+    if (formData.has("isActive")) {
+      const nextActive = formData.get("isActive") === "true";
+      if (nextActive !== existing.isActive && user?.role !== 'SUPERADMIN') {
+        return NextResponse.json({ error: "Only Super Admins can change active/inactive status" }, { status: 403 });
+      }
+      data.isActive = nextActive;
+    }
 
     if (password) {
       data.password = await bcrypt.hash(password, 10);
@@ -91,6 +103,10 @@ export async function DELETE(
 
     if (user?.portalType !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (user?.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: "Only Super Admins can delete companies" }, { status: 403 });
     }
 
     await prisma.companyUser.delete({

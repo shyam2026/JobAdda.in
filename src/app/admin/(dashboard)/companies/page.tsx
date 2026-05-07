@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import { createPortal } from 'react-dom';
 import { Building2, Plus, Search, Globe, MapPin, Mail, Loader2, X, CheckCircle, ExternalLink, LayoutGrid, List, Edit2, Trash2, Phone, User, Calendar, Users, Info, Upload, Eye, EyeOff, Bold, Italic, Underline as UnderlineIcon, ListOrdered, RotateCcw, RotateCw } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -67,12 +68,16 @@ const Tiptap = ({ value, onChange, placeholder }: { value: string, onChange: (co
 };
 
 export default function AdminCompaniesPage() {
+  const { data: session } = useSession();
+  const isSuperAdmin = (session?.user as any)?.role === 'SUPERADMIN';
+
   const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [submitting, setSubmitting] = useState(false);
   const [editCompany, setEditCompany] = useState<any>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -99,7 +104,7 @@ export default function AdminCompaniesPage() {
   const [editFormData, setEditFormData] = useState<any>({
     companyName: '', email: '', name: '', contactNo: '',
     website: '', hq: '', bio: '', size: '', type: '', industry: '', founded: '', moreDetails: '',
-    password: '', logo: null
+    password: '', logo: null, isActive: true
   });
 
   const cleanUrl = (url: string) => {
@@ -197,7 +202,8 @@ export default function AdminCompaniesPage() {
       founded: company.founded || '',
       moreDetails: company.moreDetails || '',
       password: '',
-      logo: null
+      logo: null,
+      isActive: company.isActive ?? true
     });
 
     // Check if current type/industry are custom
@@ -232,6 +238,8 @@ export default function AdminCompaniesPage() {
             data.append('type', editOtherType);
           } else if (key === 'industry' && editFormData[key] === 'Other') {
             data.append('industry', editOtherIndustry);
+          } else if (key === 'isActive') {
+            data.append('isActive', String(editFormData.isActive));
           } else {
             data.append(key, editFormData[key]);
           }
@@ -264,10 +272,36 @@ export default function AdminCompaniesPage() {
     }
   };
 
-  const filtered = (Array.isArray(companies) ? companies : []).filter(c =>
-    c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const toggleActiveStatus = async (company: any) => {
+    const nextActive = !company.isActive;
+    try {
+      const data = new FormData();
+      data.append('isActive', String(nextActive));
+      const res = await fetch(`/api/admin/companies/${company.id}`, {
+        method: 'PATCH',
+        body: data
+      });
+      if (res.ok) {
+        fetchCompanies();
+      } else {
+        alert('Failed to update status');
+      }
+    } catch (err) {
+      alert('Failed to update status');
+    }
+  };
+
+  const filtered = (Array.isArray(companies) ? companies : []).filter(c => {
+    const matchesSearch = c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          c.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    if (statusFilter === 'active') {
+      return matchesSearch && c.isActive !== false;
+    }
+    if (statusFilter === 'inactive') {
+      return matchesSearch && c.isActive === false;
+    }
+    return matchesSearch;
+  });
 
   if (loading) return (
     <div className="flex-center" style={{ height: '60vh' }}>
@@ -305,14 +339,47 @@ export default function AdminCompaniesPage() {
         </div>
       </div>
 
-      <div style={{ position: 'relative', marginBottom: '2rem' }}>
-        <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-        <input
-          placeholder="Search by company name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ paddingLeft: '3.25rem', height: '52px', borderRadius: '14px' }}
-        />
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
+          <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
+          <input
+            placeholder="Search by company name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ paddingLeft: '3.25rem', height: '52px', borderRadius: '14px', width: '100%' }}
+          />
+        </div>
+        
+        <div style={{ display: 'flex', background: 'var(--bg-2)', padding: '4px', borderRadius: '14px', border: '1px solid var(--border)', height: '52px', alignItems: 'center' }}>
+          {[
+            { value: 'all', label: 'All Companies' },
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+          ].map((tab) => {
+            const active = statusFilter === tab.value;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value as any)}
+                style={{
+                  height: '100%',
+                  padding: '0 1.25rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: active ? 'var(--bg-3)' : 'transparent',
+                  color: active ? 'var(--primary-light)' : 'var(--text-3)',
+                  fontWeight: '700',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {viewMode === 'grid' ? (
@@ -323,7 +390,7 @@ export default function AdminCompaniesPage() {
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary-light)', padding: c.logo ? '4px' : '0', overflow: 'hidden' }}>
                   {c.logo ? <img src={c.logo} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : c.companyName?.[0]}
                 </div>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <h4 style={{ margin: 0, fontSize: '1.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.companyName}</h4>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <Mail size={12} /> {c.email}
@@ -350,9 +417,55 @@ export default function AdminCompaniesPage() {
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: '700' }}>ID: {c.id}</span>
                   <span style={{ fontSize: '0.65rem', color: 'var(--primary-light)', fontWeight: '600' }}>Slug: {c.slug}</span>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  {isSuperAdmin ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleActiveStatus(c)}
+                      style={{
+                        position: 'relative',
+                        width: '32px',
+                        height: '18px',
+                        borderRadius: '9px',
+                        background: c.isActive ? '#10b981' : '#ef4444',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      title={c.isActive ? "Deactivate Company" : "Activate Company"}
+                    >
+                      <div style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        background: 'white',
+                        position: 'absolute',
+                        left: c.isActive ? '18px' : '4px',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: '0 1.5px 3px rgba(0,0,0,0.2)'
+                      }} />
+                    </button>
+                  ) : (
+                    <span style={{ 
+                      fontSize: '0.65rem', 
+                      padding: '2px 8px', 
+                      background: c.isActive ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
+                      color: c.isActive ? '#10b981' : '#ef4444', 
+                      borderRadius: '6px',
+                      fontWeight: '700',
+                      textTransform: 'uppercase',
+                      border: `1px solid ${c.isActive ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`
+                    }}>
+                      {c.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  )}
                   <button onClick={() => handleOpenEdit(c)} className="btn btn-ghost btn-sm" style={{ padding: '0.4rem' }} title="Edit"><Edit2 size={14} /></button>
-                  <button onClick={() => handleDeleteCompany(c.id)} className="btn btn-ghost btn-sm text-danger" style={{ padding: '0.4rem' }} title="Delete"><Trash2 size={14} /></button>
+                  {isSuperAdmin && (
+                    <button onClick={() => handleDeleteCompany(c.id)} className="btn btn-ghost btn-sm text-danger" style={{ padding: '0.4rem' }} title="Delete"><Trash2 size={14} /></button>
+                  )}
                 </div>
               </div>
             </div>
@@ -367,6 +480,7 @@ export default function AdminCompaniesPage() {
                 <th style={{ textAlign: 'left', padding: '1rem 1.5rem' }}>Industry</th>
                 <th style={{ textAlign: 'left', padding: '1rem 1.5rem' }}>HQ Location</th>
                 <th style={{ textAlign: 'left', padding: '1rem 1.5rem' }}>Email</th>
+                <th style={{ textAlign: 'center', padding: '1rem 1.5rem', width: '120px' }}>Status</th>
                 <th style={{ textAlign: 'right', padding: '1rem 1.5rem' }}>Actions</th>
               </tr>
             </thead>
@@ -387,10 +501,59 @@ export default function AdminCompaniesPage() {
                   </td>
                   <td style={{ padding: '1rem 1.5rem', color: 'var(--text-3)', fontSize: '0.9rem' }}>{c.hq || '---'}</td>
                   <td style={{ padding: '1rem 1.5rem', color: 'var(--text-3)', fontSize: '0.9rem' }}>{c.email}</td>
+                  <td style={{ padding: '1rem 1.5rem', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      {isSuperAdmin ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleActiveStatus(c)}
+                          style={{
+                            position: 'relative',
+                            width: '38px',
+                            height: '20px',
+                            borderRadius: '10px',
+                            background: c.isActive ? '#10b981' : '#ef4444',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            padding: 0,
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <div style={{
+                            width: '14px',
+                            height: '14px',
+                            borderRadius: '50%',
+                            background: 'white',
+                            position: 'absolute',
+                            left: c.isActive ? '20px' : '4px',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                          }} />
+                        </button>
+                      ) : (
+                        <span style={{ 
+                          fontSize: '0.65rem', 
+                          padding: '3px 10px', 
+                          background: c.isActive ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
+                          color: c.isActive ? '#10b981' : '#ef4444', 
+                          borderRadius: '6px',
+                          fontWeight: '700',
+                          textTransform: 'uppercase',
+                          border: `1px solid ${c.isActive ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`
+                        }}>
+                          {c.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                       <button onClick={() => handleOpenEdit(c)} className="btn btn-ghost btn-sm"><Edit2 size={14} /> Edit</button>
-                      <button onClick={() => handleDeleteCompany(c.id)} className="btn btn-ghost btn-sm text-danger"><Trash2 size={14} /></button>
+                      {isSuperAdmin && (
+                        <button onClick={() => handleDeleteCompany(c.id)} className="btn btn-ghost btn-sm text-danger"><Trash2 size={14} /></button>
+                      )}
                     </div>
                   </td>
                 </tr>

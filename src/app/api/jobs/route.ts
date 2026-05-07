@@ -28,7 +28,12 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '12', 10);
 
-    const where: any = { status: 'OPEN' };
+    const where: any = {
+      status: 'OPEN',
+      company: {
+        isActive: true
+      }
+    };
 
     if (q) where.OR = [{ title: { contains: q } }, { description: { contains: q } }, { location: { contains: q } }];
     if (location) where.location = { contains: location };

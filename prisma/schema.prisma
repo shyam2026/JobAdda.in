@@ -316,6 +316,7 @@ model CompanyUser {
   industry         String?
   website          String?
   createdByAdminId String?
+  isActive         Boolean  @default(true)
   jobs             Job[]    @relation("CompanyUserJobs")
 }
 
