@@ -50,7 +50,7 @@ export default async function CompanyApplicantsPage() {
                 </td>
               </tr>
             ) : (
-              applications.map(app => (
+              applications.map((app: any) => (
                 <tr key={app.id} style={{ borderBottom: '1px solid #334155' }}>
                   <td style={{ padding: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

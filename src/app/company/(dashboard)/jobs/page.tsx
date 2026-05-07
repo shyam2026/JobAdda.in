@@ -22,8 +22,8 @@ export default async function CompanyJobsPage() {
     }
   });
 
-  const openCount = jobs.filter(j => j.status === 'OPEN').length;
-  const totalApplicants = jobs.reduce((sum, j) => sum + (j._count?.applications || 0), 0);
+  const openCount = jobs.filter((j: any) => j.status === 'OPEN').length;
+  const totalApplicants = jobs.reduce((sum: number, j: any) => sum + (j._count?.applications || 0), 0);
 
   return (
     <div className="company-page anim-fade-up">
@@ -82,7 +82,7 @@ export default async function CompanyJobsPage() {
                 </td>
               </tr>
             ) : (
-              jobs.map(job => (
+              jobs.map((job: any) => (
                 <tr key={job.id} style={{ borderBottom: '1px solid #334155' }}>
                   <td style={{ padding: '1rem' }}>
                     <div style={{ fontWeight: '700', color: '#f8fafc' }}>{job.title}</div>

@@ -33,7 +33,7 @@ export async function GET() {
 
     // Count occurrences of titles
     const counts: Record<string, number> = {};
-    recentJobs.forEach(job => {
+    recentJobs.forEach((job: any) => {
       const title = job.title.trim();
       counts[title] = (counts[title] || 0) + 1;
     });

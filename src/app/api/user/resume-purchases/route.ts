@@ -41,7 +41,7 @@ export async function GET() {
 
     // Return with expiresAt so the client can show countdown
     return NextResponse.json(
-      purchases.map(p => ({
+      purchases.map((p: any) => ({
         templateId: p.templateId,
         expiresAt: new Date(p.createdAt.getTime() + WINDOW_MS).toISOString(),
       }))

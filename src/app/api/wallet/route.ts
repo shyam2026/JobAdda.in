@@ -39,13 +39,13 @@ export async function GET() {
       where: {
         userId: userSession.id,
         type: 'REFERRAL_BONUS',
-        triggeredById: { in: referredUsersRaw.map(u => u.id) }
+        triggeredById: { in: referredUsersRaw.map((u: any) => u.id) }
       },
       select: { amount: true, triggeredById: true }
     });
 
-    const referredUsers = referredUsersRaw.map(u => {
-      const tx = (referralTransactions as any[]).find(t => t.triggeredById === u.id);
+    const referredUsers = referredUsersRaw.map((u: any) => {
+      const tx = (referralTransactions as any[]).find((t: any) => t.triggeredById === u.id);
       return {
         ...u,
         earnedAmount: tx ? tx.amount : null

@@ -29,8 +29,8 @@ export default async function CompanyDashboardPage() {
   });
 
   const totalApplicants = applications.length;
-  const interviewingCount = applications.filter(a => a.status === 'REVIEWING' || a.status === 'INTERVIEW').length;
-  const hiredCount = applications.filter(a => a.status === 'HIRED').length;
+  const interviewingCount = applications.filter((a: any) => a.status === 'REVIEWING' || a.status === 'INTERVIEW').length;
+  const hiredCount = applications.filter((a: any) => a.status === 'HIRED').length;
 
   const stats = [
     { label: 'Active Jobs', value: companyUser._count.jobs, icon: Briefcase, color: '#38bdf8' },

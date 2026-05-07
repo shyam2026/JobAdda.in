@@ -28,7 +28,7 @@ export async function GET() {
     ]);
 
     const notifications = [
-      ...applications.map((app) => ({
+      ...applications.map((app: any) => ({
         id: `app-${app.id}`,
         type: 'application',
         title: statusTitle(app.status),
@@ -38,7 +38,7 @@ export async function GET() {
         color: statusColor(app.status),
         icon: 'Briefcase',
       })),
-      ...transactions.map((tx) => ({
+      ...transactions.map((tx: any) => ({
         id: `tx-${tx.id}`,
         type: 'referral',
         title: 'Referral Bonus Credited',

@@ -60,7 +60,7 @@ export async function GET() {
 
     // Score jobs based on skill matches
     const recommendedJobs = allJobs
-      .map(job => {
+      .map((job: any) => {
         const jobRequirements = (job.requirements || '').toLowerCase();
         const jobTitle = job.title.toLowerCase();
         
@@ -73,7 +73,7 @@ export async function GET() {
         
         return { ...job, matchCount };
       })
-      .sort((a, b) => b.matchCount - a.matchCount || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a: any, b: any) => b.matchCount - a.matchCount || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 6);
 
     // 4. Other Stats
@@ -96,7 +96,7 @@ export async function GET() {
       profileScore,
       totalReferrals: totalReferralsCount,
       referralCode: user.referralCode,
-      recommendedJobs: recommendedJobs.map(j => ({
+      recommendedJobs: recommendedJobs.map((j: any) => ({
         id: j.id,
         title: j.title,
         company: j.company.name,
