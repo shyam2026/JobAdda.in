@@ -206,7 +206,10 @@ export default async function CompaniesPage({
                   </div>
 
                   <p style={{ fontSize: '0.92rem', color: '#94a3b8', lineHeight: '1.6', marginBottom: '2rem', flex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {c.bio || "Leading the industry with innovation and a people-first culture. Explore our mission and career opportunities."}
+                    {c.bio 
+                      ? c.bio.replace(/<[^>]*>/g, '') 
+                      : "Leading the industry with innovation and a people-first culture. Explore our mission and career opportunities."
+                    }
                   </p>
 
                   {/* Metadata Row */}
