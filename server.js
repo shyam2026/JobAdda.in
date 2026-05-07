@@ -4,7 +4,7 @@ const next = require('next');
 
 // Hostinger's Node.js environment passes the port via process.env.PORT
 const port = process.env.PORT || 3000;
-const dev = process.env.NODE_ENV !== 'production';
+const dev = process.env.NODE_ENV === 'development'; // Default to production to prevent Hostinger memory overflow
 
 const app = next({ dev, port });
 const handle = app.getRequestHandler();

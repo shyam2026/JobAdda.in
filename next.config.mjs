@@ -12,8 +12,7 @@ const nextConfig = {
   compress: true,
 
   // For Hostinger Node.js deployment (standalone output)
-  // Uncomment the line below when deploying to production:
-  // output: 'standalone',
+  output: 'standalone',
 
   // Redirect HTTP to HTTPS in production
   async redirects() {
