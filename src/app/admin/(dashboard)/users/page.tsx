@@ -38,10 +38,10 @@ export default async function AdminUsersPage() {
   });
 
   // Compute totalSpent per user from purchases
-  const enriched = users.map(u => ({
+  const enriched = users.map((u: any) => ({
     ...u,
     createdAt: u.createdAt.toISOString(),
-    totalSpent: u.purchases.reduce((sum, p) => sum + p.amount, 0),
+    totalSpent: u.purchases.reduce((sum: number, p: any) => sum + p.amount, 0),
     purchases: undefined, // strip raw purchases from client payload
   }));
 
