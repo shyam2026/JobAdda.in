@@ -80,18 +80,20 @@ export function CompanyTabs({ bio, moreDetails, jobs }: CompanyTabsProps) {
             {/* About */}
             <section>
               <h3 style={{ marginBottom: '1rem' }}>About the Company</h3>
-              <div style={{ color: 'var(--text-2)', lineHeight: '1.8', whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
-                {bio || 'No description provided yet.'}
-              </div>
+              <div 
+                style={{ color: 'var(--text-2)', lineHeight: '1.8', fontSize: '0.95rem' }}
+                dangerouslySetInnerHTML={{ __html: bio || 'No description provided yet.' }}
+              />
             </section>
 
             {/* More Details */}
             {moreDetails && (
               <section style={{ marginBottom: '2rem' }}>
                 <h3 style={{ marginBottom: '1rem' }}>Additional Information</h3>
-                <div style={{ color: 'var(--text-2)', lineHeight: '1.8', whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
-                  {moreDetails}
-                </div>
+                <div 
+                  style={{ color: 'var(--text-2)', lineHeight: '1.8', fontSize: '0.95rem' }}
+                  dangerouslySetInnerHTML={{ __html: moreDetails }}
+                />
               </section>
             )}
           </div>

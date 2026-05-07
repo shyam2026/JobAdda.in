@@ -75,15 +75,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        {/* Prevent flash of unstyled content: force dark background before any CSS loads */}
+        {/* Prevent flash of unstyled content */}
         <meta name="color-scheme" content="dark" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  document.documentElement.style.backgroundColor = '#0a0f1e';
-                  document.documentElement.style.color = '#f8fafc';
+                  var el = document.documentElement;
+                  el.style.backgroundColor = '#0a0f1e';
+                  el.style.color = '#f8fafc';
+                  // Hide body until CSS is ready to prevent FOUC
+                  var style = document.createElement('style');
+                  style.id = '__fouc_prevent';
+                  style.textContent = 'body { opacity: 0 !important; }';
+                  document.head.appendChild(style);
+                  // Remove the hiding style once the page is interactive
+                  function removeFOUC() {
+                    var s = document.getElementById('__fouc_prevent');
+                    if (s) {
+                      s.textContent = 'body { opacity: 0; transition: opacity 0.15s ease; }';
+                      requestAnimationFrame(function() {
+                        requestAnimationFrame(function() {
+                          if (s) s.remove();
+                        });
+                      });
+                    }
+                  }
+                  if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', removeFOUC);
+                  } else {
+                    removeFOUC();
+                  }
                 } catch(e) {}
               })();
             `,

@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
       if (res?.error) {
         setError('Invalid admin credentials. Access denied.');
       } else {
-        router.push('/admin/dashboard');
+        window.location.href = '/admin/dashboard';
       }
     } catch (err) {
       setError('An unexpected error occurred.');
