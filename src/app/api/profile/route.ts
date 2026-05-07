@@ -21,7 +21,28 @@ export async function GET() {
       } as any
     });
 
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!user) {
+      const company = await (prisma as any).companyUser.findUnique({
+        where: { id: userSession.id }
+      });
+      if (company) {
+        return NextResponse.json({
+          name: company.name || company.companyName || '',
+          email: company.email || '',
+          bio: company.bio || '',
+          phone: company.contactNo || '',
+          city: company.hq || '',
+          profileImage: company.logo || '',
+          skills: [],
+          education: [],
+          experience: [],
+          certificates: [],
+          projects: [],
+          completion: 100
+        });
+      }
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     const u = user as any;
 
