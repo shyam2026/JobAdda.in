@@ -87,15 +87,55 @@ export function CompanyTabs({ bio, moreDetails, jobs }: CompanyTabsProps) {
             </section>
 
             {/* More Details */}
-            {moreDetails && (
-              <section style={{ marginBottom: '2rem' }}>
-                <h3 style={{ marginBottom: '1rem' }}>Additional Information</h3>
-                <div 
-                  style={{ color: 'var(--text-2)', lineHeight: '1.8', fontSize: '0.95rem' }}
-                  dangerouslySetInnerHTML={{ __html: moreDetails }}
-                />
-              </section>
-            )}
+            {moreDetails && (() => {
+              let parsedDetails = null;
+              try {
+                const trimmed = moreDetails.trim();
+                if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                  parsedDetails = JSON.parse(trimmed);
+                  if (!Array.isArray(parsedDetails)) parsedDetails = null;
+                }
+              } catch (e) {
+                parsedDetails = null;
+              }
+
+              return (
+                <section style={{ marginBottom: '2rem' }}>
+                  <h3 style={{ marginBottom: '1.25rem' }}>Additional Information</h3>
+                  {parsedDetails ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
+                      {parsedDetails.map((detail: any, idx: number) => (
+                        <div 
+                          key={idx} 
+                          className="card" 
+                          style={{ 
+                            padding: '1rem 1.25rem', 
+                            background: 'var(--surface)', 
+                            border: '1px solid var(--border)', 
+                            borderRadius: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.35rem'
+                          }}
+                        >
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {detail.title}
+                          </span>
+                          <span style={{ fontSize: '0.95rem', color: 'var(--text-2)', fontWeight: '600' }}>
+                            {detail.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div 
+                      style={{ color: 'var(--text-2)', lineHeight: '1.8', fontSize: '0.95rem' }}
+                      dangerouslySetInnerHTML={{ __html: moreDetails }}
+                    />
+                  )}
+                </section>
+              );
+            })()}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
