@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { code } = await req.json();
+    const { code, target } = await req.json();
     if (!code || typeof code !== 'string') {
       return NextResponse.json({ error: 'Coupon code is required' }, { status: 400 });
     }
@@ -20,6 +20,10 @@ export async function POST(req: Request) {
 
     if (!coupon) {
       return NextResponse.json({ error: 'Invalid coupon code' }, { status: 404 });
+    }
+
+    if (coupon.target !== 'ALL' && target && coupon.target !== target) {
+      return NextResponse.json({ error: `This coupon is only valid for ${coupon.target.toLowerCase()} purchases` }, { status: 400 });
     }
 
     if (!coupon.isActive) {

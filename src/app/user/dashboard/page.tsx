@@ -54,9 +54,11 @@ function timeAgo(date: string) {
 
 export default function StudentDashboard() {
   const { data: session } = useSession();
+  const [isPremium, setIsPremium] = useState(false);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     fetch('/api/user/dashboard')
@@ -65,6 +67,13 @@ export default function StudentDashboard() {
         if (!dash.error) setData(dash);
         setLoading(false);
       }).catch(() => setLoading(false));
+    // Fetch real-time premium status from DB (not stale session)
+    fetch('/api/profile').then(r => r.json()).then(p => {
+      if (p && !p.error) {
+        setIsPremium(p.isPremium || false);
+        setProfile(p);
+      }
+    }).catch(() => {});
   }, []);
 
   const handleCopy = () => {
@@ -94,30 +103,126 @@ export default function StudentDashboard() {
 
   return (
     <div className="anim-fade-up">
-      <header style={{ marginBottom: '2rem' }}>
-        <h2 style={{ marginBottom: '0.25rem' }}>Welcome back, {user?.name?.split(' ')[0]}!</h2>
-        <p style={{ color: 'var(--text-3)', margin: 0 }}>Track your career progress and opportunities here.</p>
+      <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h2 style={{ marginBottom: '0.25rem' }}>Welcome back, {user?.name?.split(' ')[0] || 'User'}!</h2>
+          <p style={{ color: 'var(--text-3)', margin: 0 }}>Track your career progress and opportunities here.</p>
+        </div>
+        {isPremium && (
+          <div style={{ 
+            background: 'rgba(251,191,36,0.12)', 
+            color: '#fbbf24', 
+            fontSize: '0.75rem', 
+            padding: '0.5rem 1rem', 
+            borderRadius: '12px', 
+            border: '1px solid rgba(251,191,36,0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            fontWeight: 900,
+            letterSpacing: '0.05em',
+            boxShadow: '0 4px 15px rgba(251,191,36,0.1)',
+            height: 'fit-content'
+          }}>
+            <Star size={14} fill="#fbbf24" /> PREMIUM MEMBER
+          </div>
+        )}
       </header>
 
+
+
+
+
       {/* Stats Grid */}
-      <div className="grid-4" style={{ marginBottom: '2.5rem' }}>
+      <div className="grid-4 stats-grid-mobile" style={{ marginBottom: '2.5rem' }}>
         {stats.map((s, i) => (
-          <div key={i} className="card card-p-sm" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: `${s.color}15`, color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div key={i} className="card card-p-sm stats-card-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stats-icon-mobile" style={{ width: '44px', height: '44px', borderRadius: '12px', background: `${s.color}15`, color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <s.icon size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '1.25rem', fontWeight: '800', lineHeight: 1.2 }}>{s.value}</div>
+              <div className="stats-val-mobile" style={{ fontSize: '1.25rem', fontWeight: '800', lineHeight: 1.2 }}>{s.value}</div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', fontWeight: '500' }}>{s.label}</div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Premium Section */}
+      {isPremium ? (
+        /* Permanent Premium Member Card */
+        <div className="card anim-fade-up" style={{ 
+          background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.03))', 
+          border: '1px solid rgba(251,191,36,0.3)', 
+          padding: '1.75rem 2rem', 
+          marginBottom: '2.5rem',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '2rem',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.1 }}>
+            <Star size={140} fill="#fbbf24" color="#fbbf24" />
+          </div>
+          <div style={{ background: 'rgba(251,191,36,0.15)', padding: '1.25rem', borderRadius: '20px', color: '#fbbf24', boxShadow: '0 8px 25px rgba(251,191,36,0.15)' }}>
+            <Star size={36} fill="#fbbf24" />
+          </div>
+          <div style={{ flex: 1, minWidth: '260px', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 900, color: '#fbbf24' }}>Premium Benefits Active</h3>
+              <span style={{ padding: '0.25rem 0.6rem', background: '#10b981', color: '#fff', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 }}>PRO</span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.92rem', color: 'var(--text-2)', lineHeight: 1.6 }}>
+              Your membership is valid until <strong>{profile?.premiumUntil ? new Date(profile.premiumUntil).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}</strong>.
+              Enjoy unlimited HR chat, premium resume templates, and priority application status.
+            </p>
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+             <Link href="/user/premium" className="btn btn-sm" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', padding: '0.75rem 1.5rem', fontWeight: 800 }}>
+               View Benefits
+             </Link>
+          </div>
+        </div>
+      ) : (
+        /* Premium Upgrade CTA */
+        <div className="card anim-fade-up premium-card-mobile" style={{ 
+          background: 'linear-gradient(135deg, #1e293b, #0f172a)', 
+          border: '1px solid #fbbf24', 
+          padding: '1.5rem 2rem', 
+          marginBottom: '2.5rem', 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          gap: '1.5rem',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.1 }}>
+            <Star size={120} fill="#fbbf24" color="#fbbf24" />
+          </div>
+          <div style={{ flex: 1, minWidth: '280px', position: 'relative', zIndex: 1 }}>
+            <h3 style={{ color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem', fontSize: '1.25rem' }}>
+              <Star size={20} fill="#fbbf24" /> Unlock Premium Access
+            </h3>
+            <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>
+              Direct HR Chat · Premium Badge ⭐ · Priority Support · 1-Year Access
+            </p>
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+             <Link href="/user/premium" className="btn premium-btn-mobile" style={{ background: '#fbbf24', color: '#000', fontWeight: 800, padding: '0.8rem 2rem', border: 'none', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 8px 20px rgba(251,191,36,0.2)' }}>
+               Upgrade Now — ₹99 <ChevronRight size={18} />
+             </Link>
+          </div>
+        </div>
+      )}
+
       <div className="grid-2" style={{ gap: '1.5rem', alignItems: 'start' }}>
         {/* Recent Applications */}
         <div className="card card-p">
-          <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
+          <div className="flex-between header-mobile-flex" style={{ marginBottom: '1.5rem' }}>
             <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><TrendingUp size={18} /> Recent Applications</h4>
             <Link href="/user/applied-jobs" className="btn btn-ghost btn-sm">View All</Link>
           </div>
@@ -172,7 +277,7 @@ export default function StudentDashboard() {
             </button>
           </div>
 
-          <div className="grid-2" style={{ gap: '0.75rem', marginTop: '1.5rem' }}>
+          <div className="grid-2 grid-2-mobile" style={{ gap: '0.75rem', marginTop: '1.5rem' }}>
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '12px', textAlign: 'center' }}>
               <div style={{ fontSize: '1.1rem', fontWeight: '800' }}>{data?.referralStats.joined || 0}</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-3)' }}>Joined</div>
@@ -187,11 +292,11 @@ export default function StudentDashboard() {
 
       {/* Recommended Jobs - 2x3 Grid */}
       <div style={{ marginTop: '2.5rem' }}>
-        <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
+        <div className="flex-between header-mobile-flex" style={{ marginBottom: '1.5rem' }}>
           <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target size={18} style={{ color: 'var(--primary-light)' }} /> Recommended for you</h4>
           <Link href="/jobs" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Explore <ChevronRight size={14} /></Link>
         </div>
-        <div className="grid-3">
+        <div className="grid-3 job-grid-mobile">
           {data?.recommendedJobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`} className="card card-p-sm job-hover-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
               {job.matchCount > 0 && (
@@ -221,8 +326,60 @@ export default function StudentDashboard() {
         }
         .job-hover-card:hover {
           transform: translateY(-4px);
-          border-color: var(--primary-light);
+          border-color: var(--border-active);
           background: rgba(255,255,255,0.04);
+        }
+
+        @media (max-width: 768px) {
+          .stats-grid-mobile {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 0.6rem !important;
+          }
+          .stats-card-mobile {
+            padding: 0.75rem !important;
+            gap: 0.6rem !important;
+          }
+          .grid-2-mobile {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .stats-icon-mobile {
+            width: 36px !important;
+            height: 36px !important;
+          }
+          .stats-val-mobile {
+            font-size: 1.1rem !important;
+          }
+          
+          .header-mobile-flex {
+            flex-direction: row !important;
+            text-align: left !important;
+            justify-content: space-between !important;
+            margin-bottom: 1rem !important;
+          }
+          .header-mobile-flex h4 {
+            font-size: 1rem !important;
+          }
+          
+          .premium-card-mobile {
+            padding: 1.25rem !important;
+            text-align: center;
+            justify-content: center !important;
+          }
+          .premium-card-mobile > div {
+            min-width: 100% !important;
+          }
+          .premium-card-mobile h3 {
+            justify-content: center !important;
+            font-size: 1.15rem !important;
+          }
+          .premium-btn-mobile {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+
+          .job-grid-mobile {
+            gap: 0.75rem !important;
+          }
         }
       `}</style>
     </div>

@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Download, Lock, Eye, EyeOff, Clock, AlertTriangle, ChevronDown, ChevronUp, CheckCircle, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Download, Lock, Eye, EyeOff, Clock, AlertTriangle, ChevronDown, ChevronUp, CheckCircle, X, Star, Zap } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import Template1 from './Template1';
@@ -30,6 +31,7 @@ const SECTIONS = [
 type WindowMap = Record<string, string>;
 
 export default function ResumeBuilderPage() {
+  const { data: session } = useSession();
   const [profile, setProfile]       = useState<any>(null);
   const [selected, setSelected]     = useState('TPL_1');
   const [windows, setWindows]       = useState<WindowMap>({});
@@ -49,6 +51,7 @@ export default function ResumeBuilderPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<{ type: string, discount: number | null, code: string } | null>(null);
   const [couponError, setCouponError] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [claiming, setClaiming] = useState(false);
   const resumeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,9 +103,47 @@ export default function ResumeBuilderPage() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/profile').then(r => r.json()).then(setProfile);
+    fetch('/api/profile')
+      .then(r => r.json())
+      .then(data => {
+        if (data && !data.error) {
+          // Merge session values as fallback for empty DB fields
+          const s = session?.user as any;
+          setProfile({
+            ...data,
+            name: data.name || s?.name || '',
+            email: data.email || s?.email || '',
+          });
+        } else {
+          // Fallback: build minimal profile from session
+          const s = session?.user as any;
+          setProfile({
+            name: s?.name || '',
+            email: s?.email || '',
+            bio: '', phone: '', city: '',
+            linkedin: '', github: '', website: '', profileImage: '',
+            skills: [], education: [], experience: [], certificates: [], projects: [],
+            completion: 0,
+            isPremium: s?.isPremium || false,
+            premiumResumeDownloads: 0,
+          });
+        }
+      })
+      .catch(() => {
+        const s = session?.user as any;
+        setProfile({
+          name: s?.name || '',
+          email: s?.email || '',
+          bio: '', phone: '', city: '',
+          linkedin: '', github: '', website: '', profileImage: '',
+          skills: [], education: [], experience: [], certificates: [], projects: [],
+          completion: 0,
+          isPremium: s?.isPremium || false,
+          premiumResumeDownloads: 0,
+        });
+      });
     setTimeout(loadPurchases, 0);
-  }, [loadPurchases]);
+  }, [loadPurchases, session]);
 
   useEffect(() => {
     if (checkout !== 'TPL_1') return;
@@ -160,7 +201,7 @@ export default function ResumeBuilderPage() {
       const res = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: couponCode }),
+        body: JSON.stringify({ code: couponCode, target: 'RESUME' }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -175,6 +216,12 @@ export default function ResumeBuilderPage() {
     } finally {
       setApplyingCoupon(false);
     }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
   };
 
   const getFinalPrice = () => {
@@ -277,7 +324,32 @@ export default function ResumeBuilderPage() {
       rzp.open();
     } catch (e) {
       console.error('PAYMENT_INIT_ERROR:', e);
-      alert('Failed to initialize payment');
+      setNotif({ type: 'error', msg: 'Failed to initialize payment' });
+    }
+  };
+  
+  const handlePremiumClaim = async () => {
+    if (!profile?.isPremium || profile.premiumResumeDownloads >= 5) return;
+    setClaiming(true);
+    try {
+      const res = await fetch('/api/user/premium-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId: selected }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNotif({ type: 'success', msg: data.message });
+        setProfile((prev: any) => ({ ...prev, premiumResumeDownloads: (prev.premiumResumeDownloads || 0) + 1 }));
+        await loadPurchases();
+        setCheckout(null);
+      } else {
+        setNotif({ type: 'error', msg: data.error || 'Claim failed' });
+      }
+    } catch (e) {
+      setNotif({ type: 'error', msg: 'Something went wrong' });
+    } finally {
+      setClaiming(false);
     }
   };
 
@@ -505,11 +577,29 @@ export default function ResumeBuilderPage() {
         const finalPrice = getFinalPrice();
         return (
           <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: mobile ? 'flex-end' : 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: mobile ? '0' : '1.5rem' }}>
-            <div style={{ width: '100%', maxWidth: mobile ? '100%' : '420px', padding: '2rem', borderRadius: mobile ? '24px 24px 0 0' : '24px', background: '#1e293b', border: '1px solid #334155', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)', color: '#f8fafc' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 0 0.35rem', letterSpacing: '-0.02em', color: '#f8fafc' }}>Unlock Template</h2>
-              <p style={{ color: '#94a3b8', margin: '0 0 1.5rem', fontSize: '0.85rem' }}>
-                You&apos;ll have <strong style={{ color: '#f8fafc' }}>5 minutes</strong> to download after payment.
-              </p>
+            <div style={{ 
+              width: '100%', 
+              maxWidth: mobile ? '100%' : '440px', 
+              maxHeight: mobile ? '90vh' : '85vh',
+              overflowY: 'auto',
+              padding: '2rem', 
+              borderRadius: mobile ? '24px 24px 0 0' : '24px', 
+              background: '#1e293b', 
+              border: '1px solid #334155', 
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)', 
+              color: '#f8fafc',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 0 0.35rem', letterSpacing: '-0.02em', color: '#f8fafc' }}>Unlock Template</h2>
+                  <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.85rem' }}>
+                    You&apos;ll have <strong style={{ color: '#f8fafc' }}>5 minutes</strong> to download after payment.
+                  </p>
+                </div>
+                <button onClick={() => setCheckout(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#94a3b8', padding: '0.5rem', borderRadius: '50%', cursor: 'pointer' }}><X size={18} /></button>
+              </div>
 
               {checkout === 'TPL_1' && offerTimer > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem 1rem', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '12px', marginBottom: '1.25rem' }}>
@@ -518,74 +608,151 @@ export default function ResumeBuilderPage() {
                 </div>
               )}
 
-              {cp.price > 0 && (
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <input
-                      type="text"
-                      placeholder="Enter coupon code"
-                      value={couponCode}
-                      onChange={e => setCouponCode(e.target.value.toUpperCase())}
-                      style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#f8fafc', outline: 'none', textTransform: 'uppercase' }}
-                    />
-                    <button
-                      onClick={handleApplyCoupon}
-                      disabled={applyingCoupon || !couponCode.trim()}
-                      style={{ padding: '0 1.25rem', borderRadius: '10px', background: 'var(--primary)', color: '#fff', fontWeight: 600, border: 'none', cursor: 'pointer', opacity: (applyingCoupon || !couponCode.trim()) ? 0.7 : 1, boxShadow: '0 4px 12px rgba(99,102,241,0.2)' }}
+              {cp.price > 0 && profile?.isPremium && (checkout === 'TPL_2' || checkout === 'TPL_3') && profile?.premiumResumeDownloads < 5 ? (
+                /* Premium View: Focus on Claim */
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.06))', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '20px', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: '-15px', right: '-15px', opacity: 0.15 }}>
+                      <Star size={80} fill="#fbbf24" color="#fbbf24" />
+                    </div>
+                    <h4 style={{ color: '#fbbf24', margin: '0 0 0.5rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 900 }}>
+                      <Zap size={18} fill="#fbbf24" /> Premium Member Reward
+                    </h4>
+                    <p style={{ color: '#cbd5e1', fontSize: '0.82rem', margin: '0 0 1.25rem', lineHeight: 1.5 }}>
+                      Unlock this {cp.label} template for free. You have <strong>{5 - (profile.premiumResumeDownloads || 0)}</strong> claims remaining.
+                    </p>
+                    <button 
+                      onClick={handlePremiumClaim}
+                      disabled={claiming}
+                      style={{ width: '100%', padding: '1rem', borderRadius: '14px', background: '#fbbf24', color: '#000', fontWeight: 900, fontSize: '1rem', border: 'none', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.25)', transition: 'transform 0.2s' }}
+                      onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'}
+                      onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
                     >
-                      {applyingCoupon ? '...' : 'Apply'}
+                      {claiming ? 'Claiming...' : 'Claim for Free'}
                     </button>
                   </div>
-                  {couponError && <p style={{ color: '#ef4444', fontSize: '0.75rem', margin: '0.4rem 0 0' }}>{couponError}</p>}
-                  {appliedCoupon && <p style={{ color: '#10b981', fontSize: '0.75rem', margin: '0.4rem 0 0' }}>Coupon applied successfully!</p>}
+                  
+                  {/* Option to Pay instead of using claim */}
+                  <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                    <button 
+                      onClick={() => {
+                        const el = document.getElementById('payment-section');
+                        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      Or use a coupon/pay instead
+                    </button>
+                  </div>
+
+                  <div id="payment-section" style={{ display: 'none', marginTop: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                      <input
+                        type="text"
+                        placeholder="COUPON"
+                        value={couponCode}
+                        readOnly={!!appliedCoupon}
+                        onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                        style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #334155', background: '#0f172a', color: '#f8fafc', outline: 'none', opacity: appliedCoupon ? 0.6 : 1 }}
+                      />
+                      {appliedCoupon ? (
+                        <button onClick={handleRemoveCoupon} style={{ padding: '0 1.25rem', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontWeight: 700, border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }}>Remove</button>
+                      ) : (
+                        <button onClick={handleApplyCoupon} style={{ padding: '0 1.25rem', borderRadius: '12px', background: 'var(--primary)', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Apply</button>
+                      )}
+                    </div>
+                    {couponError && <p style={{ color: '#ef4444', fontSize: '0.75rem', margin: '-1rem 0 1rem' }}>{couponError}</p>}
+                    {appliedCoupon && <p style={{ color: '#10b981', fontSize: '0.75rem', margin: '-1rem 0 1rem' }}>Coupon applied successfully!</p>}
+                    
+                    <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '14px', padding: '1.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+                        <span>Original Price</span>
+                        <span style={{ textDecoration: 'line-through' }}>₹{cp.origPrice}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                        <span style={{ color: '#94a3b8' }}>Discount</span>
+                        <span style={{ color: '#10b981', fontWeight: 700 }}>-{cp.discount}%</span>
+                      </div>
+                      {appliedCoupon && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                          <span style={{ color: '#94a3b8' }}>Coupon ({appliedCoupon.code})</span>
+                          <span style={{ color: '#10b981', fontWeight: 700 }}>{appliedCoupon.type === 'FREE' ? '-₹' + cp.price : `-${appliedCoupon.discount}%`}</span>
+                        </div>
+                      )}
+                      <div style={{ height: '1px', background: '#334155', margin: '0.75rem 0' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 800 }}>Total</span>
+                        <span style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--primary)' }}>₹{finalPrice}</span>
+                      </div>
+                      <button onClick={handlePurchase} style={{ width: '100%', marginTop: '1rem', padding: '0.8rem', borderRadius: '12px', background: 'var(--primary)', color: '#fff', fontWeight: 800, border: 'none' }}>
+                        Pay ₹{finalPrice}
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              ) : (
+                /* Standard / Free View */
+                <>
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input
+                        type="text"
+                        placeholder="ENTER COUPON CODE"
+                        value={couponCode}
+                        readOnly={!!appliedCoupon}
+                        onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                        style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #334155', background: '#0f172a', color: '#f8fafc', outline: 'none', opacity: appliedCoupon ? 0.6 : 1 }}
+                      />
+                      {appliedCoupon ? (
+                        <button onClick={handleRemoveCoupon} style={{ padding: '0 1.25rem', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontWeight: 700, border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }}>Remove</button>
+                      ) : (
+                        <button onClick={handleApplyCoupon} style={{ padding: '0 1.25rem', borderRadius: '12px', background: 'var(--primary)', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Apply</button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '18px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                      <span>Template Price</span>
+                      <span style={{ textDecoration: 'line-through' }}>₹{cp.origPrice}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem', fontSize: '0.9rem' }}>
+                      <span style={{ color: '#94a3b8' }}>Special Discount</span>
+                      <span style={{ color: '#10b981', fontWeight: 800 }}>-{cp.discount}%</span>
+                    </div>
+                    {appliedCoupon && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem', fontSize: '0.9rem' }}>
+                        <span style={{ color: '#94a3b8' }}>Coupon ({appliedCoupon.code})</span>
+                        <span style={{ color: '#10b981', fontWeight: 800 }}>{appliedCoupon.type === 'FREE' ? '-₹' + cp.price : `-${appliedCoupon.discount}%`}</span>
+                      </div>
+                    )}
+                    <div style={{ height: '1px', background: '#334155', margin: '0.8rem 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 800 }}>Amount to Pay</span>
+                      <span style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)' }}>₹{finalPrice}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                    <Clock size={16} color="var(--primary)" />
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#c7d2fe', lineHeight: 1.4 }}>5-minute window starts immediately after payment.</span>
+                  </div>
+
+                  <button onClick={handlePurchase}
+                    style={{ width: '100%', padding: '1.1rem', borderRadius: '16px', background: 'linear-gradient(135deg,var(--primary),var(--accent))', color: '#fff', fontWeight: 900, fontSize: '1.1rem', border: 'none', cursor: 'pointer', marginBottom: '1rem', boxShadow: '0 8px 25px rgba(99,102,241,0.35)' }}
+                  >
+                    {finalPrice === 0 ? 'Claim Free' : `Pay ₹${finalPrice}`} · Start Timer
+                  </button>
+                </>
               )}
 
-              <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.88rem' }}>Template</span>
-                  <span style={{ fontWeight: 700 }}>{cp.label}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.88rem' }}>Original</span>
-                  <span style={{ fontWeight: 700, textDecoration: 'line-through' }}>₹{cp.origPrice}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: appliedCoupon ? '0.5rem' : '0' }}>
-                  <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.88rem' }}>Discount</span>
-                  <span style={{ fontWeight: 700, color: '#10b981' }}>-{cp.discount}%</span>
-                </div>
-                {appliedCoupon && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.88rem' }}>Coupon ({appliedCoupon.code})</span>
-                    <span style={{ fontWeight: 700, color: '#10b981' }}>
-                      {appliedCoupon.type === 'FREE' ? '-₹' + cp.price : `-${appliedCoupon.discount}%`}
-                    </span>
-                  </div>
-                )}
-                <div style={{ height: '1px', background: '#334155', margin: '0.75rem 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontWeight: 800 }}>Total</span>
-                  <span style={{ fontWeight: 900, fontSize: '1.4rem', color: 'var(--primary)' }}>₹{finalPrice}</span>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 0.9rem', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '10px', marginBottom: '1.5rem' }}>
-                <Clock size={14} color="var(--primary)" />
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#c7d2fe' }}>5-minute window starts immediately after payment.</span>
-              </div>
-
-              <button onClick={handlePurchase}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '1rem', borderRadius: '14px', background: 'linear-gradient(135deg,var(--primary),var(--accent))', color: '#fff', fontWeight: 900, fontSize: '1rem', border: 'none', cursor: 'pointer', marginBottom: '0.75rem', boxShadow: '0 6px 20px rgba(99,102,241,0.3)' }}
-              >
-                {finalPrice === 0 ? '🎉 Claim Free · Start 5-min Timer' : `Pay ₹${finalPrice} · Start 5-min Timer`}
-              </button>
-              <button onClick={() => { setCheckout(null); setAppliedCoupon(null); setCouponCode(''); setCouponError(''); }}
-                style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: '#0f172a', border: '1px solid #334155', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }}
-                onMouseOver={e => e.currentTarget.style.color = '#f8fafc'}
-                onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}
-              >
-                Cancel
-              </button>
+              {!profile?.isPremium && (
+                <button onClick={() => { setCheckout(null); setAppliedCoupon(null); setCouponCode(''); }}
+                  style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'transparent', border: '1px solid #334155', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                >
+                  Close
+                </button>
+              )}
             </div>
           </div>
         );

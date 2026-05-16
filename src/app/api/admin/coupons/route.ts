@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { code, type, discount, usageLimit, expiresAt } = await req.json();
+    const { code, type, discount, usageLimit, expiresAt, target } = await req.json();
 
     if (!code || !type) {
       return NextResponse.json({ error: 'Code and type are required' }, { status: 400 });
@@ -55,6 +55,7 @@ export async function POST(req: Request) {
         discount: type === 'PERCENT' ? parseInt(discount) : null,
         usageLimit: usageLimit ? parseInt(usageLimit) : 100,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
+        target: target || 'ALL',
       },
     });
 

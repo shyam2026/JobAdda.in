@@ -12,6 +12,7 @@ type Coupon = {
   usedCount: number;
   expiresAt: string | null;
   isActive: boolean;
+  target: string;
   createdAt: string;
 };
 
@@ -24,7 +25,8 @@ export default function CouponClient() {
     type: 'PERCENT',
     discount: '',
     usageLimit: '100',
-    expiresAt: ''
+    expiresAt: '',
+    target: 'ALL'
   });
   const [error, setError] = useState('');
 
@@ -55,7 +57,8 @@ export default function CouponClient() {
         ...formData,
         discount: formData.type === 'PERCENT' ? parseInt(formData.discount) : null,
         usageLimit: parseInt(formData.usageLimit),
-        expiresAt: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : null
+        expiresAt: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : null,
+        target: formData.target
       };
 
       const res = await fetch('/api/admin/coupons', {
@@ -71,7 +74,7 @@ export default function CouponClient() {
       }
 
       setShowModal(false);
-      setFormData({ code: '', type: 'PERCENT', discount: '', usageLimit: '100', expiresAt: '' });
+      setFormData({ code: '', type: 'PERCENT', discount: '', usageLimit: '100', expiresAt: '', target: 'ALL' });
       fetchCoupons();
     } catch (e) {
       setError('Server error');
@@ -108,7 +111,7 @@ export default function CouponClient() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h2 style={{ color: '#1e293b', marginBottom: '0.25rem' }}>Discount Coupons</h2>
-          <p style={{ color: '#64748b', margin: 0 }}>Manage promo codes for resume templates.</p>
+          <p style={{ color: '#64748b', margin: 0 }}>Manage promo codes for resume and premium.</p>
         </div>
         <button onClick={() => setShowModal(true)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Plus size={18} /> Create Coupon
@@ -120,6 +123,7 @@ export default function CouponClient() {
           <thead>
             <tr>
               <th>Code</th>
+              <th>Target</th>
               <th>Type / Discount</th>
               <th>Usage Stats</th>
               <th>Status</th>
@@ -143,6 +147,11 @@ export default function CouponClient() {
                     <div style={{ fontWeight: 800, color: '#0f172a', fontFamily: 'monospace', fontSize: '1rem', background: '#f1f5f9', display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
                       {c.code}
                     </div>
+                  </td>
+                  <td>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '20px', background: c.target === 'ALL' ? '#f1f5f9' : c.target === 'RESUME' ? 'rgba(99,102,241,0.1)' : 'rgba(251,191,36,0.1)', color: c.target === 'ALL' ? '#64748b' : c.target === 'RESUME' ? 'var(--primary)' : '#fbbf24', border: '1px solid currentColor' }}>
+                      {c.target}
+                    </span>
                   </td>
                   <td>
                     <div style={{ fontWeight: 600, color: c.type === 'FREE' ? '#10b981' : '#6366f1' }}>{c.type}</div>
@@ -214,16 +223,25 @@ export default function CouponClient() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.3rem' }}>Usage Limit</label>
-                  <input required type="number" min="1" value={formData.usageLimit} onChange={e => setFormData({ ...formData, usageLimit: e.target.value })} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.3rem' }}>Coupon Target</label>
+                  <select value={formData.target} onChange={e => setFormData({ ...formData, target: e.target.value })} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                    <option value="ALL">All Services</option>
+                    <option value="RESUME">Resume Templates</option>
+                    <option value="PREMIUM">Premium Subscription</option>
+                  </select>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.3rem' }}>Expiry Date (Optional)</label>
-                  <input type="date" value={formData.expiresAt} onChange={e => setFormData({ ...formData, expiresAt: e.target.value })} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.3rem' }}>Usage Limit</label>
+                    <input required type="number" min="1" value={formData.usageLimit} onChange={e => setFormData({ ...formData, usageLimit: e.target.value })} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.3rem' }}>Expiry Date (Optional)</label>
+                    <input type="date" value={formData.expiresAt} onChange={e => setFormData({ ...formData, expiresAt: e.target.value })} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                  </div>
                 </div>
-              </div>
 
               <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', padding: '0.9rem', display: 'flex', justifyContent: 'center' }}>Create Coupon</button>
             </form>

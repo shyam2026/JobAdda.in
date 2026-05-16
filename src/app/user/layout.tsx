@@ -12,7 +12,9 @@ import {
   Share2, 
   Bell, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Star,
+  MessageCircle
 } from 'lucide-react';
 
 const SIDEBAR_ITEMS = [
@@ -30,6 +32,19 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const router = useRouter();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  
+  const user = session?.user as any;
+  const [isPremium, setIsPremium] = React.useState(user?.isPremium || false);
+
+  React.useEffect(() => {
+    if (status !== 'authenticated') return;
+    // Keep premium status in sync with DB
+    fetch('/api/profile').then(r => r.json()).then(data => {
+      if (data && !data.error) {
+        setIsPremium(data.isPremium);
+      }
+    }).catch(() => {});
+  }, [user?.id, status]);
 
   if (status === 'loading') {
     return (
@@ -44,7 +59,16 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     return null;
   }
 
-  const user = session?.user as any;
+  const navItems = [
+    { href: '/user/dashboard', icon: LayoutDashboard, label: 'Home' },
+    { href: '/user/applied-jobs', icon: TrendingUp, label: 'Applied' },
+    { href: '/user/premium', icon: Star, label: 'Premium', hideMobile: true },
+    { href: '/user/chat', icon: MessageCircle, label: 'Chat' },
+    { href: '/user/profile', icon: User, label: 'Profile' },
+    { href: '/user/resume', icon: FileText, label: 'Resume' },
+    { href: '/user/refer', icon: Share2, label: 'Refer' },
+    { href: '/user/notifications', icon: Bell, label: 'Alerts', hideMobile: true },
+  ];
 
   return (
     <div className={`dashboard-layout ${isCollapsed ? 'collapsed' : ''}`} style={{ transition: 'grid-template-columns 0.3s ease' }}>
@@ -53,15 +77,36 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         <div className="mobile-grid-nav" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
           <div className="desktop-sidebar-header hide-mobile" style={{ padding: isCollapsed ? '0.5rem 0 1.5rem' : '0.5rem 0.5rem 1.5rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem', display: 'flex', justifyContent: isCollapsed ? 'center' : 'space-between', alignItems: 'center', flexDirection: isCollapsed ? 'column' : 'row', gap: isCollapsed ? '1rem' : '0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div className={`avatar ${isCollapsed ? 'avatar-sm' : ''}`} style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                {user?.profileImage ? (
-                  <img src={user.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <User size={isCollapsed ? 16 : 20} color="var(--text-3)" />
+              <div className={`avatar ${isCollapsed ? 'avatar-sm' : ''}`} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '50%' }}>
+                <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {user?.profileImage ? (
+                    <img src={user.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <User size={isCollapsed ? 16 : 20} color="var(--text-3)" />
+                  )}
+                </div>
+                {isPremium && (
+                  <div style={{ 
+                    position: 'absolute', 
+                    top: '-4px', 
+                    right: '-4px', 
+                    background: '#fbbf24', 
+                    borderRadius: '50%', 
+                    width: isCollapsed ? '12px' : '16px', 
+                    height: isCollapsed ? '12px' : '16px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    border: '1.5px solid #0f172a',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
+                    zIndex: 2
+                  }}>
+                    <Star size={isCollapsed ? 6 : 8} fill="#000" color="#000" strokeWidth={3} />
+                  </div>
                 )}
               </div>
               {!isCollapsed && (
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <div style={{ fontWeight: '700', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
                 </div>
               )}
@@ -69,20 +114,13 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <nav className="nav-container">
-            {[
-              { href: '/user/dashboard', icon: LayoutDashboard, label: 'Home' },
-              { href: '/user/applied-jobs', icon: TrendingUp, label: 'Applied' },
-              { href: '/user/profile', icon: User, label: 'Profile' },
-              { href: '/user/resume', icon: FileText, label: 'Resume' },
-              { href: '/user/refer', icon: Share2, label: 'Refer' },
-              { href: '/user/notifications', icon: Bell, label: 'Alerts' },
-            ].map((item) => {
-              const isActive = pathname === item.href;
+            {navItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
                 <a 
                   key={item.href} 
                   href={item.href} 
-                  className={`sidebar-item ${isActive ? 'active' : ''}`}
+                  className={`sidebar-item ${isActive ? 'active' : ''} ${(item as any).hideMobile ? 'hide-on-mobile' : ''}`}
                   style={{ justifyContent: isCollapsed ? 'center' : 'flex-start', padding: isCollapsed ? '0.7rem' : '0.7rem 1rem' }}
                   title={isCollapsed ? item.label : undefined}
                 >
@@ -116,12 +154,36 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         </div>
       </aside>
 
+      {/* Mobile Top Header (Visible only on mobile) */}
+      <div className="mobile-top-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {user?.profileImage ? (
+              <img src={user.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <User size={18} color="var(--text-3)" />
+            )}
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Welcome back</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 800, lineHeight: 1, marginTop: '0.15rem' }}>{user?.name?.split(' ')[0]}</div>
+          </div>
+        </div>
+        <a href="/user/notifications" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(236,72,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ec4899', position: 'relative', textDecoration: 'none' }}>
+          <Bell size={20} />
+          <span style={{ position: 'absolute', top: '10px', right: '11px', width: '8px', height: '8px', background: '#ec4899', borderRadius: '50%', border: '2px solid var(--bg-2)' }}></span>
+        </a>
+      </div>
+
       {/* Main Content */}
       <main className="dashboard-content">
         {children}
       </main>
 
       <style jsx global>{`
+        .mobile-top-header {
+          display: none;
+        }
         @media (min-width: 769px) {
           .dashboard-layout.collapsed {
             grid-template-columns: 80px 1fr !important;
@@ -131,6 +193,17 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           }
         }
         @media (max-width: 768px) {
+          .mobile-top-header {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.25rem;
+            background: var(--bg-2);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+          }
           .sidebar {
             position: fixed !important;
             bottom: 0 !important;
@@ -148,6 +221,9 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             grid-template-columns: repeat(6, 1fr) !important;
             height: 100% !important;
             align-items: center !important;
+          }
+          .hide-on-mobile {
+            display: none !important;
           }
           .sidebar-item {
             padding: 0.5rem 0 !important;

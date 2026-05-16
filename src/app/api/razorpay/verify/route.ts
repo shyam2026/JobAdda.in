@@ -18,23 +18,31 @@ export async function POST(req: Request) {
       templateId,
       amount,
       couponCode,
+      type
     } = await req.json();
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !templateId || amount === undefined) {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || amount === undefined) {
       return NextResponse.json({ error: 'Missing payment details' }, { status: 400 });
     }
 
-    // Verify signature
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
-      .update(body.toString())
-      .digest('hex');
+    if (!templateId && type !== 'PREMIUM') {
+      return NextResponse.json({ error: 'Missing template ID or purchase type' }, { status: 400 });
+    }
 
-    const isAuthentic = expectedSignature === razorpay_signature;
+    // Skip signature verification for free (coupon-100%) purchases
+    const isFreeOrder = razorpay_order_id === 'FREE_COUPON';
 
-    if (!isAuthentic) {
-      return NextResponse.json({ error: 'Invalid payment signature' }, { status: 400 });
+    if (!isFreeOrder) {
+      // Verify Razorpay signature
+      const body = razorpay_order_id + '|' + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+        .update(body.toString())
+        .digest('hex');
+
+      if (expectedSignature !== razorpay_signature) {
+        return NextResponse.json({ error: 'Invalid payment signature' }, { status: 400 });
+      }
     }
 
     // Grant access (5-minute window)
@@ -55,6 +63,46 @@ export async function POST(req: Request) {
       });
     }
 
+    // Handle Premium Upgrade
+    if (type === 'PREMIUM') {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          isPremium: true,
+          premiumUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 Year premium
+        }
+      });
+
+      await (prisma as any).transaction.create({
+        data: {
+          userId,
+          amount: parseFloat(amount),
+          type: `PREMIUM_UPGRADE`,
+          status: 'COMPLETED',
+          couponCode: couponCode || null,
+          paymentId: razorpay_payment_id,
+          orderId: razorpay_order_id,
+        }
+      });
+
+      await (prisma as any).notification.create({
+        data: {
+          userId,
+          title: 'Premium Activated! ⭐',
+          message: `Your account has been upgraded to Premium! You can now chat directly with HR. Reference ID: ${refId}.`,
+          type: 'SUCCESS',
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Premium activated successfully',
+        refId: refId
+      });
+    }
+
+    // Handle Resume Template Purchase
     const purchase = await prisma.purchase.create({
       data: {
         userId,

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Bell, ChevronDown, LogOut, User, LayoutDashboard, Briefcase, Menu, X, DollarSign, Gift, Building2, Search, FileText, Share2 } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, User, LayoutDashboard, Briefcase, Menu, X, DollarSign, Gift, Building2, Search, FileText, Share2, Star } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Navbar() {
@@ -32,6 +32,8 @@ export default function Navbar() {
     setProfileOpen(false);
   }, [pathname]);
 
+  const [isPremium, setIsPremium] = useState(false);
+
   // Fetch unread notifications count
   useEffect(() => {
     if (status === 'authenticated') {
@@ -44,10 +46,13 @@ export default function Navbar() {
         })
         .catch(() => { });
 
-      // Fetch profile image for navbar avatar
+      // Fetch profile data (image + premium status)
       fetch('/api/profile')
         .then(res => res.json())
-        .then(data => { if (data?.profileImage) setNavProfileImage(data.profileImage); })
+        .then(data => { 
+          if (data?.profileImage) setNavProfileImage(data.profileImage); 
+          if (data?.isPremium) setIsPremium(true);
+        })
         .catch(() => { });
     }
   }, [status]);
@@ -113,6 +118,7 @@ export default function Navbar() {
                       <div className="avatar avatar-sm">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
                     )}
                     <span style={{ fontSize: '0.88rem', fontWeight: '600' }}>{user?.name?.split(' ')[0]}</span>
+                    {isPremium && <Star size={14} fill="#fbbf24" color="#fbbf24" style={{ flexShrink: 0 }} />}
                     <ChevronDown size={14} style={{ color: 'var(--text-3)', transition: 'transform 0.2s', transform: profileOpen ? 'rotate(180deg)' : 'none' }} />
                   </button>
                   {profileOpen && (
@@ -204,7 +210,10 @@ export default function Navbar() {
                       <div className="avatar avatar-md">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
                     )}
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: '700', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+                      <div style={{ fontWeight: '700', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {user?.name}
+                        {isPremium && <Star size={15} fill="#fbbf24" color="#fbbf24" style={{ flexShrink: 0 }} />}
+                      </div>
                       <div style={{ color: 'var(--text-3)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
                     </div>
                   </Link>

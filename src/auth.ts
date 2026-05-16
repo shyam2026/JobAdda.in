@@ -44,6 +44,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: user.role,
             portalType,
             profileImage: (user as any).studentProfile?.profileImage || null,
+            isPremium: (user as any).isPremium || false,
+            premiumUntil: (user as any).premiumUntil || null,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -53,7 +55,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
@@ -61,6 +63,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.email = user.email;
         token.portalType = (user as any).portalType;
         token.profileImage = (user as any).profileImage;
+        token.isPremium = (user as any).isPremium || false;
+        token.premiumUntil = (user as any).premiumUntil || null;
+      }
+      // Re-fetch premium status from DB on session update (after purchase)
+      if ((trigger === 'update' || trigger === 'signIn') && token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { isPremium: true, premiumUntil: true, name: true }
+          });
+          if (dbUser) {
+            token.isPremium = dbUser.isPremium;
+            token.premiumUntil = dbUser.premiumUntil;
+            if (dbUser.name) token.name = dbUser.name;
+          }
+        } catch (e) {
+          console.error('JWT_REFRESH_ERROR', e);
+        }
       }
       return token;
     },
@@ -72,6 +92,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.email = token.email as string;
         (session.user as any).portalType = token.portalType;
         (session.user as any).profileImage = token.profileImage;
+        (session.user as any).isPremium = token.isPremium;
+        (session.user as any).premiumUntil = token.premiumUntil;
       }
       return session;
     },

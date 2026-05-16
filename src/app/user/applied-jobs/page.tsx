@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, Clock, TrendingUp, CheckCircle, XCircle, AlertCircle, ChevronRight, MessageCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface Application {
   id: string;
@@ -14,6 +16,7 @@ interface Application {
     location: string;
     salary?: string | null;
     type: string;
+    companyId: string;
     company: { name: string; companyName?: string; logo?: string; email?: string };
   };
 }
@@ -35,6 +38,9 @@ function timeAgo(date: string) {
 }
 
 export default function UserApplicationsPage() {
+  const { data: session } = useSession();
+  const user = session?.user as any;
+  const router = useRouter();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
@@ -48,11 +54,40 @@ export default function UserApplicationsPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const handleChatWithHR = (app: Application) => {
-    const companyDisplayName = app.job?.company?.companyName || app.job?.company?.name || 'Company';
-    const message = `Hello, I'm reaching out regarding my application for the ${app.job.title} position at ${companyDisplayName} on JobAdda.in. I'd like to check on the status of my application.`;
-    const whatsappUrl = `https://wa.me/917004652932?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  const handleChatWithHR = async (app: Application) => {
+    setLoading(true);
+    try {
+      // Real-time premium check
+      const profileRes = await fetch('/api/profile');
+      const profileData = await profileRes.json();
+      
+      if (!profileData?.isPremium) {
+        router.push('/user/premium');
+        return;
+      }
+
+      const res = await fetch('/api/chat/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId: app.job.companyId, jobId: app.job.id })
+      });
+      const data = await res.json();
+      
+      if (res.status === 403 && data.error?.includes('Premium')) {
+        router.push('/user/premium');
+        return;
+      }
+
+      if (data.id) {
+        router.push(`/user/chat?c=${data.id}`);
+      } else {
+        alert(data.error || 'Failed to start chat. Make sure you have an active application.');
+      }
+    } catch (e) {
+      alert('Error connecting to chat server. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredApps = applications.filter(app => {
@@ -161,13 +196,17 @@ export default function UserApplicationsPage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                  <button 
-                    onClick={() => handleChatWithHR(app)}
-                    className="btn btn-outline btn-sm" 
-                    style={{ gap: '0.5rem', borderColor: '#25D366', color: '#25D366' }}
-                  >
-                    <MessageCircle size={16} /> <span className="hide-mobile">Chat with HR</span>
-                  </button>
+                  {app.job?.type !== 'EXTERNAL' && (
+                    <button 
+                      onClick={() => handleChatWithHR(app)}
+                      disabled={loading}
+                      className="btn btn-outline btn-sm" 
+                      style={{ gap: '0.5rem', borderColor: '#25D366', color: '#25D366', opacity: loading ? 0.7 : 1 }}
+                    >
+                      {loading ? <Loader2 size={16} className="spin" /> : <MessageCircle size={16} />} 
+                      <span className="hide-mobile">Chat with HR</span>
+                    </button>
+                  )}
                   
                   <Link href={`/jobs/${app.job?.id}`} className="btn btn-primary btn-sm" style={{ gap: '0.5rem' }}>
                     View Job <ChevronRight size={16} />

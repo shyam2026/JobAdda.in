@@ -179,6 +179,7 @@ export async function GET() {
             location: true,
             salary: true,
             type: true,
+            companyId: true,
             company: { select: { name: true, companyName: true, logo: true } }
           }
         },

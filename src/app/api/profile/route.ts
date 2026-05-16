@@ -45,6 +45,13 @@ export async function GET() {
     }
 
     const u = user as any;
+    
+    // Auto-heal: if name is missing in DB, sync from session token
+    const sessionUser = userSession as any;
+    if (!u.name && sessionUser.name) {
+      await prisma.user.update({ where: { id: u.id }, data: { name: sessionUser.name } });
+      u.name = sessionUser.name;
+    }
 
     return NextResponse.json({
       name: u.name || '',
@@ -95,7 +102,10 @@ export async function GET() {
         (u.educations?.some((e: any) => e.school) ? 20 : 0) +
         (u.experiences?.some((e: any) => e.company) ? 20 : 0) +
         (u.projects?.some((p: any) => p.title) ? 20 : 0)
-      ))
+      )),
+      isPremium: u.isPremium || false,
+      premiumUntil: u.premiumUntil || null,
+      premiumResumeDownloads: u.premiumResumeDownloads || 0
     });
   } catch (error) {
     console.error("PROFILE_GET_ERROR", error);

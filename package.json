@@ -6,8 +6,8 @@
     "dev": "next dev",
     "prebuild": "node -e \"const fs=require('fs'); fs.rmSync('public/_next',{recursive:true,force:true});\"",
     "build": "prisma generate && next build",
-    "postbuild": "node -e \"const fs=require('fs'); fs.rmSync('public/_next',{recursive:true,force:true}); fs.mkdirSync('public/_next/static',{recursive:true}); fs.cpSync('.next/static','public/_next/static',{recursive:true});\"",
-    "start": "next start",
+    "postbuild": "node -e \"const fs=require('fs'); const p=require('path'); fs.rmSync('public/_next',{recursive:true,force:true}); if(fs.existsSync('.next/static')){fs.mkdirSync('public/_next/static',{recursive:true}); fs.cpSync('.next/static','public/_next/static',{recursive:true}); console.log('Copied .next/static -> public/_next/static');} else {console.log('No .next/static found, skipping copy');}\"",
+    "start": "NODE_ENV=production node server.js",
     "lint": "eslint",
     "postinstall": "prisma generate"
   },

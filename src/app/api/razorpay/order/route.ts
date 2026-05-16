@@ -14,10 +14,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { amount, templateId } = await req.json();
+    const { amount, templateId, type } = await req.json();
 
-    if (!amount || !templateId) {
-      return NextResponse.json({ error: 'Missing amount or templateId' }, { status: 400 });
+    if (!amount || (!templateId && type !== 'PREMIUM')) {
+      return NextResponse.json({ error: 'Missing amount or required identifiers' }, { status: 400 });
     }
 
     const options: any = {
@@ -26,7 +26,8 @@ export async function POST(req: Request) {
       receipt: `receipt_${Date.now()}`,
       notes: {
         userId: String(session.user.id),
-        templateId: templateId,
+        templateId: templateId || 'NONE',
+        purchaseType: type || 'RESUME',
       },
     };
 

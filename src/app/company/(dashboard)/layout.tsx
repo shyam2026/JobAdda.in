@@ -2,7 +2,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { auth, signOut } from '@/auth';
 import prisma from '@/lib/prisma';
-import { LayoutDashboard, Briefcase, Users, MessageSquare, Settings, LogOut, CheckCircle } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, MessageSquare, Settings, LogOut, CheckCircle, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const SIDEBAR = [
@@ -17,6 +17,7 @@ const SIDEBAR = [
     ]
   },
   { id: 'applicants', label: 'Applicants', href: '/company/applicants', icon: Users },
+  { id: 'chat', label: 'Messages', href: '/company/chat', icon: MessageCircle },
   { id: 'settings', label: 'Settings', href: '/company/settings', icon: Settings },
 ];
 
