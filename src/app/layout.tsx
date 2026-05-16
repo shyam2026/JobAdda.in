@@ -37,9 +37,9 @@ export const metadata: Metadata = {
     siteName: "JobAdda.in",
     images: [
       {
-        url: "/logoo.png",
-        width: 1200,
-        height: 630,
+        url: "/logosq.png",
+        width: 1080,
+        height: 1080,
         alt: "JobAdda.in - Find Your Dream Job",
       },
     ],

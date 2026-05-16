@@ -314,9 +314,11 @@ export default function AdminJobsPage() {
           </h1>
           <p style={{ color: 'var(--text-3)' }}>Manage internal and external career opportunities.</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn btn-primary" style={{ gap: '0.5rem' }}>
-          <Plus size={20} /> Create New Job
-        </button>
+        {isSuperAdmin && (
+          <button onClick={() => setShowAddModal(true)} className="btn btn-primary" style={{ gap: '0.5rem' }}>
+            <Plus size={20} /> Create New Job
+          </button>
+        )}
       </div>
 
       <div style={{ position: 'relative', marginBottom: '2rem' }}>
@@ -329,77 +331,135 @@ export default function AdminJobsPage() {
         />
       </div>
 
-      <div className="grid-1" style={{ display: 'grid', gap: '0.8rem' }}>
-        {filtered.map(j => (
-          <div key={j.id} className="card card-p-sm" style={{ display: 'grid', gridTemplateColumns: '1fr 180px 180px 150px 60px 100px', gap: '1.5rem', alignItems: 'center', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-light)' }}>
-                <Building2 size={20} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: '700', fontSize: '1rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{j.company.companyName}</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-2)' }}>
-              <MapPin size={14} className="text-muted" /> {j.location}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: '700', color: 'var(--success)' }}>
-              <IndianRupee size={14} /> {j.salary || 'Best in Market'}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <span className={`badge ${j.type === 'INTERNAL' ? 'badge-primary' : 'badge-warning'}`} style={{ fontSize: '0.6rem', alignSelf: 'flex-start' }}>{j.type}</span>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <Clock size={10} /> {format(new Date(j.createdAt), 'MMM dd, yyyy')}
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {isSuperAdmin ? (
-                <div 
-                  onClick={() => handleToggleStatus(j.id, j.status)}
-                  style={{ 
-                    width: '42px', height: '22px', borderRadius: '20px', 
-                    background: j.status === 'OPEN' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                    border: `1px solid ${j.status === 'OPEN' ? '#10b981' : '#ef4444'}`,
-                    position: 'relative', cursor: 'pointer', transition: 'all 0.3s'
-                  }}
-                  title={j.status === 'OPEN' ? "Click to Close Job" : "Click to Open Job"}
-                >
-                  <div style={{ 
-                    position: 'absolute', top: '2px', left: j.status === 'OPEN' ? '22px' : '2px',
-                    width: '16px', height: '16px', borderRadius: '50%',
-                    background: j.status === 'OPEN' ? '#10b981' : '#ef4444',
-                    transition: 'all 0.3s'
-                  }} />
+      <div style={{ overflowX: 'auto', paddingBottom: '1.5rem', margin: '0 -1rem', padding: '0 1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: '1050px' }}>
+          {filtered.map(j => (
+            <div key={j.id} style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '2.5fr 1.5fr 1.5fr 1.2fr 100px 100px', 
+              gap: '1.5rem', 
+              alignItems: 'center', 
+              border: '1px solid var(--border)', 
+              background: 'var(--surface)', 
+              padding: '1.25rem 1.75rem', 
+              borderRadius: '20px',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+            }} className="hover-glow">
+              
+              {/* Logo, Title & Company */}
+              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', minWidth: 0 }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8', flexShrink: 0 }}>
+                  <Building2 size={22} />
                 </div>
-              ) : (
-                <span style={{ 
-                  fontSize: '0.65rem', 
-                  padding: '3px 10px', 
-                  background: j.status === 'OPEN' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
-                  color: j.status === 'OPEN' ? '#10b981' : '#ef4444', 
-                  borderRadius: '6px',
-                  fontWeight: '700',
-                  textTransform: 'uppercase',
-                  border: `1px solid ${j.status === 'OPEN' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`
-                }}>
-                  {j.status}
-                </span>
-              )}
-            </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '0.2rem', letterSpacing: '-0.01em' }}>{j.title}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-3)', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.company.companyName}</div>
+                </div>
+              </div>
 
-            <div style={{ textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <button onClick={() => handleOpenEdit(j)} className="btn btn-ghost btn-sm" style={{ padding: '0.4rem' }} title="Edit"><Edit2 size={15} /></button>
-              {isSuperAdmin && (
-                <button onClick={() => handleDeleteJob(j.id)} className="btn btn-ghost btn-sm" style={{ color: '#ef4444', padding: '0.4rem' }} title="Delete"><Trash2 size={15} /></button>
-              )}
+              {/* Location */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.9rem', color: 'var(--text-2)', fontWeight: '600', minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(148, 163, 184, 0.06)', flexShrink: 0 }}>
+                  <MapPin size={15} style={{ color: '#94a3b8' }} />
+                </div>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{j.location}</span>
+              </div>
+
+              {/* Salary */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.95rem', fontWeight: '800', color: 'var(--success)', minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.08)', flexShrink: 0 }}>
+                  <IndianRupee size={15} /> 
+                </div>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{j.salary || 'Best in Market'}</span>
+              </div>
+
+              {/* Job Type & Date */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', minWidth: 0 }}>
+                <span style={{ 
+                  padding: '0.3rem 0.7rem', 
+                  borderRadius: '2rem', 
+                  fontSize: '0.68rem', 
+                  fontWeight: '800', 
+                  background: j.type === 'INTERNAL' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
+                  color: j.type === 'INTERNAL' ? '#818cf8' : '#fbbf24',
+                  border: `1px solid ${j.type === 'INTERNAL' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`,
+                  letterSpacing: '0.03em',
+                  textTransform: 'uppercase',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {j.type}
+                </span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '500', maxWidth: '100%' }}>
+                  <Clock size={13} style={{ flexShrink: 0 }} /> <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{format(new Date(j.createdAt), 'MMM dd, yyyy')}</span>
+                </span>
+              </div>
+
+              {/* Status Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {isSuperAdmin ? (
+                  <div 
+                    onClick={() => handleToggleStatus(j.id, j.status)}
+                    style={{ 
+                      width: '46px', height: '24px', borderRadius: '20px', 
+                      background: j.status === 'OPEN' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      border: `1.5px solid ${j.status === 'OPEN' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
+                      position: 'relative', cursor: 'pointer', transition: 'all 0.3s ease'
+                    }}
+                    title={j.status === 'OPEN' ? "Click to Close Job" : "Click to Open Job"}
+                  >
+                    <div style={{ 
+                      position: 'absolute', top: '1.5px', left: j.status === 'OPEN' ? '23px' : '2px',
+                      width: '18px', height: '18px', borderRadius: '50%',
+                      background: j.status === 'OPEN' ? '#10b981' : '#ef4444',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                    }} />
+                  </div>
+                ) : (
+                  <span style={{ 
+                    fontSize: '0.7rem', 
+                    padding: '0.35rem 0.8rem', 
+                    background: j.status === 'OPEN' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
+                    color: j.status === 'OPEN' ? '#10b981' : '#ef4444', 
+                    borderRadius: '8px',
+                    fontWeight: '800',
+                    textTransform: 'uppercase',
+                    border: `1px solid ${j.status === 'OPEN' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`
+                  }}>
+                    {j.status}
+                  </span>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                <button 
+                  onClick={() => handleOpenEdit(j)} 
+                  className="btn btn-ghost" 
+                  style={{ padding: '0.5rem', background: 'rgba(148, 163, 184, 0.05)', border: '1px solid rgba(148, 163, 184, 0.1)', borderRadius: '10px' }} 
+                  title="Edit"
+                >
+                  <Edit2 size={16} style={{ color: '#cbd5e1' }} />
+                </button>
+                {isSuperAdmin && (
+                  <button 
+                    onClick={() => handleDeleteJob(j.id)} 
+                    className="btn btn-ghost" 
+                    style={{ padding: '0.5rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: '10px' }} 
+                    title="Delete"
+                  >
+                    <Trash2 size={16} style={{ color: '#ef4444' }} />
+                  </button>
+                )}
+              </div>
+
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Add Job Modal */}

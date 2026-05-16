@@ -549,12 +549,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
-          {job.company?.bio && (
+          {job.company?.bio && job.company.bio.replace(/<[^>]*>?/gm, '').trim() !== '' && (
             <div style={{ marginBottom: '1.25rem' }}>
-              <p style={{ color: 'var(--text-2)', lineHeight: '1.7', fontSize: '0.92rem' }}>
-                {bioExpanded ? job.company.bio : job.company.bio.split(' ').slice(0, 30).join(' ') + (job.company.bio.split(' ').length > 30 ? '...' : '')}
-              </p>
-              {job.company.bio.split(' ').length > 30 && (
+              {bioExpanded ? (
+                <div 
+                  className="rich-text-content"
+                  style={{ color: 'var(--text-2)', lineHeight: '1.7', fontSize: '0.92rem', margin: 0 }}
+                  dangerouslySetInnerHTML={{ __html: job.company.bio }}
+                />
+              ) : (
+                <p style={{ color: 'var(--text-2)', lineHeight: '1.7', fontSize: '0.92rem', margin: 0 }}>
+                  {job.company.bio.replace(/<[^>]*>?/gm, '').trim().split(/\s+/).slice(0, 30).join(' ')}
+                  {job.company.bio.replace(/<[^>]*>?/gm, '').trim().split(/\s+/).length > 30 ? '...' : ''}
+                </p>
+              )}
+              {job.company.bio.replace(/<[^>]*>?/gm, '').trim().split(/\s+/).length > 30 && (
                 <button 
                   onClick={() => setBioExpanded(!bioExpanded)}
                   style={{ background: 'none', border: 'none', color: 'var(--primary-light)', fontSize: '0.85rem', fontWeight: '700', cursor: 'pointer', padding: 0, marginTop: '0.4rem' }}

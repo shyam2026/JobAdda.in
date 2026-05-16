@@ -11,9 +11,6 @@ const nextConfig = {
   // Compression for better Hostinger performance
   compress: true,
 
-  // For Hostinger Node.js deployment (standalone output)
-  output: 'standalone',
-
   // Redirect HTTP to HTTPS in production
   async redirects() {
     return []

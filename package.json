@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "postbuild": "node -e \"const fs=require('fs'); fs.rmSync('public/_next',{recursive:true,force:true}); fs.mkdirSync('public/_next/static',{recursive:true}); fs.cpSync('.next/static','public/_next/static',{recursive:true});\"",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
