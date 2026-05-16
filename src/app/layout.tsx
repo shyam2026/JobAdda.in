@@ -4,6 +4,7 @@ import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import { OrganizationSchema, WebSiteSchema } from "@/components/StructuredData";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -114,6 +115,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }} suppressHydrationWarning>
+        <OrganizationSchema />
+        <WebSiteSchema />
         <Providers>
           <LayoutWrapper>
             {children}
