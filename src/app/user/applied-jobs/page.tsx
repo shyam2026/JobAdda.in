@@ -14,7 +14,7 @@ interface Application {
     location: string;
     salary?: string | null;
     type: string;
-    company: { name: string; email?: string };
+    company: { name: string; companyName?: string; logo?: string; email?: string };
   };
 }
 
@@ -49,7 +49,8 @@ export default function UserApplicationsPage() {
   }, []);
 
   const handleChatWithHR = (app: Application) => {
-    const message = `Hello, I'm reaching out regarding my application for the ${app.job.title} position at ${app.job.company.name} on JobAdda.in. I'd like to check on the status of my application.`;
+    const companyDisplayName = app.job?.company?.companyName || app.job?.company?.name || 'Company';
+    const message = `Hello, I'm reaching out regarding my application for the ${app.job.title} position at ${companyDisplayName} on JobAdda.in. I'd like to check on the status of my application.`;
     const whatsappUrl = `https://wa.me/917004652932?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -120,23 +121,40 @@ export default function UserApplicationsPage() {
         ) : (
           filteredApps.map(app => {
             const sc = STATUS_CONFIG[app.status];
+            const companyDisplayName = app.job?.company?.companyName || app.job?.company?.name || 'Company';
+            
             return (
-              <div key={app.id} className="card card-p-sm application-card" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', position: 'relative' }}>
+              <div key={app.id} className="card card-p-sm application-card" style={{ gap: '1.5rem', position: 'relative' }}>
                 {/* Status Indicator Bar */}
                 <div style={{ position: 'absolute', left: 0, top: '15%', bottom: '15%', width: '4px', borderRadius: '0 4px 4px 0', background: sc.color }} />
                 
-                <div className="company-logo" style={{ width: '60px', height: '60px', borderRadius: '16px', flexShrink: 0, fontSize: '1.5rem', fontWeight: '800' }}>
-                  {app.job?.company?.name?.[0]}
+                <div className="company-logo" style={{ width: '60px', height: '60px', borderRadius: '16px', flexShrink: 0, fontSize: '1.5rem', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(148, 163, 184, 0.05)', border: '1px solid rgba(148, 163, 184, 0.1)', overflow: 'hidden' }}>
+                  {app.job?.company?.logo ? (
+                    <img 
+                      src={app.job.company.logo} 
+                      alt={companyDisplayName} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          parent.innerHTML = companyDisplayName[0]?.toUpperCase() || 'C';
+                        }
+                      }}
+                    />
+                  ) : (
+                    companyDisplayName[0]?.toUpperCase()
+                  )}
                 </div>
                 
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="app-details-text" style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
                     <h4 style={{ fontSize: '1.1rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.job?.title}</h4>
                     <span className={`badge ${sc.cls}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>{sc.label}</span>
                   </div>
                   
                   <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Briefcase size={13}/>{app.job?.company?.name}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Briefcase size={13}/>{companyDisplayName}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><MapPin size={13}/>{app.job?.location}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={13}/>Applied {timeAgo(app.createdAt)}</span>
                   </div>
@@ -163,6 +181,8 @@ export default function UserApplicationsPage() {
 
       <style jsx>{`
         .application-card {
+          display: flex;
+          align-items: center;
           transition: transform 0.2s, background 0.2s;
         }
         .application-card:hover {
@@ -175,6 +195,9 @@ export default function UserApplicationsPage() {
             align-items: flex-start;
             gap: 1rem;
             padding: 1.25rem;
+          }
+          .app-details-text {
+            width: 100%;
           }
           .application-card > div:last-child {
             width: 100%;
