@@ -293,7 +293,7 @@ export default function JobsPage() {
         <div className="container">
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             {/* Keyword search */}
-            <div style={{
+            <div className="jobs-search-item" style={{
               flex: '1 1 260px', display: 'flex', alignItems: 'center', gap: '0.6rem',
               background: 'var(--surface)', border: '1.5px solid var(--border)',
               borderRadius: 'var(--radius)', padding: '0.7rem 1rem',
@@ -313,7 +313,7 @@ export default function JobsPage() {
             </div>
 
             {/* Location */}
-            <div style={{
+            <div className="jobs-search-item" style={{
               flex: '0 1 200px', display: 'flex', alignItems: 'center', gap: '0.6rem',
               background: 'var(--surface)', border: '1.5px solid var(--border)',
               borderRadius: 'var(--radius)', padding: '0.7rem 1rem',
@@ -335,7 +335,7 @@ export default function JobsPage() {
             {/* Mobile filter toggle */}
             <button
               onClick={() => setMobileSidebar(v => !v)}
-              className="btn btn-outline jobs-filter-toggle"
+              className="btn btn-outline jobs-filter-toggle jobs-search-item"
               style={{ gap: '0.5rem', position: 'relative' }}
             >
               <SlidersHorizontal size={15} />
@@ -563,6 +563,7 @@ export default function JobsPage() {
 
         @media (max-width: 560px) {
           .job-card-new { padding: 0.9rem 1rem; }
+          .jobs-search-item { flex: 1 1 100% !important; justify-content: center; }
         }
       `}</style>
     </div>

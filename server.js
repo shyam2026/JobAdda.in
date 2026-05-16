@@ -1,6 +1,11 @@
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
+const { loadEnvConfig } = require('@next/env');
+
+// Load environment variables exactly like Next.js does
+const projectDir = process.cwd();
+loadEnvConfig(projectDir);
 
 // Hostinger's Node.js environment passes the port via process.env.PORT
 const port = process.env.PORT || 3000;

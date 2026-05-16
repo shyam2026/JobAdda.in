@@ -94,7 +94,7 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
       style={{ animationDelay: `${index * 0.04}s` }}
     >
       {/* Top row: logo + title + company + badge */}
-      <div style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         {/* Logo */}
         <div className="job-card-logo" style={{
           background: logo ? 'transparent' : `${empStyle.text}18`,
@@ -109,7 +109,7 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
 
         {/* Title + company */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text)', lineHeight: 1.25, marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text)', lineHeight: 1.25, marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {job.title}
           </div>
           <div style={{ fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -193,7 +193,7 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
       )}
 
       {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: '800', color: 'var(--success)', fontSize: '0.92rem' }}>
           <IndianRupee size={13} strokeWidth={2.5} />
           {job.salary ? job.salary.replace('₹', '') : 'Competitive'}

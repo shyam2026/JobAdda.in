@@ -32,7 +32,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Fetch featured jobs
-    fetch('/api/jobs?limit=9')
+    fetch('/api/jobs?limit=3')
       .then(r => r.json())
       .then(data => {
         setFeaturedJobs(data.jobs || []);
@@ -62,7 +62,7 @@ export default function HomePage() {
               <Zap size={12} /> India&apos;s Fastest Growing Job Portal
             </span>
           </div>
-          <h1 className="hero-title anim-fade-up anim-delay-1">
+          <h1 className="hero-title anim-fade-up anim-delay-1"> 
             Find Jobs That <span className="text-gradient">Define</span><br />Your Career
           </h1>
           <p className="hero-subtitle anim-fade-up anim-delay-2">
