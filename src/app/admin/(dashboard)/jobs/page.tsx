@@ -75,6 +75,7 @@ const Tiptap = ({ value, onChange, placeholder }: { value: string, onChange: (co
 export default function AdminJobsPage() {
   const { data: session } = useSession();
   const isSuperAdmin = (session?.user as any)?.role === 'SUPERADMIN';
+  const isSubAdmin = (session?.user as any)?.role === 'SUBADMIN';
 
   const [jobs, setJobs] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
@@ -314,7 +315,7 @@ export default function AdminJobsPage() {
           </h1>
           <p style={{ color: 'var(--text-3)' }}>Manage internal and external career opportunities.</p>
         </div>
-        {isSuperAdmin && (
+        {(isSuperAdmin || isSubAdmin) && (
           <button onClick={() => setShowAddModal(true)} className="btn btn-primary" style={{ gap: '0.5rem' }}>
             <Plus size={20} /> Create New Job
           </button>

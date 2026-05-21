@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { MapPin, Briefcase, Clock, Share2, Building, Users, Globe, CheckCircle, ArrowLeft, Loader2, AlertCircle, IndianRupee, ExternalLink, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { JobPostingSchema, BreadcrumbSchema } from '@/components/StructuredData';
 
 interface CompanyInfo {
   id: string;
@@ -206,6 +207,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', padding: '2rem 0 5rem' }}>
+      {/* Structured Data for Google Jobs */}
+      <JobPostingSchema job={job} />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: 'https://jobadda.in' },
+        { name: 'Jobs', url: 'https://jobadda.in/jobs' },
+        { name: job.title, url: `https://jobadda.in/jobs/${id}` },
+      ]} />
       {/* Mobile sticky apply bar — hidden on desktop */}
       <div className="mobile-apply-bar">
         {job.status !== 'ARCHIVED' && job.status !== 'CLOSED' && (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Clock, Users, IndianRupee, Briefcase, GraduationCap, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -86,122 +86,173 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
   const empStyle = getEmpStyle(job.employmentType);
   const initial = companyName[0]?.toUpperCase() || 'C';
   const skills = job.skills ? job.skills.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const [imageError, setImageError] = useState(false);
 
   return (
-    <div
-      onClick={() => router.push(`/jobs/${job.id}`)}
-      className="job-card-new"
-      style={{ animationDelay: `${index * 0.04}s` }}
-    >
-      {/* Top row: logo + title + company + badge */}
-      <div style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        {/* Logo */}
-        <div className="job-card-logo" style={{
-          background: logo ? 'transparent' : `${empStyle.text}18`,
-          border: `1.5px solid ${empStyle.border}`,
-          color: empStyle.text,
-        }}>
-          {logo
-            ? <img src={logo} alt={companyName} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} />
-            : initial
-          }
-        </div>
-
-        {/* Title + company */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text)', lineHeight: 1.25, marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {job.title}
-          </div>
-          <div style={{ fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            {companySlugOrId
-              ? <span
-                  onClick={e => { e.stopPropagation(); router.push(`/companies/${companySlugOrId}`); }}
-                  style={{ color: 'var(--primary-light)', fontWeight: '600', cursor: 'pointer' }}
-                >{companyName}</span>
-              : <span style={{ color: 'var(--text-2)', fontWeight: '600' }}>{companyName}</span>
+    <>
+      <div
+        onClick={() => router.push(`/jobs/${job.id}`)}
+        className="job-card-new"
+        style={{ animationDelay: `${index * 0.04}s` }}
+      >
+        {/* Top row: logo + title + company + badge */}
+        <div style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          {/* Logo */}
+          <div className="job-card-logo" style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: '900',
+            fontSize: '1.15rem',
+            flexShrink: 0,
+            overflow: 'hidden',
+            background: (logo && !imageError) ? 'transparent' : `${empStyle.text}18`,
+            border: `1.5px solid ${empStyle.border}`,
+            color: empStyle.text,
+          }}>
+            {logo && !imageError
+              ? <img 
+                  src={logo} 
+                  alt={companyName} 
+                  onError={() => setImageError(true)} 
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} 
+                />
+              : initial
             }
           </div>
-        </div>
 
-        {/* Employment type pill */}
-        {job.employmentType && (
-          <span style={{
-            background: empStyle.bg, color: empStyle.text,
-            border: `1px solid ${empStyle.border}`,
-            borderRadius: '2rem', fontSize: '0.72rem', fontWeight: '700',
-            padding: '0.22rem 0.65rem', whiteSpace: 'nowrap', flexShrink: 0
-          }}>
-            {job.employmentType}
-          </span>
-        )}
-      </div>
+          {/* Title + company */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text)', lineHeight: 1.25, marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {job.title}
+            </div>
+            <div style={{ fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              {companySlugOrId
+                ? <span
+                    onClick={e => { e.stopPropagation(); router.push(`/companies/${companySlugOrId}`); }}
+                    style={{ color: 'var(--primary-light)', fontWeight: '600', cursor: 'pointer' }}
+                  >{companyName}</span>
+                : <span style={{ color: 'var(--text-2)', fontWeight: '600' }}>{companyName}</span>
+              }
+            </div>
+          </div>
 
-      {/* Specifications row */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem 1rem', marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--text-3)' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-          <MapPin size={11} strokeWidth={2} /> {job.location}
-        </span>
-        {job.experience && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <Briefcase size={11} strokeWidth={2} /> {job.experience}
-          </span>
-        )}
-        {job.education && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <GraduationCap size={11} strokeWidth={2} /> {job.education}
-          </span>
-        )}
-      </div>
-
-      {/* Hiring & Timeline Row */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '0.55rem', fontSize: '0.74rem' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(99, 102, 241, 0.07)', color: 'var(--primary-light)', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
-          <Clock size={10} strokeWidth={2.5} /> {dateStr}
-        </span>
-        {job.openings !== undefined && job.openings !== null && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(16, 185, 129, 0.07)', color: 'var(--success)', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
-            <Users size={10} strokeWidth={2.5} /> {job.openings} Position{job.openings > 1 ? 's' : ''}
-          </span>
-        )}
-        {applicants > 0 && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(139, 92, 246, 0.07)', color: '#a78bfa', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(139, 92, 246, 0.15)' }}>
-            <Users size={10} strokeWidth={2.5} /> {applicants} applied
-          </span>
-        )}
-      </div>
-
-      {/* Skills */}
-      {skills.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.65rem' }}>
-          {skills.slice(0, 5).map((s, i) => (
-            <span key={i} style={{
-              background: 'rgba(56,189,248,0.07)', color: '#38bdf8',
-              border: '1px solid rgba(56,189,248,0.18)',
-              borderRadius: '0.4rem', fontSize: '0.7rem', fontWeight: '600',
-              padding: '0.18rem 0.55rem',
-            }}>{s}</span>
-          ))}
-          {skills.length > 5 && (
+          {/* Employment type pill */}
+          {job.employmentType && (
             <span style={{
-              background: 'var(--surface)', color: 'var(--text-3)',
-              border: '1px solid var(--border)',
-              borderRadius: '0.4rem', fontSize: '0.7rem', fontWeight: '600',
-              padding: '0.18rem 0.55rem',
-            }}>+{skills.length - 5} more</span>
+              background: empStyle.bg, color: empStyle.text,
+              border: `1px solid ${empStyle.border}`,
+              borderRadius: '2rem', fontSize: '0.72rem', fontWeight: '700',
+              padding: '0.22rem 0.65rem', whiteSpace: 'nowrap', flexShrink: 0
+            }}>
+              {job.employmentType}
+            </span>
           )}
         </div>
-      )}
 
-      {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: '800', color: 'var(--success)', fontSize: '0.92rem' }}>
-          <IndianRupee size={13} strokeWidth={2.5} />
-          {job.salary ? job.salary.replace('₹', '') : 'Competitive'}
-        </span>
-        <span className="job-card-apply-btn">
-          Apply Now <Zap size={13} strokeWidth={2.5} />
-        </span>
+        {/* Specifications row */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem 1rem', marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--text-3)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <MapPin size={11} strokeWidth={2} /> {job.location}
+          </span>
+          {job.experience && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Briefcase size={11} strokeWidth={2} /> {job.experience}
+            </span>
+          )}
+          {job.education && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <GraduationCap size={11} strokeWidth={2} /> {job.education}
+            </span>
+          )}
+        </div>
+
+        {/* Hiring & Timeline Row */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '0.55rem', fontSize: '0.74rem' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(99, 102, 241, 0.07)', color: 'var(--primary-light)', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(99, 102, 241, 0.15)' }}>
+            <Clock size={10} strokeWidth={2.5} /> {dateStr}
+          </span>
+          {job.openings !== undefined && job.openings !== null && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(16, 185, 129, 0.07)', color: 'var(--success)', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+              <Users size={10} strokeWidth={2.5} /> {job.openings} Position{job.openings > 1 ? 's' : ''}
+            </span>
+          )}
+          {applicants > 0 && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(139, 92, 246, 0.07)', color: '#a78bfa', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(139, 92, 246, 0.15)' }}>
+              <Users size={10} strokeWidth={2.5} /> {applicants} applied
+            </span>
+          )}
+        </div>
+
+        {/* Skills */}
+        {skills.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.65rem' }}>
+            {skills.slice(0, 5).map((s, i) => (
+              <span key={i} style={{
+                background: 'rgba(56,189,248,0.07)', color: '#38bdf8',
+                border: '1px solid rgba(56,189,248,0.18)',
+                borderRadius: '0.4rem', fontSize: '0.7rem', fontWeight: '600',
+                padding: '0.18rem 0.55rem',
+              }}>{s}</span>
+            ))}
+            {skills.length > 5 && (
+              <span style={{
+                background: 'var(--surface)', color: 'var(--text-3)',
+                border: '1px solid var(--border)',
+                borderRadius: '0.4rem', fontSize: '0.7rem', fontWeight: '600',
+                padding: '0.18rem 0.55rem',
+              }}>+{skills.length - 5} more</span>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: '800', color: 'var(--success)', fontSize: '0.92rem' }}>
+            <IndianRupee size={13} strokeWidth={2.5} />
+            {job.salary ? job.salary.replace('₹', '') : 'Competitive'}
+          </span>
+          <span className="job-card-apply-btn">
+            Apply Now <Zap size={13} strokeWidth={2.5} />
+          </span>
+        </div>
       </div>
-    </div>
+
+      <style>{`
+        .job-card-new {
+          background: var(--surface) !important;
+          border: 1px solid var(--border) !important;
+          border-radius: var(--radius) !important;
+          padding: 1.1rem 1.25rem !important;
+          cursor: pointer !important;
+          transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s !important;
+          display: block !important;
+          text-decoration: none !important;
+        }
+        .job-card-new:hover {
+          border-color: rgba(99,102,241,0.4) !important;
+          box-shadow: 0 4px 24px rgba(99,102,241,0.1) !important;
+          transform: translateY(-1px) !important;
+        }
+        .job-card-logo {
+          width: 44px; height: 44px;
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 900; font-size: 1.15rem;
+          flex-shrink: 0; overflow: hidden;
+        }
+        .job-card-apply-btn {
+          display: inline-flex !important; align-items: center !important; gap: 0.3rem !important;
+          background: var(--primary) !important; color: white !important;
+          border-radius: 0.5rem !important; font-size: 0.78rem !important; font-weight: 700 !important;
+          padding: 0.38rem 0.9rem !important;
+          transition: opacity 0.15s !important;
+        }
+        .job-card-new:hover .job-card-apply-btn { opacity: 0.88 !important; }
+      `}</style>
+    </>
   );
 }
