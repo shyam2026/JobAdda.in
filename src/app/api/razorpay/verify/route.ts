@@ -70,6 +70,7 @@ export async function POST(req: Request) {
         data: {
           isPremium: true,
           premiumUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 Year premium
+          premiumResumeDownloads: 0,
         }
       });
 

@@ -181,28 +181,34 @@ export default function PremiumUpgradePage() {
         image: '/logo.png',
         order_id: orderData.id,
         handler: async (response: any) => {
-          const verifyRes = await fetch('/api/razorpay/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              type: 'PREMIUM',
-              amount: finalPrice,
-              couponCode: appliedCoupon?.code,
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            await update();
-            setShowCheckout(false);
-            setNotif({ type: 'success', msg: 'Premium Activated Successfully! ⭐' });
-            setTimeout(() => window.location.href = '/user/dashboard', 1500);
-          } else {
-            setNotif({ type: 'error', msg: verifyData.error || 'Payment verification failed' });
+          try {
+            const verifyRes = await fetch('/api/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                type: 'PREMIUM',
+                amount: finalPrice,
+                couponCode: appliedCoupon?.code,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok && verifyData.success) {
+              await update();
+              setShowCheckout(false);
+              setNotif({ type: 'success', msg: 'Premium Activated Successfully! ⭐' });
+              setTimeout(() => window.location.href = '/user/dashboard', 1500);
+            } else {
+              setNotif({ type: 'error', msg: verifyData.error || 'Payment verification failed. Contact support if money was deducted.' });
+            }
+          } catch (err) {
+            console.error('PREMIUM_VERIFY_ERROR:', err);
+            setNotif({ type: 'error', msg: 'Payment verification failed. Please contact support if money was deducted.' });
+          } finally {
+            setLoading(false);
           }
-          setLoading(false);
         },
         prefill: {
           name: profile?.name || session?.user?.name || '',
@@ -393,6 +399,7 @@ export default function PremiumUpgradePage() {
             {[
               { icon: <MessageCircle size={22} color="var(--primary)" />, bg: 'rgba(99,102,241,0.1)', title: 'Direct HR Chat', desc: "Bypass the queue and message HR directly for jobs you've applied to." },
               { icon: <Star size={22} color="#fbbf24" />, bg: 'rgba(251,191,36,0.1)', title: 'Premium Badge ⭐', desc: 'Stand out with a verified star next to your name on every listing.' },
+              { icon: <Tag size={22} color="#f59e0b" />, bg: 'rgba(245,158,11,0.1)', title: '5 Free Resume Downloads 📄', desc: 'Get 5 free downloads of high-conversion premium resume templates.' },
               { icon: <Zap size={22} color="#10b981" />, bg: 'rgba(16,185,129,0.1)', title: 'Priority Support', desc: 'Dedicated premium support channel with faster response times.' },
             ].map((f, i) => (
               <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -421,7 +428,7 @@ export default function PremiumUpgradePage() {
             </div>
 
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.75rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              {['Direct Messaging with HR', 'Premium Profile Badge ⭐', 'Priority Application Review', 'Valid for 365 Days'].map((ft, i) => (
+              {['Direct Messaging with HR', 'Premium Profile Badge ⭐', '5 Free Resume Template Downloads 📄', 'Priority Application Review', 'Valid for 365 Days'].map((ft, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.93rem' }}>
                   <CheckCircle size={17} color="#10b981" style={{ flexShrink: 0 }} /> {ft}
                 </li>

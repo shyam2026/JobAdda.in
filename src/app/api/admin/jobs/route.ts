@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         type: type || 'INTERNAL',
         category: category || 'Other',
         employmentType: body.employmentType || 'Full-time',
-        externalLink,
+        externalLink: externalLink && !/^https?:\/\//i.test(externalLink) ? `https://${externalLink}` : (externalLink || null),
         openings: openings ? parseInt(openings, 10) : 1,
         education,
         experience,

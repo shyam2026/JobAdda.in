@@ -135,7 +135,7 @@ export async function PATCH(req: Request) {
     let updateData: any = {};
     if (action === 'grant') {
       const expiryDate = premiumUntil ? new Date(premiumUntil) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-      updateData = { isPremium: true, premiumUntil: expiryDate };
+      updateData = { isPremium: true, premiumUntil: expiryDate, premiumResumeDownloads: 0 };
     } else if (action === 'revoke') {
       updateData = { isPremium: false, premiumUntil: null };
     } else if (action === 'extend') {

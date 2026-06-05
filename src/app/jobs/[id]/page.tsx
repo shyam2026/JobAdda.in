@@ -50,6 +50,12 @@ function timeAgo(date: string) {
   return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function normalizeUrl(url: string): string {
+  if (!url) return url;
+  if (!/^https?:\/\//i.test(url)) return `https://${url}`;
+  return url;
+}
+
 function parseListItems(text?: string | null): string[] {
   if (!text) return [];
   // Split by new line, then handle each line
@@ -164,7 +170,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     }
 
     if (job?.externalLink) {
-      window.open(job.externalLink, '_blank', 'noopener,noreferrer');
+      window.open(normalizeUrl(job.externalLink), '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -220,7 +226,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           applied ? (
             <button
               onClick={() => {
-                if (isExternal && job.externalLink) window.open(job.externalLink, '_blank', 'noopener,noreferrer');
+                if (isExternal && job.externalLink) window.open(normalizeUrl(job.externalLink), '_blank', 'noopener,noreferrer');
                 else router.push('/user/applied-jobs');
               }}
               className="btn btn-outline"
@@ -384,7 +390,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <button
                     onClick={() => {
                       if (isExternal && job.externalLink) {
-                        window.open(job.externalLink, '_blank', 'noopener,noreferrer');
+                        window.open(normalizeUrl(job.externalLink), '_blank', 'noopener,noreferrer');
                       } else {
                         router.push('/user/applied-jobs');
                       }

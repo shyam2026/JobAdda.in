@@ -148,7 +148,7 @@ export async function POST(req: Request) {
             salary: salary || null,
             requirements: requirements || null,
             type: type as JobType || JobType.INTERNAL,
-            externalLink: externalLink || null,
+            externalLink: externalLink && !/^https?:\/\//i.test(externalLink) ? `https://${externalLink}` : (externalLink || null),
             category: category || 'Other',
             status: 'OPEN',
           }

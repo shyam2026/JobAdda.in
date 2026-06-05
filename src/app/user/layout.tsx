@@ -46,6 +46,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     }).catch(() => {});
   }, [user?.id, status]);
 
+  React.useEffect(() => {
+    if (status === 'unauthenticated' || (status === 'authenticated' && session?.user && (session.user as any).role !== 'STUDENT' && (session.user as any).role !== 'ADMIN')) {
+      router.push('/login');
+    }
+  }, [status, session, router]);
+
   if (status === 'loading') {
     return (
       <div className="flex-center" style={{ height: '80vh' }}>
@@ -55,7 +61,6 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   }
 
   if (status === 'unauthenticated' || (session?.user && (session.user as any).role !== 'STUDENT' && (session.user as any).role !== 'ADMIN')) {
-    router.push('/login');
     return null;
   }
 

@@ -94,7 +94,7 @@ export default function AdminTransactionsPage() {
   );
 
   const pendingRequests = filtered.filter(tx => tx.status === 'PENDING' && tx.type === 'WITHDRAWAL');
-  const settledData = filtered.filter(tx => tx.status !== 'PENDING' || tx.type !== 'WITHDRAWAL');
+  const settledData = filtered.filter(tx => tx.status !== 'PENDING' && tx.type === 'WITHDRAWAL');
 
   if (loading) {
     return (
@@ -242,6 +242,15 @@ function TransactionCard({ tx, onUpdate, onCopy, copiedId, processingId, isSettl
               #{tx.user.referralCode}
             </div>
           </div>
+          {tx.referralStats && (
+            <div style={{ marginTop: '0.65rem', padding: '0.4rem 0.6rem', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '8px' }}>
+              <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.02em', fontWeight: 600 }}>Referral Info</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.15rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: '800', color: '#818cf8' }}>₹{tx.referralStats.totalEarned} earned</span>
+                <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontWeight: '600' }}>{tx.referralStats.successfulCount}/{tx.referralStats.signupCount} refs</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Amount & Date */}

@@ -53,14 +53,15 @@ export default function UserReferPage() {
   const [showConfirmStep, setShowConfirmStep] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
   const [showAllWithdrawals, setShowAllWithdrawals] = useState(false);
+  const [historyTab, setHistoryTab] = useState<'withdrawals' | 'earnings'>('withdrawals');
 
   useEffect(() => {
     fetch('/api/wallet')
       .then(r => r.json())
       .then(data => { 
-        setWalletData(data); 
-        setLoading(false); 
-        if (data.balance) setWithdrawAmount(data.balance.toString());
+         setWalletData(data); 
+         setLoading(false); 
+         if (data.balance) setWithdrawAmount(data.balance.toString());
       })
       .catch(() => setLoading(false));
   }, []);
@@ -143,6 +144,8 @@ export default function UserReferPage() {
 
   const balance = walletData?.balance || 0;
   const withdrawalTransactions = walletData?.transactions.filter((t: any) => t.type === 'WITHDRAWAL') || [];
+  const earningsTransactions = walletData?.transactions.filter((t: any) => t.type === 'REFERRAL_BONUS') || [];
+  const totalEarned = walletData?.referredUsers.reduce((sum, u) => sum + (u.earnedAmount || 0), 0) || 0;
 
   return (
     <div className="anim-fade-up">
@@ -209,6 +212,17 @@ export default function UserReferPage() {
               <div>
                 <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--success)' }}>₹{balance.toFixed(0)}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>Current Wallet Balance</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1rem 0', borderTop: '1px solid rgba(16,185,129,0.1)', borderBottom: '1px solid rgba(16,185,129,0.1)', marginBottom: '1.5rem' }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Total Referrals</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white' }}>{walletData?.referredUsers?.length || 0}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Total Referral Earned</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--success)' }}>₹{totalEarned}</div>
               </div>
             </div>
             
@@ -281,46 +295,91 @@ export default function UserReferPage() {
             )}
           </div>
 
-          {/* Withdrawal History */}
+          {/* History Section */}
           <div className="card">
-            <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h4 style={{ margin: 0 }}>Withdrawal History</h4>
-              <span className="badge badge-muted" style={{ fontSize: '0.65rem' }}>{withdrawalTransactions.length} Total</span>
+            <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.35rem' }}>
+                <button 
+                  onClick={() => setHistoryTab('withdrawals')} 
+                  className={`btn btn-sm ${historyTab === 'withdrawals' ? 'btn-primary' : 'btn-ghost'}`}
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', minHeight: 'auto', height: '32px' }}
+                >
+                  Withdrawals
+                </button>
+                <button 
+                  onClick={() => setHistoryTab('earnings')} 
+                  className={`btn btn-sm ${historyTab === 'earnings' ? 'btn-primary' : 'btn-ghost'}`}
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', minHeight: 'auto', height: '32px' }}
+                >
+                  Earnings
+                </button>
+              </div>
+              <span className="badge badge-muted" style={{ fontSize: '0.65rem' }}>
+                {historyTab === 'withdrawals' ? withdrawalTransactions.length : earningsTransactions.length} Total
+              </span>
             </div>
-            {withdrawalTransactions.length > 0 ? (
-              <div>
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {(showAllWithdrawals ? withdrawalTransactions : withdrawalTransactions.slice(0, 3)).map((tx: any, i: number, arr: any[]) => (
-                    <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(99,102,241,0.05)', color: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Wallet size={18} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>₹{tx.amount}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-3)' }}>{timeAgo(tx.createdAt)}</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div className={`badge ${tx.status === 'COMPLETED' ? 'badge-success' : tx.status === 'PENDING' ? 'badge-warning' : 'badge-danger'}`} style={{ fontSize: '0.65rem' }}>
-                          {tx.status}
+
+            {historyTab === 'withdrawals' ? (
+              withdrawalTransactions.length > 0 ? (
+                <div>
+                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    {(showAllWithdrawals ? withdrawalTransactions : withdrawalTransactions.slice(0, 3)).map((tx: any, i: number, arr: any[]) => (
+                      <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(99,102,241,0.05)', color: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Wallet size={18} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>₹{tx.amount}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-3)' }}>{timeAgo(tx.createdAt)}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div className={`badge ${tx.status === 'COMPLETED' ? 'badge-success' : tx.status === 'PENDING' ? 'badge-warning' : 'badge-danger'}`} style={{ fontSize: '0.65rem' }}>
+                            {tx.status}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  {withdrawalTransactions.length > 3 && (
+                    <button 
+                      onClick={() => setShowAllWithdrawals(!showAllWithdrawals)}
+                      className="btn btn-ghost btn-sm" 
+                      style={{ width: '100%', borderTop: '1px solid var(--border)', borderRadius: 0, padding: '0.75rem' }}
+                    >
+                      {showAllWithdrawals ? 'See Less' : `See More (${withdrawalTransactions.length - 3} more)`}
+                    </button>
+                  )}
                 </div>
-                {withdrawalTransactions.length > 3 && (
-                  <button 
-                    onClick={() => setShowAllWithdrawals(!showAllWithdrawals)}
-                    className="btn btn-ghost btn-sm" 
-                    style={{ width: '100%', borderTop: '1px solid var(--border)', borderRadius: 0, padding: '0.75rem' }}
-                  >
-                    {showAllWithdrawals ? 'See Less' : `See More (${withdrawalTransactions.length - 3} more)`}
-                  </button>
-                )}
-              </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-3)' }}>
+                  <p style={{ fontSize: '0.85rem', margin: 0 }}>No withdrawal history</p>
+                </div>
+              )
             ) : (
-              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-3)' }}>
-                <p style={{ fontSize: '0.85rem', margin: 0 }}>No withdrawal history</p>
-              </div>
+              earningsTransactions.length > 0 ? (
+                <div>
+                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    {earningsTransactions.map((tx: any, i: number, arr: any[]) => (
+                      <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16,185,129,0.05)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Gift size={18} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '700', fontSize: '0.9rem', color: 'var(--success)' }}>+₹{tx.amount}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-3)' }}>{timeAgo(tx.createdAt)}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>Credited</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-3)' }}>
+                  <p style={{ fontSize: '0.85rem', margin: 0 }}>No referral earnings yet</p>
+                </div>
+              )
             )}
           </div>
         </div>
