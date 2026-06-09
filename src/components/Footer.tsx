@@ -38,8 +38,9 @@ export default function Footer() {
         <div className="grid-4" style={{ marginBottom: '3rem' }}>
           {/* Brand */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1rem' }}>
               <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>JobAdda<span style={{ color: '#818cf8' }}>.in</span></span>
+              <span style={{ fontSize: '0.72rem', fontWeight: '500', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>"A Part of GogalEdu Academy"</span>
             </div>
             <p style={{ fontSize: '0.9rem', lineHeight: '1.8', maxWidth: '240px', color: 'var(--text-3)' }}>
               India&apos;s fastest growing job portal connecting talent with opportunity.
@@ -86,7 +87,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>© 2026 JobAdda.in | All rights reserved.</p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>Made with ❤️ in India</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>Powered by "Gogaledu Academy OPC Private Limited"</p>
         </div>
       </div>
     </footer>
