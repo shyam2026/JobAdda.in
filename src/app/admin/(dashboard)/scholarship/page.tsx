@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Download, GraduationCap, CheckCircle2, XCircle, Loader2, Mail, Phone, MapPin, User, Award, Compass, BarChart2, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Download, GraduationCap, CheckCircle2, XCircle, Loader2, Mail, Phone, MapPin, User, Award, Compass, BarChart2, Copy, Check, ChevronDown, ChevronUp, Camera } from 'lucide-react';
 
 export default function AdminScholarshipPage() {
   const [entries, setEntries] = useState<any[]>([]);
@@ -14,6 +14,10 @@ export default function AdminScholarshipPage() {
   const [examStats, setExamStats] = useState({ attempted: 0, avgScore: 0, maxScore: 0 });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+  const [selectedProctorSnapshots, setSelectedProctorSnapshots] = useState<{
+    studentName: string;
+    snapshots: Array<{ timestamp: string; image: string }>;
+  } | null>(null);
 
   const toggleExpand = (id: string) => {
     setExpandedCards(prev => ({
@@ -352,6 +356,46 @@ export default function AdminScholarshipPage() {
                         Exam Pending
                       </span>
                     )}
+
+                    {entry.proctorSnapshots && (() => {
+                      try {
+                        const snaps = JSON.parse(entry.proctorSnapshots);
+                        if (snaps && snaps.length > 0) {
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedProctorSnapshots({
+                                  studentName: entry.name,
+                                  snapshots: snaps
+                                });
+                              }}
+                              style={{
+                                background: 'rgba(99,102,241,0.12)',
+                                border: '1px solid rgba(99,102,241,0.25)',
+                                borderRadius: '6px',
+                                color: 'var(--primary-light)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.68rem',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                transition: 'var(--transition)'
+                              }}
+                              title="View exam proctoring snapshots"
+                            >
+                              <Camera size={12} />
+                              <span>{snaps.length}</span>
+                            </button>
+                          );
+                        }
+                      } catch (err) {
+                        return null;
+                      }
+                      return null;
+                    })()}
                   </div>
 
                   {/* Right Side: Payment status & Chevron */}
@@ -569,6 +613,101 @@ export default function AdminScholarshipPage() {
       ) : (
         <div className="card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
           <p style={{ color: 'var(--text-3)', margin: 0, fontSize: '0.88rem' }}>No registrations found.</p>
+        </div>
+      )}
+
+      {/* PROCTOR SNAPSHOTS MODAL */}
+      {selectedProctorSnapshots && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 11000,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem'
+        }}>
+          <div className="card" style={{
+            maxWidth: '750px',
+            width: '100%',
+            maxHeight: '90vh',
+            padding: '2.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem',
+            overflowY: 'auto',
+            border: '1px solid var(--border)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
+            backgroundColor: '#0f172a'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Proctoring Snapshots</h3>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.2rem' }}>Candidate: <strong>{selectedProctorSnapshots.studentName}</strong></p>
+              </div>
+              <button
+                onClick={() => setSelectedProctorSnapshots(null)}
+                className="btn btn-ghost"
+                style={{ minWidth: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.75rem', height: 'auto' }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))',
+              gap: '1rem',
+              overflowY: 'auto',
+              maxHeight: '60vh',
+              padding: '0.25rem'
+            }}>
+              {selectedProctorSnapshots.snapshots.map((snap, idx) => (
+                <div key={idx} style={{
+                  backgroundColor: 'rgba(255,255,255,0.02)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <div style={{ position: 'relative', width: '100%', paddingTop: '75%', backgroundColor: '#000' }}>
+                    <img
+                      src={snap.image}
+                      alt={`Snapshot ${idx + 1}`}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => {
+                        const w = window.open();
+                        if (w) {
+                          w.document.write(`<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a;"><img src="${snap.image}" style="max-width:90%; max-height:90vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.6);" /></div>`);
+                          w.document.title = `${selectedProctorSnapshots.studentName} - Snapshot #${idx + 1}`;
+                          w.document.body.style.margin = '0';
+                        }
+                      }}
+                    />
+                  </div>
+                  <div style={{ padding: '0.55rem', fontSize: '0.7rem', color: 'var(--text-3)', textAlign: 'center', borderTop: '1px solid var(--border)', fontWeight: 600 }}>
+                    {new Date(snap.timestamp).toLocaleString('en-IN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                      hour12: true
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

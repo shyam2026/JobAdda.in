@@ -11,7 +11,8 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   // Routes where the global Navbar and Footer should be hidden
   const hideGlobalUI = 
     pathname.startsWith('/admin') || 
-    pathname.startsWith('/company');
+    pathname.startsWith('/company') ||
+    pathname === '/scholarship/exam';
 
   return (
     <>

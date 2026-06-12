@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GraduationCap, Shield, Star, Wallet, Lock, Tag, X, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { GraduationCap, Shield, Star, Wallet, Lock, Tag, X, CheckCircle, AlertTriangle, Loader2, Sun, BookOpen, Clock, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { INDIA_STATES } from '@/lib/india-states';
 import WavingIndianFlag from '@/components/WavingIndianFlag';
@@ -49,6 +49,19 @@ const InlineNotification = ({ toast, onClose }: { toast: any; onClose: () => voi
 };
 
 export default function ScholarshipPage() {
+  // Entrance animation states
+  const [showHeader, setShowHeader] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    const hTimer = setTimeout(() => setShowHeader(true), 3000);
+    const fTimer = setTimeout(() => setShowForm(true), 4000);
+    return () => {
+      clearTimeout(hTimer);
+      clearTimeout(fTimer);
+    };
+  }, []);
+
   // Navigation states
   const [step, setStep] = useState<'form' | 'payment' | 'success' | 'retrieve' | 'retrieve-otp'>('form');
 
@@ -441,9 +454,24 @@ export default function ScholarshipPage() {
   };
 
   return (
-    <>
-      <WavingIndianFlag />
+    <div className="patriotic-bg-container" style={{ position: 'relative', minHeight: '100vh', width: '100%', overflow: 'hidden' }}>
       <style>{`
+        .patriotic-bg-container::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-image: url('/patriotic_bg.jpg');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          opacity: 0.75; /* More visible background */
+          z-index: 0;
+          pointer-events: none;
+        }
         .card {
           background: var(--bg-2) !important;
           backdrop-filter: none !important;
@@ -458,23 +486,93 @@ export default function ScholarshipPage() {
             grid-template-columns: 1fr !important;
           }
         }
+        .card-header-animated {
+          opacity: 0;
+          transform: translateY(60px);
+          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+          visibility: hidden;
+        }
+        .card-header-animated.visible {
+          opacity: 1;
+          transform: translateY(0);
+          visibility: visible;
+        }
+        .card-form-animated {
+          opacity: 0;
+          transform: translateY(60px);
+          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+          visibility: hidden;
+        }
+        .card-form-animated.visible {
+          opacity: 1;
+          transform: translateY(0);
+          visibility: visible;
+        }
+        .card-header-custom {
+          background: var(--bg-2) !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+          backdrop-filter: blur(8px) !important;
+          -webkit-backdrop-filter: blur(8px) !important;
+        }
       `}</style>
       <div style={{ position: 'relative', maxWidth: '720px', margin: '7rem auto 4rem', padding: '0 1.5rem', zIndex: 1 }} className="anim-fade-up">
       
       {/* Header Banner Card */}
-      <div className="card" style={{ textAlign: 'center', marginBottom: '2rem', padding: '2rem 1.5rem', background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.04) 100%) !important', border: '1px solid rgba(99,102,241,0.15) !important' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '60px', height: '60px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))', color: 'var(--primary)', marginBottom: '1rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
-          <GraduationCap size={30} />
+      <div className={`card card-header-animated card-header-custom ${showHeader ? 'visible' : ''}`} style={{ textAlign: 'center', marginBottom: '2rem', padding: '2.25rem 1.5rem', borderRadius: '20px' }}>
+        
+        {/* Independence Day Special Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 1rem', borderRadius: '9999px', backgroundColor: '#FFFFFF', border: '1px solid rgba(249,115,22,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '1.25rem' }}>
+          <Sun size={16} color="#F97316" fill="#F97316" />
+          <span style={{ color: '#F97316', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em' }}>INDEPENDENCE DAY SPECIAL</span>
         </div>
-        <h1 style={{ fontSize: '1.85rem', fontWeight: 900, marginBottom: '0.35rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>Scholarship Test 2026</h1>
-        <p style={{ color: 'var(--text-3)', fontSize: '0.92rem', margin: '0 0 0.75rem' }}>Test Date: <strong style={{ color: 'var(--text-1)' }}>15th August 2026</strong></p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Shield size={13} color="var(--success)" /> 150 MCQs</span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Star size={13} color="#fbbf24" /> 150 Minutes</span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Wallet size={13} color="var(--primary-light)" />Win ₹15,000</span>
+
+        {/* Title */}
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.65rem', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+          <span style={{ color: '#F97316' }}>Scholarship </span>
+          <span style={{ color: '#FFFFFF' }}>Test </span>
+          <span style={{ color: '#22C55E' }}>2026</span>
+        </h1>
+
+        {/* Subtitle / Test Date with Saffron and Green Dashes */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', marginBottom: '1.75rem', fontSize: '1rem', fontWeight: 700 }}>
+          <span style={{ display: 'inline-flex', gap: '4px' }}>
+            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
+            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
+          </span>
+          <span style={{ color: '#818CF8' }}>Test Date: 15th August 2026</span>
+          <span style={{ display: 'inline-flex', gap: '4px' }}>
+            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
+            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
+          </span>
+        </div>
+
+        {/* Stats Row */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.25rem', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#22C55E', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(34,197,94,0.2)' }}>
+              <BookOpen size={16} />
+            </div>
+            <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 MCQs</span>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F97316', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(249,115,22,0.2)' }}>
+              <Clock size={16} />
+            </div>
+            <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 Minutes</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#6366F1', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(99,102,241,0.2)' }}>
+              <Trophy size={16} />
+            </div>
+            <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>Win ₹15,000</span>
+          </div>
         </div>
       </div>
 
+      <div className={`card-form-animated ${showForm ? 'visible' : ''}`}>
       {step === 'form' && (
         <div className="card card-p">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
@@ -936,8 +1034,9 @@ export default function ScholarshipPage() {
           </form>
         </div>
       )}
+      </div>
 
     </div>
-    </>
+    </div>
   );
 }

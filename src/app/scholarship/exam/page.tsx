@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Lock, Phone, Key, Award, AlertCircle, CheckCircle, 
   ChevronLeft, ChevronRight, RefreshCw, Send, BookOpen, 
-  CheckCircle2, Clock, AlertTriangle, FileText, User
+  CheckCircle2, Clock, AlertTriangle, FileText, User,
+  Camera, Shield
 } from 'lucide-react';
+import ProctorManager from '@/components/ProctorManager';
 
 interface Question {
   id: number;
@@ -36,10 +38,12 @@ export default function ScholarshipExamPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [timeLeft, setTimeLeft] = useState(150 * 60); // 150 minutes in seconds
   const [rulesChecked, setRulesChecked] = useState(false);
-  const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('All');
   
   // Submit modal
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  
+  // Mobile palette drawer
+  const [showMobilePalette, setShowMobilePalette] = useState(false);
   
   // Results summary
   const [attemptedCount, setAttemptedCount] = useState(0);
@@ -47,6 +51,19 @@ export default function ScholarshipExamPage() {
   
   // Ref for auto-submit safety
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Local testing state
+  const [isLocalHost, setIsLocalHost] = useState(false);
+
+  // Restore state from localStorage if starting/active
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        setIsLocalHost(true);
+      }
+    }
+  }, []);
 
   // Restore state from localStorage if starting/active
   useEffect(() => {
@@ -289,6 +306,11 @@ export default function ScholarshipExamPage() {
     localStorage.removeItem('jobadda_exam_answers');
   };
 
+  // Proctor auto-submit callback (violation threshold reached)
+  const handleProctorAutoSubmit = useCallback(() => {
+    handleAutoSubmit(registrationNo, mobile, answers);
+  }, [registrationNo, mobile, answers]);
+
   // Helper formatting for timer
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -297,86 +319,177 @@ export default function ScholarshipExamPage() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Filtered Questions list based on Subject Filter
-  const subjects = [
-    'All', 'Mathematics', 'Reasoning & Aptitude', 'General Knowledge', 
-    'Current Affairs', 'Science', 'History', 'Geography', 'Indian Constitution & Civics'
-  ];
+
 
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', color: 'var(--text)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-outfit), sans-serif' }}>
       <style>{`
+        /* ── Mobile Responsive Styles for Exam Portal ── */
         @media (max-width: 768px) {
           .exam-grid {
             grid-template-columns: 1fr !important;
           }
           .exam-header-inner {
-            padding: 0 1rem !important;
-            gap: 0.75rem !important;
+            padding: 0 0.75rem !important;
+            height: 56px !important;
           }
           .exam-header-inner > div:last-child {
             gap: 0.5rem !important;
           }
+          .exam-candidate-info {
+            display: none !important;
+          }
+          .exam-logo-subtitle {
+            display: none !important;
+          }
+          .exam-logo-title {
+            font-size: 1rem !important;
+          }
           .exam-question-card {
             min-height: auto !important;
-            padding: 1.25rem !important;
+            padding: 1rem !important;
           }
           .exam-palette-card {
-            height: auto !important;
-            max-height: 250px !important;
-            padding: 1rem !important;
+            display: none !important;
+          }
+          .exam-mobile-fab {
+            display: flex !important;
+          }
+          .exam-nav-bar {
+            flex-wrap: wrap !important;
+            gap: 0.5rem !important;
+          }
+          .exam-verify-card {
+            padding: 1.5rem !important;
+          }
+          .exam-rules-card {
+            padding: 1.25rem !important;
+          }
+          .exam-option-btn {
+            padding: 0.85rem 1rem !important;
+          }
+          .exam-option-label {
+            font-size: 0.88rem !important;
+          }
+          .exam-option-char {
+            width: 26px !important;
+            height: 26px !important;
+            font-size: 0.78rem !important;
+          }
+          .exam-submit-btn-header {
+            padding: 0.4rem 0.65rem !important;
+            font-size: 0.72rem !important;
+          }
+          .exam-timer-badge {
+            padding: 0.3rem 0.6rem !important;
+          }
+          .exam-timer-badge span {
+            font-size: 0.85rem !important;
           }
         }
         @media (max-width: 480px) {
           .exam-header-inner {
-            flex-wrap: wrap !important;
-            height: auto !important;
-            padding: 0.75rem 1rem !important;
+            height: 50px !important;
+            padding: 0 0.5rem !important;
           }
+          .exam-question-card {
+            padding: 0.75rem !important;
+          }
+          .exam-question-text {
+            font-size: 1rem !important;
+            margin-bottom: 1rem !important;
+          }
+          .exam-option-btn {
+            padding: 0.75rem 0.85rem !important;
+            gap: 0.75rem !important;
+            border-radius: 10px !important;
+          }
+          .exam-nav-bar {
+            padding-top: 0.75rem !important;
+            margin-top: 1rem !important;
+          }
+        }
+
+        /* Mobile Palette Drawer */
+        .exam-mobile-fab {
+          display: none;
+        }
+        .exam-mobile-palette-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 8000;
+          background-color: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(4px);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.25s ease;
+        }
+        .exam-mobile-palette-overlay.active {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        .exam-mobile-palette-drawer {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 8001;
+          background-color: var(--bg-2, #1e1e2e);
+          border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+          border-radius: 20px 20px 0 0;
+          padding: 1.25rem;
+          max-height: 65vh;
+          overflow-y: auto;
+          transform: translateY(100%);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+        }
+        .exam-mobile-palette-drawer.active {
+          transform: translateY(0);
         }
       `}</style>
       
       {/* DISTRACTION-FREE HEADER */}
       <header className="exam-header-inner" style={{ height: '70px', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Award size={28} color="var(--primary)" />
+          <Award size={24} color="var(--primary)" />
           <div>
-            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>JobAdda.in</span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--primary-light)', fontWeight: 700, textTransform: 'uppercase', display: 'block', letterSpacing: '1px' }}>Scholarship Exam Portal</span>
+            <span className="exam-logo-title" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>JobAdda.in</span>
+            <span className="exam-logo-subtitle" style={{ fontSize: '0.7rem', color: 'var(--primary-light)', fontWeight: 700, textTransform: 'uppercase', display: 'block', letterSpacing: '1px' }}>Scholarship Exam Portal</span>
           </div>
         </div>
 
         {step === 'exam' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="exam-candidate-info" style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Candidate</div>
               <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{studentName || 'Scholarship Aspirant'}</div>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: timeLeft < 600 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(99, 102, 241, 0.15)', border: `1px solid ${timeLeft < 600 ? 'var(--danger)' : 'var(--primary)'}`, padding: '0.4rem 1rem', borderRadius: '8px', color: timeLeft < 600 ? 'var(--danger)' : 'var(--primary-light)' }}>
-              <Clock size={16} />
+            <div className="exam-timer-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: timeLeft < 600 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(99, 102, 241, 0.15)', border: `1px solid ${timeLeft < 600 ? 'var(--danger)' : 'var(--primary)'}`, padding: '0.4rem 1rem', borderRadius: '8px', color: timeLeft < 600 ? 'var(--danger)' : 'var(--primary-light)' }}>
+              <Clock size={14} />
               <span style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '1px' }}>{formatTime(timeLeft)}</span>
             </div>
 
             <button
               onClick={() => setShowSubmitModal(true)}
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm exam-submit-btn-header"
               style={{ padding: '0.5rem 1rem' }}
             >
-              Submit Exam
+              Submit
             </button>
           </div>
         )}
       </header>
 
       {/* MAIN CONTAINER */}
-      <main style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem', zIndex: 1, position: 'relative' }}>
+      <main style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem', zIndex: 1, position: 'relative' }}>
         
         {/* STEP 1: VERIFICATION SCREEN */}
         {step === 'verify' && (
-          <div className="card" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="card exam-verify-card" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '1px solid rgba(99,102,241,0.2)' }}>
                 <Lock size={28} color="var(--primary)" />
@@ -492,12 +605,30 @@ export default function ScholarshipExamPage() {
                 </button>
               </form>
             )}
+
+            {isLocalHost && (
+              <div style={{ marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRegistrationNo('JA-DEBUG');
+                    setMobile('9999999999');
+                    setStudentName('Local Test Candidate');
+                    setStep('rules');
+                  }}
+                  className="btn btn-outline"
+                  style={{ width: '100%', justifyContent: 'center', borderColor: 'var(--warning)', color: 'var(--warning)', gap: '0.5rem', fontWeight: 700 }}
+                >
+                  <span>🔧 Local Test: Bypass to Rules</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
         {/* STEP 2: RULES SCREEN */}
         {step === 'rules' && (
-          <div className="card" style={{ width: '100%', maxWidth: '650px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="card exam-rules-card" style={{ width: '100%', maxWidth: '650px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '1.25rem' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(99,102,241,0.2)' }}>
                 <BookOpen size={24} color="var(--primary)" />
@@ -540,6 +671,20 @@ export default function ScholarshipExamPage() {
                   <li>One registration is restricted to only one attempt.</li>
                 </ul>
               </div>
+
+              <div style={{ backgroundColor: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', padding: '1rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ef4444', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Shield size={14} /> Online Proctoring & Prohibited Actions
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.78rem', color: 'var(--text-2)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <li><strong>Webcam Required:</strong> Your webcam must remain active throughout the exam. Periodic snapshots will be captured for identity verification.</li>
+                  <li><strong>Fullscreen Mode:</strong> The exam must be taken in fullscreen. Exiting fullscreen will count as a violation.</li>
+                  <li><strong>Tab Switching:</strong> Navigating to other tabs or applications is strictly prohibited and will be logged as a violation.</li>
+                  <li><strong>Copy/Paste Disabled:</strong> All clipboard operations, right-click context menus, screenshots, and developer tools are blocked.</li>
+                  <li><strong>Auto-Submit:</strong> Accumulating <strong>5 violations</strong> will result in automatic submission of your exam.</li>
+                  <li>All suspicious activities are monitored and logged. Further human review may occur if suspicious behavior is detected.</li>
+                </ul>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', backgroundColor: 'rgba(99,102,241,0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(99,102,241,0.1)' }}>
@@ -551,7 +696,7 @@ export default function ScholarshipExamPage() {
                 style={{ marginTop: '0.2rem', cursor: 'pointer' }}
               />
               <label htmlFor="agree-rules" style={{ fontSize: '0.75rem', color: 'var(--text-2)', lineHeight: 1.4, cursor: 'pointer' }}>
-                I have read all the instructions, guidelines, and tie-breaker criteria. I consent to start my countdown timer and begin my scholarship exam attempt.
+                I have read all the instructions, guidelines, and proctoring policies. I consent to webcam monitoring, activity tracking, and fullscreen enforcement. I agree to start my countdown timer and begin my scholarship exam attempt.
               </label>
             </div>
 
@@ -575,26 +720,33 @@ export default function ScholarshipExamPage() {
 
         {/* STEP 3: ACTIVE EXAM PORTAL */}
         {step === 'exam' && questions.length > 0 && currentQuestion && (
-          <div className="exam-grid" style={{ width: '100%', maxWidth: '1100px', display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1.5rem', alignItems: 'start' }}>
+          <>
+          <ProctorManager
+            registrationNo={registrationNo}
+            onAutoSubmit={handleProctorAutoSubmit}
+            maxViolations={5}
+            snapshotIntervalMs={3 * 60 * 1000}
+          />
+          <div className="exam-grid" style={{ width: '100%', maxWidth: '1200px', display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1.5rem', alignItems: 'start' }}>
             
             {/* Left Column: Active Question box */}
-            <div className="card exam-question-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', minHeight: '450px', justifyContent: 'space-between' }}>
+            <div className="card exam-question-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', minHeight: '520px', justifyContent: 'space-between' }}>
               
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 900, background: 'rgba(99,102,241,0.15)', color: 'var(--primary-light)', border: '1px solid rgba(99,102,241,0.25)', padding: '0.25rem 0.75rem', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem', marginBottom: '1.75rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 900, background: 'rgba(99,102,241,0.15)', color: 'var(--primary-light)', border: '1px solid rgba(99,102,241,0.25)', padding: '0.25rem 0.75rem', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     {currentQuestion.subject}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>
                     Question <strong>{currentQuestionIndex + 1}</strong> of {questions.length}
                   </span>
                 </div>
 
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.5, marginBottom: '1.5rem' }}>
+                <h3 className="exam-question-text" style={{ fontSize: '1.28rem', fontWeight: 700, lineHeight: 1.5, marginBottom: '1.75rem', color: '#fff' }}>
                   {currentQuestion.question}
                 </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                   {currentQuestion.options.map((option, idx) => {
                     const isSelected = answers[currentQuestion.id.toString()] === idx;
                     const optionChar = String.fromCharCode(65 + idx);
@@ -603,10 +755,11 @@ export default function ScholarshipExamPage() {
                       <button
                         key={idx}
                         onClick={() => handleSelectOption(currentQuestion.id, idx)}
+                        className="exam-option-btn"
                         style={{
                           width: '100%',
                           textAlign: 'left',
-                          padding: '1rem 1.25rem',
+                          padding: '1.15rem 1.4rem',
                           borderRadius: '12px',
                           border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border)',
                           backgroundColor: isSelected ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.02)',
@@ -614,26 +767,27 @@ export default function ScholarshipExamPage() {
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '1rem',
+                          gap: '1.1rem',
                           transition: 'var(--transition)'
                         }}
                       >
-                        <span style={{
-                          width: '28px',
-                          height: '28px',
-                          borderRadius: '6px',
+                        <span className="exam-option-char" style={{
+                          width: '30px',
+                          height: '30px',
+                          borderRadius: '7px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontWeight: 800,
-                          fontSize: '0.8rem',
+                          fontSize: '0.85rem',
                           backgroundColor: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
                           border: isSelected ? '1px solid var(--primary-light)' : '1px solid var(--border)',
-                          color: isSelected ? 'white' : 'var(--text-3)'
+                          color: isSelected ? 'white' : 'var(--text-3)',
+                          flexShrink: 0
                         }}>
                           {optionChar}
                         </span>
-                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{option}</span>
+                        <span className="exam-option-label" style={{ fontSize: '0.98rem', fontWeight: 600 }}>{option}</span>
                       </button>
                     );
                   })}
@@ -641,7 +795,7 @@ export default function ScholarshipExamPage() {
               </div>
 
               {/* Navigation controls */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '1.25rem', marginTop: '2rem' }}>
+              <div className="exam-nav-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '1.25rem', marginTop: '2rem' }}>
                 <button
                   disabled={currentQuestionIndex === 0}
                   onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
@@ -683,16 +837,7 @@ export default function ScholarshipExamPage() {
                 <FileText size={14} /> Question Palette
               </div>
 
-              {/* Subject Dropdown Filter */}
-              <select
-                value={selectedSubjectFilter}
-                onChange={(e) => setSelectedSubjectFilter(e.target.value)}
-                style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', borderRadius: '8px' }}
-              >
-                {subjects.map((sub, i) => (
-                  <option key={i} value={sub}>{sub}</option>
-                ))}
-              </select>
+
 
               {/* Stats overview */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', backgroundColor: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.68rem', textAlign: 'center' }}>
@@ -709,8 +854,6 @@ export default function ScholarshipExamPage() {
               {/* Scrollable Numbers Grid */}
               <div style={{ flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem', paddingRight: '0.25rem' }}>
                 {questions.map((q, idx) => {
-                  const matches = selectedSubjectFilter === 'All' || q.subject === selectedSubjectFilter;
-                  if (!matches) return null;
 
                   const isCurrent = idx === currentQuestionIndex;
                   const isAnswered = answers[q.id.toString()] !== undefined;
@@ -742,6 +885,99 @@ export default function ScholarshipExamPage() {
 
             </div>
           </div>
+        {/* ── Mobile: Floating Palette Toggle Button ── */}
+        <button
+          className="exam-mobile-fab"
+          onClick={() => setShowMobilePalette(true)}
+          style={{
+            position: 'fixed',
+            bottom: '1rem',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 7000,
+            display: 'none',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.65rem 1.25rem',
+            borderRadius: '40px',
+            backgroundColor: 'var(--primary, #6366f1)',
+            color: '#fff',
+            border: 'none',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 24px rgba(99,102,241,0.5)',
+            letterSpacing: '0.3px',
+          }}
+        >
+          <FileText size={14} />
+          <span>Question Palette ({Object.keys(answers).length}/{questions.length})</span>
+        </button>
+
+        {/* ── Mobile: Slide-up Palette Drawer ── */}
+        <div
+          className={`exam-mobile-palette-overlay ${showMobilePalette ? 'active' : ''}`}
+          onClick={() => setShowMobilePalette(false)}
+        />
+        <div className={`exam-mobile-palette-drawer ${showMobilePalette ? 'active' : ''}`}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-3)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <FileText size={14} /> Question Palette
+            </div>
+            <button
+              onClick={() => setShowMobilePalette(false)}
+              style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: '1.25rem', fontWeight: 700, lineHeight: 1 }}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Stats overview */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', backgroundColor: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.7rem', textAlign: 'center', marginBottom: '1rem' }}>
+            <div>
+              <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--primary)', marginRight: '4px' }} />
+              Attempted: {Object.keys(answers).length}
+            </div>
+            <div>
+              <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: '4px' }} />
+              Left: {questions.length - Object.keys(answers).length}
+            </div>
+          </div>
+
+          {/* Numbers Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.4rem' }}>
+            {questions.map((q, idx) => {
+              const isCurrent = idx === currentQuestionIndex;
+              const isAnswered = answers[q.id.toString()] !== undefined;
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => {
+                    setCurrentQuestionIndex(idx);
+                    setShowMobilePalette(false);
+                  }}
+                  style={{
+                    height: '36px',
+                    borderRadius: '8px',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    border: isCurrent ? '1.5px solid white' : isAnswered ? '1px solid var(--primary)' : '1px solid var(--border)',
+                    backgroundColor: isCurrent ? 'white' : isAnswered ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.02)',
+                    color: isCurrent ? 'black' : 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'var(--transition)'
+                  }}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        </>
         )}
 
         {/* STEP 4: SUBMITTED SUCCESS CARD */}
@@ -823,9 +1059,11 @@ export default function ScholarshipExamPage() {
       )}
 
       {/* FOOTER */}
-      <footer style={{ padding: '1.25rem 0', borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-2)', textAlign: 'center', fontSize: '0.68rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-        © 2026 JobAdda.in. Secure Examination Environment. All Rights Reserved.
-      </footer>
+      {step !== 'exam' && (
+        <footer style={{ padding: '1.25rem 0', borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-2)', textAlign: 'center', fontSize: '0.68rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          © 2026 JobAdda.in. Secure Examination Environment. All Rights Reserved.
+        </footer>
+      )}
     </div>
   );
 }

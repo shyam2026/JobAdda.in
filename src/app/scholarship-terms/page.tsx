@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, Award, BookOpen, Clock, Check } from 'lucide-react';
+import { GraduationCap, Award, BookOpen, Clock, Check, Sun } from 'lucide-react';
 import WavingIndianFlag from '@/components/WavingIndianFlag';
 
 export const metadata = {
@@ -9,9 +9,24 @@ export const metadata = {
 
 export default function ScholarshipTermsPage() {
   return (
-    <>
-      <WavingIndianFlag />
+    <div className="patriotic-bg-container" style={{ position: 'relative', minHeight: '100vh', width: '100%', overflow: 'hidden' }}>
       <style>{`
+        .patriotic-bg-container::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-image: url('/patriotic_bg.jpg');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          opacity: 0.75; /* More visible background */
+          z-index: 0;
+          pointer-events: none;
+        }
         .card {
           background: var(--bg-2) !important;
           backdrop-filter: none !important;
@@ -23,11 +38,31 @@ export default function ScholarshipTermsPage() {
       `}</style>
       <div style={{ position: 'relative', maxWidth: '900px', margin: '7rem auto 4rem', padding: '0 1.5rem', zIndex: 1 }} className="anim-fade-up">
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <div className="card" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '60px', height: '60px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)) !important', color: 'var(--primary)', marginBottom: '1.25rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
-            <GraduationCap size={30} />
+          {/* Independence Day Special Badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 1rem', borderRadius: '9999px', backgroundColor: '#FFFFFF', border: '1px solid rgba(249,115,22,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '1.25rem' }}>
+            <Sun size={16} color="#F97316" fill="#F97316" />
+            <span style={{ color: '#F97316', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em' }}>INDEPENDENCE DAY SPECIAL</span>
           </div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 900, marginBottom: '0.35rem', color: 'var(--text-1)' }}>JOBADDA.IN SCHOLARSHIP TEST 2026</h1>
-          <p style={{ color: 'var(--text-3)', fontSize: '1rem' }}>Additional Terms & Conditions — Test Date: 15th August 2026</p>
+
+          {/* Title */}
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.65rem', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+            <span style={{ color: '#F97316' }}>Scholarship </span>
+            <span style={{ color: '#FFFFFF' }}>Test </span>
+            <span style={{ color: '#22C55E' }}>2026</span>
+          </h1>
+
+          {/* Subtitle / Test Date with Saffron and Green Dashes */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', fontSize: '1.05rem', fontWeight: 700 }}>
+            <span style={{ display: 'inline-flex', gap: '4px' }}>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
+            </span>
+            <span style={{ color: '#818CF8' }}>Additional Terms & Conditions — Test Date: 15th August 2026</span>
+            <span style={{ display: 'inline-flex', gap: '4px' }}>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
+            </span>
+          </div>
         </div>
 
         <div className="card card-p" style={{ padding: '2.5rem', color: 'var(--text-2)', lineHeight: 1.8, fontSize: '0.95rem' }}>
@@ -296,6 +331,6 @@ export default function ScholarshipTermsPage() {
 
       </div>
     </div>
-    </>
+    </div>
   );
 }

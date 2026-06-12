@@ -10,6 +10,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
+    const host = req.headers.get('host') || '';
+    const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || process.env.NODE_ENV === 'development';
+
+    if (isLocal && registrationNo === 'JA-DEBUG') {
+      // Evaluate answers locally and return score without updating DB
+      const questions = SCHOLARSHIP_QUESTIONS;
+      let examAttempted = 0;
+      let examCorrect = 0;
+      let examWrong = 0;
+
+      questions.forEach((q) => {
+        const selectedIndex = answers[q.id.toString()];
+        if (selectedIndex !== undefined && selectedIndex !== null && selectedIndex !== '') {
+          const selected = Number(selectedIndex);
+          examAttempted++;
+          const isCorrect = selected === q.answerIndex;
+          if (isCorrect) examCorrect++;
+          else examWrong++;
+        }
+      });
+
+      const examNegativeMarks = examWrong * 0.25;
+      const examScore = examCorrect - examNegativeMarks;
+
+      return NextResponse.json({
+        success: true,
+        score: examScore,
+        correct: examCorrect,
+        wrong: examWrong,
+        attempted: examAttempted
+      });
+    }
+
     const db = prisma as any;
 
     // Check if registration exists and matches mobile
