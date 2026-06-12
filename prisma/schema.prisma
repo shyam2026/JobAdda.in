@@ -323,6 +323,9 @@ model ScholarshipEntry {
   examReasoningScore  Float?
   examCaScore         Float?
   examAnswers         String?  @db.LongText
+  proctorViolations   Int      @default(0)
+  proctorSnapshots    String?  @db.LongText  // JSON array of base64 snapshots metadata
+  proctorLog          String?  @db.LongText  // JSON array of { type, timestamp, details }
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
