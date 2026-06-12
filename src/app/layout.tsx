@@ -113,10 +113,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
-      </head>
-      <body style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }} suppressHydrationWarning>
         <OrganizationSchema />
         <WebSiteSchema />
+      </head>
+      <body style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }} suppressHydrationWarning>
         <Providers>
           <LayoutWrapper>
             {children}

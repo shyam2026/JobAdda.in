@@ -4,12 +4,12 @@ import { auth } from '@/auth';
 
 export async function POST(req: Request) {
   try {
+    const { code, target } = await req.json();
+
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user && target !== 'SCHOLARSHIP') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { code, target } = await req.json();
     if (!code || typeof code !== 'string') {
       return NextResponse.json({ error: 'Coupon code is required' }, { status: 400 });
     }

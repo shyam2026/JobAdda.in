@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Briefcase, Info, MapPin, IndianRupee, Clock, ExternalLink, Tag } from 'lucide-react';
+import { Briefcase, Info, MapPin, IndianRupee, Clock, ExternalLink, Tag, Zap } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -152,38 +152,90 @@ export function CompanyTabs({ bio, moreDetails, jobs }: CompanyTabsProps) {
                   <a
                     href={`/jobs/${job.id}`}
                     key={job.id}
-                    className="card card-p card-hover no-underline"
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}
+                    className="no-underline"
+                    style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      flexWrap: 'wrap', 
+                      gap: '1.25rem',
+                      padding: '1.25rem 1.5rem',
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '16px',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.borderColor = 'var(--primary-light)';
+                      e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ margin: '0 0 0.4rem', color: 'var(--text)', fontWeight: '700' }}>{job.title}</h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.82rem', color: 'var(--text-3)' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <MapPin size={12} />{job.location}
+                      <h4 style={{ margin: '0 0 0.5rem', color: 'var(--text)', fontWeight: '700', fontSize: '1.1rem', transition: 'color 0.2s' }}>{job.title}</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-3)' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <MapPin size={14} style={{ color: 'var(--primary-light)' }} />{job.location}
                         </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <Clock size={12} />{timeAgo(job.createdAt)}
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Clock size={14} style={{ color: 'var(--text-3)' }} />{timeAgo(job.createdAt)}
                         </span>
                         {job.category && job.category !== 'Other' && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <Tag size={12} />{job.category}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <Tag size={14} style={{ color: 'var(--primary-light)' }} />{job.category}
                           </span>
                         )}
                       </div>
-                      <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
-                        <span style={{ background: `${typeColor}15`, color: typeColor, border: `1px solid ${typeColor}30`, borderRadius: '2rem', fontSize: '0.72rem', fontWeight: '700', padding: '0.2rem 0.65rem' }}>
-                          {job.type}
-                        </span>
-                      </div>
+                      {job.type !== 'EXTERNAL' && (
+                        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                          <span style={{ background: `${typeColor}12`, color: typeColor, border: `1px solid ${typeColor}25`, borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700', padding: '0.2rem 0.65rem' }}>
+                            {job.type}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: '800', color: 'var(--success)', fontSize: '1rem', justifyContent: 'flex-end' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem', flexShrink: 0 }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.35rem', 
+                        fontWeight: '800', 
+                        color: '#10b981', 
+                        fontSize: '1.05rem', 
+                        background: 'rgba(16, 185, 129, 0.08)',
+                        border: '1px solid rgba(16, 185, 129, 0.15)',
+                        padding: '0.3rem 0.75rem',
+                        borderRadius: '8px'
+                      }}>
                         <IndianRupee size={14} />
                         {job.salary ? job.salary.replace('₹', '') : 'Competitive'}
                       </div>
-                      <span className="btn btn-outline btn-sm" style={{ marginTop: '0.5rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        {job.type === 'EXTERNAL' ? <><ExternalLink size={12} /> Apply External</> : 'Apply Now →'}
+                      <span 
+                        className="btn" 
+                        style={{ 
+                          fontSize: '0.9rem', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '0.5rem',
+                          background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                          border: 'none',
+                          color: '#fff',
+                          borderRadius: '12px',
+                          padding: '0.65rem 1.35rem',
+                          fontWeight: '600',
+                          boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
+                        }}
+                      >
+                        Apply Now <Zap size={16} />
                       </span>
                     </div>
                   </a>

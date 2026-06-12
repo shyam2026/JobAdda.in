@@ -29,48 +29,30 @@ export function resetPrismaClient() {
   console.log('Prisma Client re-instantiated successfully.');
 }
 
-// Self-healing proxy to automatically catch and heal Prisma Rust/Engine panics
+// Simple forwarding proxy that lazily resolves the singleton client.
+// Returns raw PrismaPromise objects untouched so $transaction([...]) works.
+// Only heals synchronous engine-crash errors (RustPanic etc.).
 const prisma = new Proxy({} as any, {
-  get(target, prop, receiver) {
+  get(_target, prop, _receiver) {
     const client = getPrismaClient();
     const value = Reflect.get(client, prop);
 
+    // For $transaction / $connect / $disconnect and similar root methods,
+    // wrap only synchronous errors for self-healing. The returned promise
+    // is NOT wrapped with .catch() so PrismaPromise identity is preserved.
     if (typeof value === 'function') {
       return function (this: any, ...args: any[]) {
         try {
-          const result = value.apply(this === receiver ? client : this, args);
-          if (result && typeof result.then === 'function') {
-            return result.catch((err: any) => {
-              const errMsg = String(err);
-              if (
-                errMsg.includes('RustPanic') || 
-                errMsg.includes('PANIC') || 
-                errMsg.includes('Query engine') ||
-                errMsg.includes('timer has gone away') ||
-                errMsg.includes('connection')
-              ) {
-                console.warn('Prisma engine panic caught on root call. Reinitializing client...', err);
-                resetPrismaClient();
-                const freshClient = getPrismaClient();
-                const freshValue = Reflect.get(freshClient, prop);
-                if (typeof freshValue === 'function') {
-                  return freshValue.apply(freshClient, args);
-                }
-              }
-              throw err;
-            });
-          }
-          return result;
+          return value.apply(client, args);
         } catch (err: any) {
           const errMsg = String(err);
           if (
-            errMsg.includes('RustPanic') || 
-            errMsg.includes('PANIC') || 
+            errMsg.includes('RustPanic') ||
+            errMsg.includes('PANIC') ||
             errMsg.includes('Query engine') ||
-            errMsg.includes('timer has gone away') ||
-            errMsg.includes('connection')
+            errMsg.includes('timer has gone away')
           ) {
-            console.warn('Prisma engine panic caught on root sync call. Reinitializing client...', err);
+            console.warn('Prisma engine panic caught (sync). Reinitializing client...', err);
             resetPrismaClient();
             const freshClient = getPrismaClient();
             const freshValue = Reflect.get(freshClient, prop);
@@ -83,65 +65,9 @@ const prisma = new Proxy({} as any, {
       };
     }
 
-    // For database models (prisma.user, prisma.job, prisma.companyUser, etc.)
-    if (value && typeof value === 'object') {
-      return new Proxy(value, {
-        get(modelTarget, modelProp, modelReceiver) {
-          const modelValue = Reflect.get(modelTarget, modelProp);
-          if (typeof modelValue === 'function') {
-            return function (this: any, ...args: any[]) {
-              try {
-                const result = modelValue.apply(this === modelReceiver ? modelTarget : this, args);
-                if (result && typeof result.then === 'function') {
-                  return result.catch((err: any) => {
-                    const errMsg = String(err);
-                    if (
-                      errMsg.includes('RustPanic') || 
-                      errMsg.includes('PANIC') || 
-                      errMsg.includes('Query engine') ||
-                      errMsg.includes('timer has gone away') ||
-                      errMsg.includes('connection')
-                    ) {
-                      console.warn(`Prisma panic caught on model query (${String(prop)}.${String(modelProp)}). Healing client...`, err);
-                      resetPrismaClient();
-                      const freshClient = getPrismaClient();
-                      const freshModel = Reflect.get(freshClient, prop);
-                      const freshValue = Reflect.get(freshModel, modelProp);
-                      if (typeof freshValue === 'function') {
-                        return freshValue.apply(freshModel, args);
-                      }
-                    }
-                    throw err;
-                  });
-                }
-                return result;
-              } catch (err: any) {
-                const errMsg = String(err);
-                if (
-                  errMsg.includes('RustPanic') || 
-                  errMsg.includes('PANIC') || 
-                  errMsg.includes('Query engine') ||
-                  errMsg.includes('timer has gone away') ||
-                  errMsg.includes('connection')
-                ) {
-                  console.warn(`Prisma panic caught on sync model query (${String(prop)}.${String(modelProp)}). Healing client...`, err);
-                  resetPrismaClient();
-                  const freshClient = getPrismaClient();
-                  const freshModel = Reflect.get(freshClient, prop);
-                  const freshValue = Reflect.get(freshModel, modelProp);
-                  if (typeof freshValue === 'function') {
-                    return freshValue.apply(freshModel, args);
-                  }
-                }
-                throw err;
-              }
-            };
-          }
-          return modelValue;
-        }
-      });
-    }
-
+    // For model delegates (prisma.user, prisma.job, etc.), return
+    // the real model object directly. No wrapping needed — PrismaPromise
+    // objects flow through untouched.
     return value;
   }
 });

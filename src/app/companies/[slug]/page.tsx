@@ -48,7 +48,17 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="container py-12 anim-fade-up company-profile-root" style={{ marginTop: '5rem' }}>
       {/* Header Section */}
-      <div className="card card-p profile-header" style={{ marginBottom: '2.5rem', borderLeft: '6px solid var(--primary)', position: 'relative', zIndex: 10 }}>
+      {/* Header Section */}
+      <div className="card card-p profile-header" style={{ 
+        marginBottom: '2.5rem', 
+        borderRadius: '24px', 
+        border: '1px solid var(--border)', 
+        position: 'relative', 
+        overflow: 'hidden', 
+        zIndex: 10 
+      }}>
+        {/* Top Accent Line */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }} />
         <div className="header-logo" style={{ flexShrink: 0, width: '100px', height: '100px', borderRadius: '20px', background: 'var(--surface-light)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: '900', color: 'var(--primary)', overflow: 'hidden' }}>
           {company.logo ? <img src={company.logo} alt={company.companyName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : company.companyName[0]}
         </div>
@@ -72,8 +82,16 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
         {/* Sidebar (More Information) */}
         <div className="sidebar-container" style={{ marginTop: '5rem', marginBottom: '5rem' }}>
-          <div className="sidebar-card card" style={{ padding: '1.5rem', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px' }}>
-            <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: '700', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="sidebar-card card" style={{ 
+            padding: '1.5rem', 
+            background: 'var(--surface)', 
+            border: '1px solid var(--border)', 
+            borderRadius: '20px', 
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }} />
+            <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: '700', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
               <Info size={18} style={{ color: 'var(--primary)' }} /> More Information
             </h3>
             

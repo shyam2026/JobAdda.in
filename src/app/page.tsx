@@ -1,20 +1,43 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Briefcase, TrendingUp, ChevronDown, Star, Zap, Shield, ArrowRight, Loader2, Code, Megaphone, Banknote, Palette, Stethoscope, GraduationCap, Settings, BarChart3, HelpCircle, Users, FileText, Wallet } from 'lucide-react';
+import { Search, MapPin, Briefcase, TrendingUp, ChevronDown, Star, Zap, Shield, ArrowRight, Loader2, Code, Megaphone, Banknote, Palette, Stethoscope, GraduationCap, Settings, BarChart3, HelpCircle, Users, FileText, Wallet, X } from 'lucide-react';
 import Link from 'next/link';
 import { JobCard } from '@/features/jobs/components/JobCard';
 import { FAQSchema } from '@/components/StructuredData';
 
+const WavingImageFlag = ({ width = 24, height = 16 }: { width?: number; height?: number }) => (
+  <img 
+    src="/indian-flag.png" 
+    alt="Waving Indian Flag" 
+    width={width}
+    height={height}
+    style={{
+      width: `${width}px`,
+      height: `${height}px`,
+      borderRadius: '2px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      transformOrigin: 'bottom left',
+      animation: 'flag-wave 2.5s ease-in-out infinite'
+    }}
+  />
+);
+
 const CATEGORIES = [
   { name: 'Technology', icon: Code, color: '#6366f1', link: '/jobs?category=Technology' },
-  { name: 'Marketing', icon: Megaphone, color: '#ec4899', link: '/jobs?category=Marketing' },
   { name: 'Finance', icon: Banknote, color: '#10b981', link: '/jobs?category=Finance' },
-  { name: 'Design', icon: Palette, color: '#f59e0b', link: '/jobs?category=Design' },
   { name: 'Healthcare', icon: Stethoscope, color: '#ef4444', link: '/jobs?category=Healthcare' },
-  { name: 'Education', icon: GraduationCap, color: '#8b5cf6', link: '/jobs?category=Education' },
+  { name: 'Marketing', icon: Megaphone, color: '#ec4899', link: '/jobs?category=Marketing' },
   { name: 'Sales', icon: BarChart3, color: '#3b82f6', link: '/jobs?category=Sales' },
-  { name: 'Engineering', icon: Settings, color: '#64748b', link: '/jobs?category=Engineering' },
+  { name: 'HR', icon: Users, color: '#8b5cf6', link: '/jobs?category=HR' },
+  { name: 'Operations', icon: Settings, color: '#64748b', link: '/jobs?category=Operations' },
+  { name: 'Education', icon: GraduationCap, color: '#f59e0b', link: '/jobs?category=Education' },
+  { name: 'Legal', icon: Shield, color: '#f43f5e', link: '/jobs?category=Legal' },
+  { name: 'Design', icon: Palette, color: '#a855f7', link: '/jobs?category=Design' },
+  { name: 'Data & Analytics', icon: TrendingUp, color: '#06b6d4', link: '/jobs?category=Data%20%26%20Analytics' },
+  { name: 'Other', icon: HelpCircle, color: '#94a3b8', link: '/jobs?category=Other' },
 ];
 
 const STATS = [
@@ -39,6 +62,38 @@ export default function HomePage() {
   const [featuredJobs, setFeaturedJobs] = useState<any[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    // 1. Check local storage
+    if (localStorage.getItem('scholarship_applied') === 'true') {
+      return;
+    }
+
+    // 2. Check server session
+    let active = true;
+    let timer: NodeJS.Timeout;
+
+    fetch('/api/scholarship/check-applied')
+      .then(r => r.json())
+      .then(data => {
+        if (data.applied) {
+          localStorage.setItem('scholarship_applied', 'true');
+        } else if (active) {
+          timer = setTimeout(() => setShowPopup(true), 2500);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          timer = setTimeout(() => setShowPopup(true), 2500);
+        }
+      });
+
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
 
   useEffect(() => {
     fetch('/api/jobs?limit=3')
@@ -73,7 +128,27 @@ export default function HomePage() {
           </p>
 
           <form onSubmit={handleSearch} className="anim-fade-up anim-delay-3" style={{ width: '100%', maxWidth: '840px', margin: '0 auto' }}>
-            <div className="search-box">
+            <div className="search-box" style={{
+              background: 'rgba(15, 23, 42, 0.45)',
+              backdropFilter: 'blur(16px)',
+              border: '1.5px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '24px',
+              padding: '0.4rem',
+              display: 'flex',
+              alignItems: 'center',
+              boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 50px rgba(99, 102, 241, 0.04)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              margin: '0 auto',
+            }}
+            onFocusCapture={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.45)';
+              e.currentTarget.style.boxShadow = '0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 50px rgba(99, 102, 241, 0.15)';
+            }}
+            onBlurCapture={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+              e.currentTarget.style.boxShadow = '0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 50px rgba(99, 102, 241, 0.04)';
+            }}
+            >
               <div className="search-item">
                 <Search size={20} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
                 <input
@@ -93,7 +168,18 @@ export default function HomePage() {
                   onChange={e => setLocation(e.target.value)}
                 />
               </div>
-              <button type="submit" className="btn btn-primary btn-lg" style={{ flexShrink: 0, margin: '0.25rem' }}>
+              <button type="submit" className="btn btn-lg" style={{ 
+                flexShrink: 0, 
+                margin: '0.25rem',
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '16px',
+                fontWeight: '700',
+                padding: '0.8rem 1.8rem',
+                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+                transition: 'all 0.2s'
+              }}>
                 Search Jobs
               </button>
             </div>
@@ -155,21 +241,21 @@ export default function HomePage() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '1rem',
+                  gap: '0.5rem',
                   aspectRatio: '1 / 1',
-                  padding: '0.75rem',
+                  padding: '1rem',
                 }}
               >
                 {/* Decorative background glow on hover */}
                 <div className="category-glow" style={{ background: `radial-gradient(circle 100px at 50% 50%, ${cat.color}15, transparent)` }} />
                 
                 <div className="category-icon" style={{ background: `${cat.color}12`, color: cat.color, border: `1px solid ${cat.color}25` }}>
-                  <cat.icon size={26} strokeWidth={1.5} />
+                  <cat.icon size={22} strokeWidth={1.5} />
                 </div>
                 
-                <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                  <h4 style={{ margin: '0', fontWeight: '800', fontSize: '1.05rem', color: 'var(--text)', transition: 'color 0.2s', textAlign: 'center' }}>{cat.name}</h4>
-                  <span className="category-count" style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-3)', transition: 'all 0.25s ease' }}>
+                <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15rem' }}>
+                  <h4 style={{ margin: '0', fontWeight: '800', fontSize: '0.98rem', color: 'var(--text)', transition: 'color 0.2s', textAlign: 'center' }}>{cat.name}</h4>
+                  <span className="category-count" style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-3)', transition: 'all 0.25s ease' }}>
                     Browse Jobs →
                   </span>
                 </div>
@@ -227,9 +313,9 @@ export default function HomePage() {
       {/* ═══ REFER & EARN ═══ */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <div className="card card-p-lg" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))', border: '1px solid rgba(99,102,241,0.2)', textAlign: 'center', overflow: 'hidden', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '250px', height: '250px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: '-40px', left: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(236,72,153,0.15), transparent)', pointerEvents: 'none' }} />
+          <div className="card card-p-lg" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.1))', border: '1px solid rgba(99,102,241,0.25)', textAlign: 'center', overflow: 'hidden', position: 'relative', borderRadius: '32px' }}>
+            <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '250px', height: '250px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.25), transparent)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '-40px', left: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(236,72,153,0.18), transparent)', pointerEvents: 'none' }} />
             <div className="badge badge-primary" style={{ marginBottom: '1.5rem', fontSize: '0.85rem' }}>
               💸 Referral Program
             </div>
@@ -238,8 +324,16 @@ export default function HomePage() {
               Share your unique JobAdda.in link. Earn <strong style={{ color: 'var(--success)' }}>Upto ₹50</strong> for every friend who joins and applies — straight to your wallet.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/register" className="btn btn-primary btn-lg">Join & Get Your Link</Link>
-              <Link href="/refer" className="btn btn-outline btn-lg">Learn More</Link>
+              <Link href="/register" className="btn btn-lg" style={{
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '14px',
+                fontWeight: '700',
+                padding: '0.8rem 1.8rem',
+                boxShadow: '0 4px 15px rgba(99, 102, 241, 0.35)',
+              }}>Join & Get Your Link</Link>
+              <Link href="/refer" className="btn btn-outline btn-lg" style={{ borderRadius: '14px' }}>Learn More</Link>
             </div>
           </div>
         </div>
@@ -253,12 +347,12 @@ export default function HomePage() {
           </div>
           <div className="grid-3">
             {[
-              { icon: <Shield size={28} />, title: '100% Verified Jobs', desc: 'Every listing is manually reviewed. No fake jobs, no spam — guaranteed quality.', color: '#10b981' },
-              { icon: <Zap size={28} />, title: 'One-Click Apply', desc: 'Apply to any job instantly using your JobAdda profile. No re-filling forms.', color: '#6366f1' },
-              { icon: <TrendingUp size={28} />, title: 'Smart Job Matching', desc: 'Our engine surfaces the most relevant roles based on your skills and preferences.', color: '#ec4899' },
+              { icon: <Shield size={28} />, title: '100% Verified Jobs', desc: 'Every listing is manually reviewed. No fake jobs, no spam — guaranteed quality.', color: '#10b981', gradient: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))' },
+              { icon: <Zap size={28} />, title: 'One-Click Apply', desc: 'Apply to any job instantly using your JobAdda profile. No re-filling forms.', color: '#6366f1', gradient: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))' },
+              { icon: <TrendingUp size={28} />, title: 'Smart Job Matching', desc: 'Our engine surfaces the most relevant roles based on your skills and preferences.', color: '#ec4899', gradient: 'linear-gradient(135deg, rgba(236,72,153,0.15), rgba(236,72,153,0.05))' },
             ].map((f, i) => (
-              <div key={i} className="card card-p" style={{ textAlign: 'center' }}>
-                <div style={{ width: '60px', height: '60px', borderRadius: '1rem', background: `${f.color}15`, border: `1px solid ${f.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: f.color, margin: '0 auto 1.5rem' }}>{f.icon}</div>
+              <div key={i} className="card card-p anim-fade-up" style={{ textAlign: 'center', animationDelay: `${i * 0.1}s` }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: f.gradient, border: `1px solid ${f.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: f.color, margin: '0 auto 1.5rem', boxShadow: `0 8px 24px ${f.color}15` }}>{f.icon}</div>
                 <h3 style={{ marginBottom: '0.75rem' }}>{f.title}</h3>
                 <p style={{ fontSize: '0.9rem' }}>{f.desc}</p>
               </div>
@@ -325,7 +419,9 @@ export default function HomePage() {
       </section>
 
       {/* ═══ CTA FOR EMPLOYERS ═══ */}
-      <section style={{ background: 'var(--bg-2)', padding: '5rem 0', borderTop: '1px solid var(--border)' }}>
+      <section style={{ background: 'var(--bg-2)', padding: '5rem 0', borderTop: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+        {/* Decorative gradient accent */}
+        <div style={{ position: 'absolute', top: 0, left: '15%', right: '15%', height: '2px', background: 'linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent)' }} />
         <div className="container flex-between" style={{ flexWrap: 'wrap', gap: '2rem' }}>
           <div>
             <h2 style={{ marginBottom: '1rem' }}>Are You <span className="text-gradient">Hiring?</span></h2>
@@ -342,6 +438,66 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Scholarship Popup Modal */}
+      {showPopup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', padding: '1.5rem' }}>
+          <div className="card anim-fade-up" style={{ width: '100%', maxWidth: '440px', padding: '2.5rem 2rem', position: 'relative', borderRadius: '24px', textAlign: 'center', boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(99,102,241,0.1)', background: 'linear-gradient(145deg, var(--bg-2) 0%, #0f172a 100%)', border: '1px solid rgba(99,102,241,0.2)' }}>
+            {/* Decorative gradient accent on top */}
+            <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: '3px', background: 'linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent)', borderRadius: '0 0 4px 4px' }} />
+            
+            <button 
+              onClick={() => { setShowPopup(false); }} 
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-3)', cursor: 'pointer', borderRadius: '50%', padding: '0.4rem', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}
+            >
+              <X size={18} />
+            </button>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))', color: 'var(--primary)', marginBottom: '1.25rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
+              <GraduationCap size={32} />
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', width: '100%', position: 'relative' }}>
+              Scholarship Test 2026
+              <span style={{ display: 'inline-block', position: 'relative', top: '-6px' }}>
+                <WavingImageFlag width={22} height={15} />
+              </span>
+            </h3>
+            <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', margin: '0 0 1.25rem' }}>
+              Showcase your talent on <strong style={{ color: 'var(--text-1)' }}>15th August 2026</strong>. Stand out & win career guidance with top scholarships!
+            </p>
+            
+            {/* Feature highlights */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left', margin: '0 0 1.5rem', padding: '1rem', borderRadius: '14px', background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
+              {[
+                { icon: '📝', text: '150 MCQs • 150 Minutes' },
+                { icon: '🏆', text: 'Win scholarships up to ₹15,000' }
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.82rem', color: 'var(--text-2)', fontWeight: 600 }}>
+                  <span style={{ fontSize: '1rem' }}>{item.icon}</span>
+                  <span>{item.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+              <Link 
+                href="/scholarship" 
+                onClick={() => { setShowPopup(false); }}
+                className="btn btn-primary" 
+                style={{ width: '100%', padding: '0.9rem', justifyContent: 'center', fontWeight: 800 }}
+              >
+                Register Now →
+              </Link>
+              <button 
+                onClick={() => { setShowPopup(false); }} 
+                className="btn btn-ghost" 
+                style={{ fontSize: '0.85rem', alignSelf: 'center', margin: '0 auto' }}
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══ HOMEPAGE STYLES ═══ */}
       <style jsx>{`
         .stats-row {
@@ -352,11 +508,18 @@ export default function HomePage() {
         .stat-card {
           display: flex;
           align-items: center;
-          gap: 1rem;
-          padding: 1rem 1.25rem;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
+          gap: 1.25rem;
+          padding: 1.25rem 1.5rem;
+          background: rgba(255,255,255,0.02);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(99, 102, 241, 0.25);
+          box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.4);
+          background: rgba(255,255,255,0.04);
         }
         .stat-card-icon {
           width: 48px; height: 48px;
@@ -373,19 +536,19 @@ export default function HomePage() {
 
         .categories-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1.5rem;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 1rem;
         }
         .category-card {
           aspect-ratio: 1 / 1;
-          padding: 0.75rem;
+          padding: 1rem;
           text-align: center;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 1rem;
-          border-radius: 24px !important;
+          gap: 0.5rem;
+          border-radius: 20px !important;
           cursor: pointer;
         }
         .category-card:hover {
@@ -413,8 +576,8 @@ export default function HomePage() {
           box-shadow: 0 8px 24px -4px var(--hover-color)30;
         }
         .category-icon {
-          width: 60px; height: 60px;
-          border-radius: 18px;
+          width: 52px; height: 52px;
+          border-radius: 16px;
           display: flex; align-items: center; justify-content: center;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           flex-shrink: 0;
@@ -426,7 +589,7 @@ export default function HomePage() {
 
         @media (max-width: 1024px) {
           .stats-row { grid-template-columns: repeat(2, 1fr); }
-          .categories-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+          .categories-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
         }
 
         @media (max-width: 768px) {
@@ -438,20 +601,33 @@ export default function HomePage() {
           .stat-lbl { font-size: 0.72rem; }
 
           .categories-grid { grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
-          .category-card { aspect-ratio: 1 / 1; padding: 1rem !important; border-radius: 5px !important; gap: 0.5rem !important; }
-          .category-icon { width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0; }
-          .category-icon :global(svg) { width: 22px !important; height: 22px !important; }
-          .category-card h4 { font-size: 0.95rem !important; }
+          .category-card { aspect-ratio: 1 / 1; padding: 0.85rem !important; border-radius: 16px !important; gap: 0.4rem !important; }
+          .category-icon { width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0; }
+          .category-icon :global(svg) { width: 20px !important; height: 20px !important; }
+          .category-card h4 { font-size: 0.88rem !important; }
         }
 
         @media (max-width: 560px) {
-          .categories-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.65rem !important; }
-          .category-card { padding: 0.75rem !important; gap: 0.4rem !important; }
+          .categories-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 0.5rem !important; }
+          .category-card { padding: 0.6rem !important; gap: 0.35rem !important; border-radius: 12px !important; }
+          .category-icon { width: 36px !important; height: 36px !important; border-radius: 10px !important; }
+          .category-icon :global(svg) { width: 16px !important; height: 16px !important; }
+          .category-card h4 { font-size: 0.78rem !important; }
+          .category-count { display: none !important; }
         }
 
         @media (max-width: 380px) {
           .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-          .categories-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .categories-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 0.4rem !important; }
+          .category-card { padding: 0.5rem !important; }
+          .category-card h4 { font-size: 0.72rem !important; }
+        }
+        @keyframes flag-wave {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          20% { transform: translateY(-1px) rotate(3deg); }
+          40% { transform: translateY(1.5px) rotate(-1deg); }
+          60% { transform: translateY(-1px) rotate(2deg); }
+          80% { transform: translateY(1px) rotate(-2deg); }
         }
       `}</style>
     </>

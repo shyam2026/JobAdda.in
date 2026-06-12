@@ -211,7 +211,18 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
 
         {/* Footer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: '800', color: 'var(--success)', fontSize: '0.92rem' }}>
+          <span style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.25rem', 
+            fontWeight: '800', 
+            color: '#10b981', 
+            fontSize: '0.9rem',
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.15)',
+            padding: '0.25rem 0.65rem',
+            borderRadius: '6px'
+          }}>
             <IndianRupee size={13} strokeWidth={2.5} />
             {job.salary ? job.salary.replace('₹', '') : 'Competitive'}
           </span>
@@ -225,17 +236,17 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
         .job-card-new {
           background: var(--surface) !important;
           border: 1px solid var(--border) !important;
-          border-radius: var(--radius) !important;
-          padding: 1.1rem 1.25rem !important;
+          border-radius: 16px !important;
+          padding: 1.25rem 1.4rem !important;
           cursor: pointer !important;
-          transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s !important;
+          transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
           display: block !important;
           text-decoration: none !important;
         }
         .job-card-new:hover {
-          border-color: rgba(99,102,241,0.4) !important;
-          box-shadow: 0 4px 24px rgba(99,102,241,0.1) !important;
-          transform: translateY(-1px) !important;
+          border-color: rgba(99,102,241,0.35) !important;
+          box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.05) !important;
+          transform: translateY(-3px) !important;
         }
         .job-card-logo {
           width: 44px; height: 44px;
@@ -245,13 +256,14 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
           flex-shrink: 0; overflow: hidden;
         }
         .job-card-apply-btn {
-          display: inline-flex !important; align-items: center !important; gap: 0.3rem !important;
-          background: var(--primary) !important; color: white !important;
-          border-radius: 0.5rem !important; font-size: 0.78rem !important; font-weight: 700 !important;
-          padding: 0.38rem 0.9rem !important;
-          transition: opacity 0.15s !important;
+          display: inline-flex !important; align-items: center !important; gap: 0.35rem !important;
+          background: linear-gradient(135deg, #6366f1, #8b5cf6) !important; color: white !important;
+          border-radius: 10px !important; font-size: 0.8rem !important; font-weight: 700 !important;
+          padding: 0.45rem 1rem !important;
+          transition: transform 0.2s, opacity 0.15s !important;
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
         }
-        .job-card-new:hover .job-card-apply-btn { opacity: 0.88 !important; }
+        .job-card-new:hover .job-card-apply-btn { transform: translateX(2px) !important; }
       `}</style>
     </>
   );

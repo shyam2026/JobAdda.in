@@ -292,6 +292,58 @@ model PasswordResetToken {
   @@unique([email, token])
 }
 
+model ScholarshipEntry {
+  id              String   @id @default(cuid())
+  registrationNo  String   @unique
+  name            String
+  mobile          String
+  email           String
+  district        String
+  state           String
+  lastQualification String
+  marksPercent    String
+  careerGoal      String
+  fatherName      String?
+  aadharNo        String?
+  mobileVerified  Boolean  @default(false)
+  emailVerified   Boolean  @default(false)
+  paymentStatus   String   @default("PENDING")
+  paymentId       String?
+  orderId         String?
+  amount          Float?
+  couponCode      String?
+  passportImage   String?  @db.LongText
+  examScore           Float?
+  examSubmitted       Boolean  @default(false)
+  examAttempted       Int?
+  examCorrect         Int?
+  examWrong           Int?
+  examNegativeMarks   Float?
+  examMathScore       Float?
+  examReasoningScore  Float?
+  examCaScore         Float?
+  examAnswers         String?  @db.LongText
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([mobile])
+  @@index([email])
+}
+
+model ScholarshipOtp {
+  id        String   @id @default(cuid())
+  target    String
+  type      String
+  otp       String
+  sendCount Int      @default(1)
+  lastSentAt DateTime @default(now())
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([target, type])
+}
+
 model AdminUser {
   id        String   @id @default(cuid())
   email     String   @unique

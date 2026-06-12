@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Linkedin } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, ExternalLink } from 'lucide-react';
 
 export default function Template1({ p, config, unlocked }: { p: any; config: any; unlocked: boolean }) {
   return (
@@ -19,14 +19,14 @@ export default function Template1({ p, config, unlocked }: { p: any; config: any
         <h1 style={{ fontSize: '26px', fontWeight: 700, marginBottom: '1rem', letterSpacing: '-0.02em' }}>{p.name || 'Your Name'}</h1>
         {/* Contact row */}
         <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1.25rem', marginTop: '0.5rem', fontSize: '12px', color: '#475569' }}>
-          {config.showEmail && p.email && <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Mail size={13} />{p.email}</span>}
-          {config.showPhone && p.phone && <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Phone size={13} />{p.phone}</span>}
+          {config.showEmail && p.email && <a href={`mailto:${p.email}`} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'inherit', textDecoration: 'none' }}><Mail size={13} />{p.email}</a>}
+          {config.showPhone && p.phone && <a href={`tel:${p.phone}`} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'inherit', textDecoration: 'none' }}><Phone size={13} />{p.phone}</a>}
           {p.city && <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><MapPin size={13} />{p.city}</span>}
           {config.showSocials && p.linkedin && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <a href={p.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'inherit', textDecoration: 'none' }}>
               <Linkedin size={13} />
               {p.linkedin.includes('linkedin.com/in/') ? `/in/${p.linkedin.split('/in/')[1].split('/')[0]}` : 'LinkedIn'}
-            </span>
+            </a>
           )}
         </div>
       </div>
@@ -115,7 +115,14 @@ export default function Template1({ p, config, unlocked }: { p: any; config: any
             {p.certificates.filter((c: any) => c.name).map((cert: any, i: number) => (
               <div key={i} style={{ marginBottom: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <strong style={{ fontSize: '16px', fontWeight: 700 }}>{cert.name}</strong>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <strong style={{ fontSize: '16px', fontWeight: 700 }}>{cert.name}</strong>
+                    {cert.url && (
+                      <a href={cert.url.startsWith('http') ? cert.url : `https://${cert.url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
+                  </span>
                   <span style={{ fontSize: '12px', color: '#64748b' }}>{cert.date}</span>
                 </div>
                 <div style={{ fontSize: '12px', color: '#475569', fontWeight: 600 }}>{cert.issuer}</div>

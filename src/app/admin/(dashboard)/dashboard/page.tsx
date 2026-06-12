@@ -2,7 +2,7 @@ import React from 'react';
 import prisma from '@/lib/prisma';
 import {
   Users, Building2, Briefcase, FileText, IndianRupee,
-  Activity, ArrowUpRight, TrendingUp
+  Activity, ArrowUpRight, TrendingUp, GraduationCap
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -71,6 +71,10 @@ export default async function AdminDashboardPage() {
     applicationsByStatus,
     revenueData,
     topCompanies,
+    totalScholarships,
+    paidScholarships,
+    takenScholarships,
+    scholarshipScoreAggregate,
   ] = await Promise.all([
     prisma.user.count({ where: { role: 'STUDENT' } }),
     (prisma.companyUser as any).count(),
@@ -96,9 +100,17 @@ export default async function AdminDashboardPage() {
       orderBy: { jobs: { _count: 'desc' } },
       take: 3,
     }),
+    prisma.scholarshipEntry.count(),
+    prisma.scholarshipEntry.count({ where: { paymentStatus: 'PAID' } }),
+    prisma.scholarshipEntry.count({ where: { examSubmitted: true } }),
+    prisma.scholarshipEntry.aggregate({
+      where: { examSubmitted: true },
+      _avg: { examScore: true }
+    })
   ]);
 
   const totalRevenue = revenueData._sum.amount || 0;
+  const avgScholarshipScore = scholarshipScoreAggregate._avg.examScore || 0;
 
   const statusCount = (status: string) => {
     const found = (applicationsByStatus as any[]).find(a => a.status === status);
@@ -144,8 +156,8 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
-      {/* ── Bottom 2-col grid ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      {/* ── Bottom multi-col grid ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
 
         {/* Application Pipeline */}
         <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem 1.5rem' }}>
@@ -184,6 +196,44 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
+        {/* Scholarship Test Activity Card */}
+        <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.1rem' }}>
+              <GraduationCap size={16} style={{ color: 'var(--success)' }} />
+              <h4 style={{ margin: 0 }}>Scholarship Test</h4>
+              <Link href="/admin/scholarship" style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--success)', fontWeight: '600', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.1rem' }}>
+                Manage <ArrowUpRight size={13} />
+              </Link>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+              <div style={{ background: 'var(--bg-3)', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 'bold', textTransform: 'uppercase' }}>Registrations</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: '800', marginTop: '0.2rem', color: 'var(--text-1)' }}>{totalScholarships}</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--success)', marginTop: '0.1rem', fontWeight: 600 }}>{paidScholarships} Paid Fee</div>
+              </div>
+              
+              <div style={{ background: 'var(--bg-3)', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 'bold', textTransform: 'uppercase' }}>Exams Taken</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: '800', marginTop: '0.2rem', color: 'var(--success)' }}>{takenScholarships}</div>
+                <div style={{ fontSize: '0.68rem', color: '#a855f7', marginTop: '0.1rem', fontWeight: 600 }}>Avg Score: {avgScholarshipScore.toFixed(1)}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.3rem', fontWeight: 600 }}>
+              <span>Fee Payment Ratio</span>
+              <span>{Math.round((paidScholarships / (totalScholarships || 1)) * 100)}% Complete</span>
+            </div>
+            <div style={{ height: '8px', background: 'var(--border)', borderRadius: '99px', overflow: 'hidden', display: 'flex' }}>
+              <div style={{ height: '100%', background: 'var(--success)', width: `${(paidScholarships / (totalScholarships || 1)) * 100}%` }} />
+              <div style={{ height: '100%', background: 'var(--warning)', width: `${((totalScholarships - paidScholarships) / (totalScholarships || 1)) * 100}%` }} />
+            </div>
+          </div>
+        </div>
+
         {/* Top 3 Actively Posting Companies */}
         <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -201,28 +251,28 @@ export default async function AdminDashboardPage() {
               return (
                 <div key={c.id} style={{
                   display: 'flex', alignItems: 'center', gap: '1rem',
-                  padding: '1rem 1.5rem',
+                  padding: '0.8rem 1.5rem',
                   borderBottom: i < topCompanies.length - 1 ? '1px solid var(--border)' : 'none',
                 }}>
                   {/* Rank */}
                   <div style={{
-                    width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
+                    width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0,
                     background: `${rankColors[i]}22`, color: rankColors[i],
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: '800', fontSize: '0.8rem',
+                    fontWeight: '800', fontSize: '0.75rem',
                   }}>
                     #{i + 1}
                   </div>
 
                   {/* Logo or initial */}
                   {c.logo ? (
-                    <img src={c.logo} alt={c.companyName} style={{ width: '38px', height: '38px', borderRadius: '8px', objectFit: 'contain', background: 'var(--bg-3)', border: '1px solid var(--border)', flexShrink: 0 }} />
+                    <img src={c.logo} alt={c.companyName} style={{ width: '34px', height: '34px', borderRadius: '8px', objectFit: 'contain', background: 'var(--bg-3)', border: '1px solid var(--border)', flexShrink: 0 }} />
                   ) : (
                     <div style={{
-                      width: '38px', height: '38px', borderRadius: '8px', flexShrink: 0,
+                      width: '34px', height: '34px', borderRadius: '8px', flexShrink: 0,
                       background: 'rgba(16,185,129,0.1)', color: '#10b981',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: '800', fontSize: '1rem',
+                      fontWeight: '800', fontSize: '0.9rem',
                       border: '1px solid rgba(16,185,129,0.15)',
                     }}>
                       {initial}
@@ -231,27 +281,27 @@ export default async function AdminDashboardPage() {
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: '700', fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {c.companyName}
                     </div>
                     {c.industry && (
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>{c.industry}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>{c.industry}</div>
                     )}
                   </div>
 
                   {/* Job count + link */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                     <span style={{
                       background: 'rgba(16,185,129,0.08)', color: '#10b981',
                       border: '1px solid rgba(16,185,129,0.18)',
-                      borderRadius: '2rem', fontSize: '0.72rem', fontWeight: '800',
-                      padding: '0.2rem 0.65rem',
+                      borderRadius: '2rem', fontSize: '0.7rem', fontWeight: '800',
+                      padding: '0.15rem 0.55rem',
                     }}>
                       {c._count.jobs} jobs
                     </span>
                     {c.slug && (
                       <Link href={`/companies/${c.slug}`} target="_blank" style={{ color: 'var(--text-3)', display: 'flex' }}>
-                        <ArrowUpRight size={14} />
+                        <ArrowUpRight size={13} />
                       </Link>
                     )}
                   </div>

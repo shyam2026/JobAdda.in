@@ -1,0 +1,831 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Lock, Phone, Key, Award, AlertCircle, CheckCircle, 
+  ChevronLeft, ChevronRight, RefreshCw, Send, BookOpen, 
+  CheckCircle2, Clock, AlertTriangle, FileText, User
+} from 'lucide-react';
+
+interface Question {
+  id: number;
+  subject: string;
+  question: string;
+  options: string[];
+}
+
+export default function ScholarshipExamPage() {
+  // Step flow: 'verify' | 'rules' | 'exam' | 'submitted'
+  const [step, setStep] = useState<'verify' | 'rules' | 'exam' | 'submitted'>('verify');
+  
+  // Verification states
+  const [registrationNo, setRegistrationNo] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  
+  // Student Context
+  const [studentName, setStudentName] = useState('');
+  
+  // Exam states
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [timeLeft, setTimeLeft] = useState(150 * 60); // 150 minutes in seconds
+  const [rulesChecked, setRulesChecked] = useState(false);
+  const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('All');
+  
+  // Submit modal
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  
+  // Results summary
+  const [attemptedCount, setAttemptedCount] = useState(0);
+  const [unattemptedCount, setUnattemptedCount] = useState(0);
+  
+  // Ref for auto-submit safety
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Restore state from localStorage if starting/active
+  useEffect(() => {
+    const savedReg = localStorage.getItem('jobadda_exam_reg');
+    const savedMobile = localStorage.getItem('jobadda_exam_mobile');
+    const savedStep = localStorage.getItem('jobadda_exam_step');
+    const savedAnswers = localStorage.getItem('jobadda_exam_answers');
+    
+    if (savedReg && savedMobile && savedStep === 'exam') {
+      setRegistrationNo(savedReg);
+      setMobile(savedMobile);
+      
+      // Load questions
+      fetchQuestions(savedReg, savedMobile).then((success) => {
+        if (success) {
+          setStep('exam');
+          
+          // Load answers
+          if (savedAnswers) {
+            try {
+              setAnswers(JSON.parse(savedAnswers));
+            } catch (e) {
+              console.error(e);
+            }
+          }
+          
+          // Load timer
+          const savedStartTime = localStorage.getItem('jobadda_exam_start_time');
+          if (savedStartTime) {
+            const elapsed = Math.floor((Date.now() - Number(savedStartTime)) / 1000);
+            const remaining = Math.max(0, (150 * 60) - elapsed);
+            setTimeLeft(remaining);
+            if (remaining <= 0) {
+              // Time over while reload, auto submit
+              handleAutoSubmit(savedReg, savedMobile, JSON.parse(savedAnswers || '{}'));
+            }
+          }
+        }
+      });
+    }
+  }, []);
+
+  // Timer Countdown logic
+  useEffect(() => {
+    if (step === 'exam') {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            // Trigger auto submit
+            handleAutoSubmit(registrationNo, mobile, answers);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [step, answers, registrationNo, mobile]);
+
+  // Save answers to localStorage on change
+  useEffect(() => {
+    if (step === 'exam') {
+      localStorage.setItem('jobadda_exam_answers', JSON.stringify(answers));
+    }
+  }, [answers, step]);
+
+  const fetchQuestions = async (reg: string, mob: string): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/scholarship/exam/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationNo: reg, mobile: mob })
+      });
+      const data = await res.json();
+      if (res.ok && data.questions) {
+        setQuestions(data.questions);
+        return true;
+      } else {
+        setError(data.error || 'Failed to load questions.');
+        return false;
+      }
+    } catch (e) {
+      setError('Connection error. Please try again.');
+      return false;
+    }
+  };
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/scholarship/exam/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationNo, mobile, action: 'send' })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOtpSent(true);
+        setSuccessMsg('OTP sent successfully to your registered mobile and email.');
+      } else {
+        setError(data.error || 'Verification failed.');
+      }
+    } catch (err) {
+      setError('Server connection failed. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/scholarship/exam/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationNo, mobile, action: 'verify', otp })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Fetch candidate details for rules screen
+        const detailRes = await fetch(`/api/scholarship/register?lookup=${registrationNo}`);
+        const detailData = await detailRes.json();
+        if (detailRes.ok) {
+          setStudentName(detailData.name);
+        }
+        setStep('rules');
+      } else {
+        setError(data.error || 'Invalid OTP.');
+      }
+    } catch (err) {
+      setError('Verification failed. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartExam = async () => {
+    if (!rulesChecked) return;
+    setError('');
+    setLoading(true);
+
+    const success = await fetchQuestions(registrationNo, mobile);
+    if (success) {
+      setStep('exam');
+      // Set timer markers
+      const startTime = Date.now();
+      localStorage.setItem('jobadda_exam_start_time', startTime.toString());
+      localStorage.setItem('jobadda_exam_reg', registrationNo);
+      localStorage.setItem('jobadda_exam_mobile', mobile);
+      localStorage.setItem('jobadda_exam_step', 'exam');
+      setTimeLeft(150 * 60);
+    }
+    setLoading(false);
+  };
+
+  const handleSelectOption = (questionId: number, optionIndex: number) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId.toString()]: optionIndex
+    }));
+  };
+
+  const handleClearResponse = (questionId: number) => {
+    setAnswers(prev => {
+      const updated = { ...prev };
+      delete updated[questionId.toString()];
+      return updated;
+    });
+  };
+
+  const handleAutoSubmit = async (reg: string, mob: string, currentAnswers: Record<string, number>) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/scholarship/exam/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationNo: reg, mobile: mob, answers: currentAnswers })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAttemptedCount(data.attempted);
+        setUnattemptedCount(150 - data.attempted);
+        setStep('submitted');
+        clearLocalStorage();
+      } else {
+        alert('Auto-submit failed: ' + (data.error || 'Server error. Please contact admin.'));
+      }
+    } catch (e) {
+      alert('Critical Error submitting exam automatically. Please do not close this window.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    setShowSubmitModal(false);
+    setLoading(true);
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    try {
+      const res = await fetch('/api/scholarship/exam/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationNo, mobile, answers })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAttemptedCount(data.attempted);
+        setUnattemptedCount(150 - data.attempted);
+        setStep('submitted');
+        clearLocalStorage();
+      } else {
+        setError(data.error || 'Submission failed.');
+      }
+    } catch (e) {
+      setError('Connection error. Failed to submit.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearLocalStorage = () => {
+    localStorage.removeItem('jobadda_exam_start_time');
+    localStorage.removeItem('jobadda_exam_reg');
+    localStorage.removeItem('jobadda_exam_mobile');
+    localStorage.removeItem('jobadda_exam_step');
+    localStorage.removeItem('jobadda_exam_answers');
+  };
+
+  // Helper formatting for timer
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Filtered Questions list based on Subject Filter
+  const subjects = [
+    'All', 'Mathematics', 'Reasoning & Aptitude', 'General Knowledge', 
+    'Current Affairs', 'Science', 'History', 'Geography', 'Indian Constitution & Civics'
+  ];
+
+  const currentQuestion = questions[currentQuestionIndex];
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', color: 'var(--text)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-outfit), sans-serif' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .exam-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .exam-header-inner {
+            padding: 0 1rem !important;
+            gap: 0.75rem !important;
+          }
+          .exam-header-inner > div:last-child {
+            gap: 0.5rem !important;
+          }
+          .exam-question-card {
+            min-height: auto !important;
+            padding: 1.25rem !important;
+          }
+          .exam-palette-card {
+            height: auto !important;
+            max-height: 250px !important;
+            padding: 1rem !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .exam-header-inner {
+            flex-wrap: wrap !important;
+            height: auto !important;
+            padding: 0.75rem 1rem !important;
+          }
+        }
+      `}</style>
+      
+      {/* DISTRACTION-FREE HEADER */}
+      <header className="exam-header-inner" style={{ height: '70px', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Award size={28} color="var(--primary)" />
+          <div>
+            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>JobAdda.in</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--primary-light)', fontWeight: 700, textTransform: 'uppercase', display: 'block', letterSpacing: '1px' }}>Scholarship Exam Portal</span>
+          </div>
+        </div>
+
+        {step === 'exam' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Candidate</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{studentName || 'Scholarship Aspirant'}</div>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: timeLeft < 600 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(99, 102, 241, 0.15)', border: `1px solid ${timeLeft < 600 ? 'var(--danger)' : 'var(--primary)'}`, padding: '0.4rem 1rem', borderRadius: '8px', color: timeLeft < 600 ? 'var(--danger)' : 'var(--primary-light)' }}>
+              <Clock size={16} />
+              <span style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '1px' }}>{formatTime(timeLeft)}</span>
+            </div>
+
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="btn btn-primary btn-sm"
+              style={{ padding: '0.5rem 1rem' }}
+            >
+              Submit Exam
+            </button>
+          </div>
+        )}
+      </header>
+
+      {/* MAIN CONTAINER */}
+      <main style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem', zIndex: 1, position: 'relative' }}>
+        
+        {/* STEP 1: VERIFICATION SCREEN */}
+        {step === 'verify' && (
+          <div className="card" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '1px solid rgba(99,102,241,0.2)' }}>
+                <Lock size={28} color="var(--primary)" />
+              </div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Access Verification</h2>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>Verify paid registration to start the exam</p>
+            </div>
+
+            {error && (
+              <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--danger)', fontSize: '0.8rem', borderRadius: '8px', display: 'flex', gap: '0.5rem' }}>
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {successMsg && (
+              <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: 'var(--success)', fontSize: '0.8rem', borderRadius: '8px', display: 'flex', gap: '0.5rem' }}>
+                <CheckCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {!otpSent ? (
+              <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <span className="label">Registration ID</span>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', fontWeight: 800 }}>JA-</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter 8-character Code"
+                      value={registrationNo.replace('JA-', '')}
+                      onChange={(e) => setRegistrationNo(`JA-${e.target.value.toUpperCase().trim()}`)}
+                      style={{ paddingLeft: '2.8rem' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <span className="label">Registered Mobile Number</span>
+                  <div style={{ position: 'relative' }}>
+                    <Phone size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      placeholder="Enter 10-digit number"
+                      value={mobile}
+                      onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                      style={{ paddingLeft: '2.5rem' }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary"
+                  style={{ width: '100%', justifyContent: 'center', padding: '0.85rem' }}
+                >
+                  {loading ? (
+                    <RefreshCw className="animate-spin" size={18} />
+                  ) : (
+                    <>
+                      <span>Send OTP Code</span>
+                      <Send size={14} />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="input-group">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="label">Enter OTP Code</span>
+                    <button
+                      type="button"
+                      onClick={() => setOtpSent(false)}
+                      style={{ background: 'none', border: 'none', color: 'var(--primary-light)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700 }}
+                    >
+                      Change Details
+                    </button>
+                  </div>
+                  <div style={{ position: 'relative' }}>
+                    <Key size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      placeholder="6-digit verification code"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                      style={{ paddingLeft: '2.5rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold' }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary"
+                  style={{ width: '100%', justifyContent: 'center', padding: '0.85rem' }}
+                >
+                  {loading ? (
+                    <RefreshCw className="animate-spin" size={18} />
+                  ) : (
+                    <>
+                      <span>Verify & Enter Portal</span>
+                      <CheckCircle2 size={16} />
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+
+        {/* STEP 2: RULES SCREEN */}
+        {step === 'rules' && (
+          <div className="card" style={{ width: '100%', maxWidth: '650px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '1.25rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(99,102,241,0.2)' }}>
+                <BookOpen size={24} color="var(--primary)" />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Welcome, {studentName}</h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>Please read and accept the rules to unlock the exam</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '320px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--primary-light)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FileText size={14} /> Exam Pattern & Timing
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.78rem', color: 'var(--text-2)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <li>Duration: 150 minutes (2.5 hours).</li>
+                  <li>Total Questions: 150 multiple choice questions.</li>
+                </ul>
+              </div>
+
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--warning)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <AlertTriangle size={14} /> Marking Scheme
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.78rem', color: 'var(--text-2)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <li>Correct Answer: <strong>+1.0 mark</strong>.</li>
+                  <li>Incorrect Answer: <strong>-0.25 mark</strong> (negative marking applies).</li>
+                  <li>Unattempted Question: <strong>0.0 marks</strong>.</li>
+                </ul>
+              </div>
+
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-2)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Lock size={14} /> General Guidelines
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.78rem', color: 'var(--text-2)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <li>Do not close or refresh this page during the exam.</li>
+                  <li>If disconnected, you can re-verify with OTP and resume. Answers are saved locally.</li>
+                  <li>One registration is restricted to only one attempt.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', backgroundColor: 'rgba(99,102,241,0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(99,102,241,0.1)' }}>
+              <input
+                type="checkbox"
+                id="agree-rules"
+                checked={rulesChecked}
+                onChange={(e) => setRulesChecked(e.target.checked)}
+                style={{ marginTop: '0.2rem', cursor: 'pointer' }}
+              />
+              <label htmlFor="agree-rules" style={{ fontSize: '0.75rem', color: 'var(--text-2)', lineHeight: 1.4, cursor: 'pointer' }}>
+                I have read all the instructions, guidelines, and tie-breaker criteria. I consent to start my countdown timer and begin my scholarship exam attempt.
+              </label>
+            </div>
+
+            <button
+              onClick={handleStartExam}
+              disabled={!rulesChecked || loading}
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '0.9rem' }}
+            >
+              {loading ? (
+                <RefreshCw className="animate-spin" size={18} />
+              ) : (
+                <>
+                  <span>Start Scholarship Exam</span>
+                  <ChevronRight size={16} />
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3: ACTIVE EXAM PORTAL */}
+        {step === 'exam' && questions.length > 0 && currentQuestion && (
+          <div className="exam-grid" style={{ width: '100%', maxWidth: '1100px', display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1.5rem', alignItems: 'start' }}>
+            
+            {/* Left Column: Active Question box */}
+            <div className="card exam-question-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', minHeight: '450px', justifyContent: 'space-between' }}>
+              
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 900, background: 'rgba(99,102,241,0.15)', color: 'var(--primary-light)', border: '1px solid rgba(99,102,241,0.25)', padding: '0.25rem 0.75rem', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {currentQuestion.subject}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                    Question <strong>{currentQuestionIndex + 1}</strong> of {questions.length}
+                  </span>
+                </div>
+
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.5, marginBottom: '1.5rem' }}>
+                  {currentQuestion.question}
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {currentQuestion.options.map((option, idx) => {
+                    const isSelected = answers[currentQuestion.id.toString()] === idx;
+                    const optionChar = String.fromCharCode(65 + idx);
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleSelectOption(currentQuestion.id, idx)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '1rem 1.25rem',
+                          borderRadius: '12px',
+                          border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border)',
+                          backgroundColor: isSelected ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.02)',
+                          color: isSelected ? 'white' : 'var(--text-2)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '1rem',
+                          transition: 'var(--transition)'
+                        }}
+                      >
+                        <span style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '0.8rem',
+                          backgroundColor: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                          border: isSelected ? '1px solid var(--primary-light)' : '1px solid var(--border)',
+                          color: isSelected ? 'white' : 'var(--text-3)'
+                        }}>
+                          {optionChar}
+                        </span>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{option}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Navigation controls */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '1.25rem', marginTop: '2rem' }}>
+                <button
+                  disabled={currentQuestionIndex === 0}
+                  onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+                  className="btn btn-outline btn-sm"
+                  style={{ gap: '0.25rem' }}
+                >
+                  <ChevronLeft size={16} />
+                  <span>Previous</span>
+                </button>
+
+                <button
+                  onClick={() => handleClearResponse(currentQuestion.id)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}
+                >
+                  Clear Response
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (currentQuestionIndex < questions.length - 1) {
+                      setCurrentQuestionIndex(prev => prev + 1);
+                    } else {
+                      setShowSubmitModal(true);
+                    }
+                  }}
+                  className="btn btn-primary btn-sm"
+                  style={{ gap: '0.25rem' }}
+                >
+                  <span>{currentQuestionIndex === questions.length - 1 ? 'Review & Submit' : 'Next'}</span>
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+
+            </div>
+
+            {/* Right Column: Grid palette */}
+            <div className="card exam-palette-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: '450px' }}>
+              <div style={{ fontWeight: 800, fontSize: '0.75rem', color: 'var(--text-3)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <FileText size={14} /> Question Palette
+              </div>
+
+              {/* Subject Dropdown Filter */}
+              <select
+                value={selectedSubjectFilter}
+                onChange={(e) => setSelectedSubjectFilter(e.target.value)}
+                style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', borderRadius: '8px' }}
+              >
+                {subjects.map((sub, i) => (
+                  <option key={i} value={sub}>{sub}</option>
+                ))}
+              </select>
+
+              {/* Stats overview */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', backgroundColor: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.68rem', textAlign: 'center' }}>
+                <div>
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--primary)', marginRight: '4px' }} />
+                  Attempted: {Object.keys(answers).length}
+                </div>
+                <div>
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: '4px' }} />
+                  Left: {questions.length - Object.keys(answers).length}
+                </div>
+              </div>
+
+              {/* Scrollable Numbers Grid */}
+              <div style={{ flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem', paddingRight: '0.25rem' }}>
+                {questions.map((q, idx) => {
+                  const matches = selectedSubjectFilter === 'All' || q.subject === selectedSubjectFilter;
+                  if (!matches) return null;
+
+                  const isCurrent = idx === currentQuestionIndex;
+                  const isAnswered = answers[q.id.toString()] !== undefined;
+
+                  return (
+                    <button
+                      key={q.id}
+                      onClick={() => setCurrentQuestionIndex(idx)}
+                      style={{
+                        height: '32px',
+                        borderRadius: '8px',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        border: isCurrent ? '1.5px solid white' : isAnswered ? '1px solid var(--primary)' : '1px solid var(--border)',
+                        backgroundColor: isCurrent ? 'white' : isAnswered ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.02)',
+                        color: isCurrent ? 'black' : 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'var(--transition)'
+                      }}
+                    >
+                      {idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: SUBMITTED SUCCESS CARD */}
+        {step === 'submitted' && (
+          <div className="card" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <CheckCircle2 size={32} color="var(--success)" />
+            </div>
+
+            <div>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Exam Submitted Successfully</h2>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>Your responses have been saved and scored.</p>
+            </div>
+
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1rem 1.25rem', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-3)' }}>Candidate</span>
+                <strong>{studentName}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-3)' }}>Registration ID</span>
+                <strong style={{ color: 'var(--primary-light)' }}>{registrationNo}</strong>
+              </div>
+              <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '0.25rem 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-3)' }}>Questions Attempted</span>
+                <strong>{attemptedCount} / 150</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-3)' }}>Questions Unattempted</span>
+                <strong>{unattemptedCount} / 150</strong>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-3)', lineHeight: 1.4 }}>
+              Merit Ranks and official results will be declared on the JobAdda.in platform on <strong>25th August 2026</strong>.
+            </p>
+
+            <a href="/scholarship" className="btn btn-outline" style={{ justifyContent: 'center' }}>
+              Return to Scholarship Portal
+            </a>
+          </div>
+        )}
+
+      </main>
+
+      {/* CONFIRMATION SUBMISSION MODAL */}
+      {showSubmitModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', padding: '1rem' }}>
+          <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <AlertTriangle size={24} color="var(--danger)" />
+              </div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Confirm Submission</h3>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.25rem', lineHeight: 1.4 }}>
+                You have answered <strong>{Object.keys(answers).length}</strong> out of 150 questions. Once submitted, you cannot resume or edit your answers.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <button
+                onClick={() => setShowSubmitModal(false)}
+                className="btn btn-ghost"
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                Go Back
+              </button>
+              <button
+                onClick={handleManualSubmit}
+                className="btn btn-danger"
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                Yes, Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <footer style={{ padding: '1.25rem 0', borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg-2)', textAlign: 'center', fontSize: '0.68rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        © 2026 JobAdda.in. Secure Examination Environment. All Rights Reserved.
+      </footer>
+    </div>
+  );
+}

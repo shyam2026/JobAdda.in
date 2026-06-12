@@ -21,8 +21,8 @@ export default function Template2({ p, config, unlocked, accentColor }: { p: any
           <p style={{ margin: '0 0 1.25rem', opacity: 0.9, lineHeight: 1.6, fontSize: '14px', fontWeight: 700, maxWidth: '100%' }}>{p.bio}</p>
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', fontSize: '12px', opacity: 0.88 }}>
-          {config.showEmail && p.email && <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Mail size={13} />{p.email}</span>}
-          {config.showPhone && p.phone && <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Phone size={13} />{p.phone}</span>}
+          {config.showEmail && p.email && <a href={`mailto:${p.email}`} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'inherit', textDecoration: 'none' }}><Mail size={13} />{p.email}</a>}
+          {config.showPhone && p.phone && <a href={`tel:${p.phone}`} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'inherit', textDecoration: 'none' }}><Phone size={13} />{p.phone}</a>}
           {p.city && <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><MapPin size={13} />{p.city}</span>}
           {config.showSocials && p.linkedin && (
             <a href={p.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'inherit', textDecoration: 'none' }}>
@@ -152,7 +152,7 @@ export default function Template2({ p, config, unlocked, accentColor }: { p: any
                   <div style={{ fontSize: '12px', color: accentColor, fontWeight: 700 }}>{cert.issuer}</div>
                   <div style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span>{cert.date}</span>
-                    {cert.url && <a href={cert.url} target="_blank" rel="noopener noreferrer" style={{ color: accentColor, display: 'flex', alignItems: 'center', gap: '0.2rem', textDecoration: 'none' }}>Verify <ExternalLink size={11} /></a>}
+                    {cert.url && <a href={cert.url.startsWith('http') ? cert.url : `https://${cert.url}`} target="_blank" rel="noopener noreferrer" style={{ color: accentColor, display: 'flex', alignItems: 'center', gap: '0.2rem', textDecoration: 'none' }}>Verify <ExternalLink size={11} /></a>}
                   </div>
                 </div>
               ))}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { MapPin, Briefcase, Clock, Share2, Building, Users, Globe, CheckCircle, ArrowLeft, Loader2, AlertCircle, IndianRupee, ExternalLink, Tag } from 'lucide-react';
+import { MapPin, Briefcase, Clock, Share2, Building, Users, Globe, CheckCircle, ArrowLeft, Loader2, AlertCircle, IndianRupee, ExternalLink, Tag, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { JobPostingSchema, BreadcrumbSchema } from '@/components/StructuredData';
@@ -230,17 +230,41 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 else router.push('/user/applied-jobs');
               }}
               className="btn btn-outline"
-              style={{ flex: 1, justifyContent: 'center', borderColor: 'var(--success)', color: 'var(--success)', background: 'rgba(16,185,129,0.05)', padding: '0.8rem' }}
+              style={{ flex: 1, justifyContent: 'center', borderColor: 'var(--success)', color: 'var(--success)', background: 'rgba(16,185,129,0.05)', padding: '0.8rem', borderRadius: '12px' }}
             >
               <CheckCircle size={17} style={{ marginRight: '0.4rem' }} /> Applied
             </button>
           ) : isExternal ? (
-            <button onClick={handleExternalApply} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '0.8rem', gap: '0.4rem' }}>
-              Apply Now <ExternalLink size={15} />
+            <button onClick={handleExternalApply} className="btn" style={{ 
+              flex: 1, 
+              justifyContent: 'center', 
+              padding: '0.8rem', 
+              gap: '0.4rem',
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '12px',
+              fontWeight: '700',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}>
+              Apply Now <Zap size={15} />
             </button>
           ) : (
-            <button onClick={handleApply} disabled={applying} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '0.8rem' }}>
-              {applying ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite', marginRight: '0.4rem' }} />Submitting...</> : 'One-Click Apply'}
+            <button onClick={handleApply} disabled={applying} className="btn" style={{ 
+              flex: 1, 
+              justifyContent: 'center', 
+              padding: '0.8rem',
+              gap: '0.4rem',
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '12px',
+              fontWeight: '700',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}>
+              {applying ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite', marginRight: '0.4rem' }} />Submitting...</> : <>One-Click Apply <Zap size={15} /></>}
             </button>
           )
         )}
@@ -255,7 +279,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0 }}>
 
             {/* Header Card */}
-            <div className="card card-p job-header-card" style={{ position: 'relative' }}>
+            <div className="card card-p job-header-card" style={{ 
+              position: 'relative', 
+              borderRadius: '24px', 
+              border: '1px solid var(--border)',
+              overflow: 'hidden'
+            }}>
+              {/* Top Accent Line */}
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }} />
               {/* Status badge — isolated top-right */}
               <div className="job-status-corner" style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <span style={{ 
@@ -372,8 +403,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             <div className="card card-p" style={{ position: 'sticky', top: 'calc(var(--nav-height, 64px) + 1rem)' }}>
               {job.salary && (
                 <div style={{ marginBottom: '1.5rem', textAlign: 'center', padding: '1rem', background: 'rgba(16,185,129,0.06)', borderRadius: 'var(--radius)', border: '1px solid rgba(16,185,129,0.15)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', fontSize: '1.85rem', fontWeight: '800', color: 'var(--success)' }}>
-                    <IndianRupee size={22} />{job.salary.replace('₹', '')}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', fontSize: '1.85rem', fontWeight: '800', background: 'linear-gradient(135deg, #10b981, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    <IndianRupee size={22} style={{ color: '#10b981' }} />{job.salary.replace('₹', '')}
                   </div>
                   <p style={{ margin: '0.3rem 0 0', fontSize: '0.8rem', color: 'var(--text-3)' }}>Estimated annual package</p>
                 </div>
@@ -408,10 +439,24 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <button
                     onClick={handleExternalApply}
-                    className="btn btn-primary"
-                    style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', justifyContent: 'center', gap: '0.5rem' }}
+                    className="btn"
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.9rem', 
+                      fontSize: '1rem', 
+                      justifyContent: 'center', 
+                      gap: '0.5rem',
+                      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      boxShadow: '0 4px 15px rgba(99, 102, 241, 0.25)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                    }}
                   >
-                    Apply Now <ExternalLink size={16} />
+                    Apply Now <Zap size={16} />
                   </button>
                   {applyError && (
                     <div style={{ padding: '0.85rem', background: 'rgba(239,68,68,0.08)', borderRadius: 'var(--radius)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '0.85rem', color: 'var(--danger)', textAlign: 'center' }}>
@@ -434,10 +479,24 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <>
                   <button
                     onClick={handleApply} disabled={applying}
-                    className="btn btn-primary"
-                    style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', justifyContent: 'center' }}
+                    className="btn"
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.9rem', 
+                      fontSize: '1rem', 
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      boxShadow: '0 4px 15px rgba(99, 102, 241, 0.25)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                    }}
                   >
-                    {applying ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Submitting...</> : 'One-Click Apply'} 
+                    {applying ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Submitting...</> : <>One-Click Apply <Zap size={16} /></>} 
                   </button>
                   {applyError && (
                     <div style={{ marginTop: '0.75rem', padding: '0.85rem', background: 'rgba(239,68,68,0.08)', borderRadius: 'var(--radius)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '0.85rem', color: 'var(--danger)', textAlign: 'center' }}>
@@ -669,7 +728,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             padding: 0.75rem 1rem;
             background: var(--bg);
             border-top: 1px solid var(--border);
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+            box-shadow: 0 -4px 30px rgba(0,0,0,0.35);
             gap: 0.75rem;
           }
 

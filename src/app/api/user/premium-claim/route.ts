@@ -8,7 +8,14 @@ export async function POST(req: Request) {
     const userSession = session?.user as { id: string } | undefined;
     if (!userSession?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { templateId } = await req.json();
+    let templateId: string | undefined;
+    try {
+      const body = await req.json();
+      templateId = body?.templateId;
+    } catch (e) {
+      return NextResponse.json({ error: "Invalid or empty JSON body" }, { status: 400 });
+    }
+
     if (!templateId) return NextResponse.json({ error: "Template ID is required" }, { status: 400 });
 
     // 1. Fetch user to check premium and remaining downloads
@@ -22,12 +29,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Premium template download limit (5) reached" }, { status: 403 });
     }
 
-    // 2. Check if already purchased
-    const existing = await prisma.purchase.findFirst({
-      where: { userId: user.id, templateId, status: "COMPLETED" }
+    // 2. Check if there is an active completed purchase (within the 5-minute download window)
+    const WINDOW_MS = 5 * 60 * 1000;
+    const cutoff = new Date(Date.now() - WINDOW_MS);
+
+    const activeExisting = await prisma.purchase.findFirst({
+      where: {
+        userId: user.id,
+        templateId,
+        status: "COMPLETED",
+        createdAt: { gte: cutoff }
+      }
     });
 
-    if (existing) return NextResponse.json({ error: "Template already unlocked" }, { status: 400 });
+    if (activeExisting) {
+      return NextResponse.json({ error: "Template already unlocked and active" }, { status: 400 });
+    }
 
     // 3. Process claim: Update user and create purchase
     await prisma.$transaction([

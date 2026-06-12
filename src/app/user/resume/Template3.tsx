@@ -40,8 +40,8 @@ export default function Template3({ p, config, unlocked }: { p: any; config: any
         <div>
           <h3 style={{ fontSize: '20px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: gold, marginBottom: '0.75rem' }}>Contact</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            {config.showEmail && p.email && <span style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.5rem', wordBreak: 'break-all' }}><Mail size={13} style={{ flexShrink: 0 }} />{p.email}</span>}
-            {config.showPhone && p.phone && <span style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Phone size={13} />{p.phone}</span>}
+            {config.showEmail && p.email && <a href={`mailto:${p.email}`} style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.5rem', wordBreak: 'break-all', textDecoration: 'none' }}><Mail size={13} style={{ flexShrink: 0 }} />{p.email}</a>}
+            {config.showPhone && p.phone && <a href={`tel:${p.phone}`} style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}><Phone size={13} />{p.phone}</a>}
             {p.city && <span style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MapPin size={13} />{p.city}</span>}
             {config.showSocials && p.linkedin && (
               <a href={p.linkedin} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
@@ -219,7 +219,7 @@ export default function Template3({ p, config, unlocked }: { p: any; config: any
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                       <div style={{ fontSize: '16px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cert.name}</div>
-                      {cert.url && <a href={cert.url} target="_blank" rel="noopener noreferrer" style={{ color: gold, marginLeft: '0.5rem' }}><ExternalLink size={13} /></a>}
+                      {cert.url && <a href={cert.url.startsWith('http') ? cert.url : `https://${cert.url}`} target="_blank" rel="noopener noreferrer" style={{ color: gold, marginLeft: '0.5rem' }}><ExternalLink size={13} /></a>}
                     </div>
                     <div style={{ fontSize: '12px', color: gold, fontWeight: 700, marginTop: '0.05rem' }}>{cert.issuer}</div>
                     <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '0.1rem' }}>{cert.date}</div>

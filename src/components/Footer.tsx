@@ -33,7 +33,7 @@ const SOCIAL_LINKS = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--border)', padding: '4rem 0 2rem' }}>
+    <footer style={{ position: 'relative', zIndex: 10, background: 'var(--bg-2)', borderTop: '1px solid var(--border)', padding: '4rem 0 2rem' }}>
       <div className="container">
         <div className="grid-4" style={{ marginBottom: '3rem' }}>
           {/* Brand */}

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { auth, signOut } from '@/auth';
 import prisma from '@/lib/prisma';
-import { LayoutDashboard, Users, Building, Briefcase, IndianRupee, ShieldAlert, LogOut, ShieldCheck, ChevronDown, Plus, Ticket, FileText, MessageSquare, Star } from 'lucide-react';
+import { LayoutDashboard, Users, Building, Briefcase, IndianRupee, ShieldAlert, LogOut, ShieldCheck, ChevronDown, Plus, Ticket, FileText, MessageSquare, Star, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 
 interface Module {
@@ -23,6 +23,7 @@ const ALL_MODULES: Module[] = [
   { id: 'transactions', label: 'Transactions', href: '/admin/transactions', icon: IndianRupee },
   { id: 'coupons', label: 'Coupons', href: '/admin/coupons', icon: Ticket },
   { id: 'resume-data', label: 'Resume Data', href: '/admin/resume-data', icon: FileText },
+  { id: 'scholarship', label: 'Scholarships', href: '/admin/scholarship', icon: GraduationCap },
   { id: 'contact', label: 'Inquiries', href: '/admin/contact', icon: MessageSquare },
   { id: 'premium', label: 'Premium', href: '/admin/premium', icon: Star, reqSuper: true },
   { id: 'team', label: 'Admin Team', href: '/admin/team', icon: ShieldAlert, reqSuper: true },

@@ -178,6 +178,29 @@ export default function ResumeBuilderPage() {
       const w = pdf.internal.pageSize.getWidth();
       const h = (canvas.height * w) / canvas.width;
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h);
+      
+      // Inject clickable link overlays into the PDF
+      const links = resumeRef.current.querySelectorAll('a');
+      const containerRect = resumeRef.current.getBoundingClientRect();
+      links.forEach((linkEl) => {
+        const href = linkEl.getAttribute('href');
+        if (!href) return;
+        
+        const rect = linkEl.getBoundingClientRect();
+        const relativeLeft = rect.left - containerRect.left;
+        const relativeTop = rect.top - containerRect.top;
+        const relativeWidth = rect.width;
+        const relativeHeight = rect.height;
+        
+        // Convert to PDF coordinates (mm)
+        const pdfX = (relativeLeft / containerRect.width) * w;
+        const pdfY = (relativeTop / containerRect.height) * h;
+        const pdfW = (relativeWidth / containerRect.width) * w;
+        const pdfH = (relativeHeight / containerRect.height) * h;
+        
+        pdf.link(pdfX, pdfY, pdfW, pdfH, { url: href });
+      });
+
       pdf.save(`JobAdda_Resume_${profile?.name?.replace(/\s+/g, '_') || 'Resume'}.pdf`);
     } catch (e) { console.error(e); }
     finally { setDl(false); }

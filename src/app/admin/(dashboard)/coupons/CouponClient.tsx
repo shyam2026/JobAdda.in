@@ -149,7 +149,27 @@ export default function CouponClient() {
                     </div>
                   </td>
                   <td>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '20px', background: c.target === 'ALL' ? '#f1f5f9' : c.target === 'RESUME' ? 'rgba(99,102,241,0.1)' : 'rgba(251,191,36,0.1)', color: c.target === 'ALL' ? '#64748b' : c.target === 'RESUME' ? 'var(--primary)' : '#fbbf24', border: '1px solid currentColor' }}>
+                    <span style={{ 
+                      fontSize: '0.75rem', 
+                      fontWeight: 700, 
+                      padding: '0.2rem 0.6rem', 
+                      borderRadius: '20px', 
+                      background: c.target === 'ALL' 
+                        ? '#f1f5f9' 
+                        : c.target === 'RESUME' 
+                        ? 'rgba(99,102,241,0.1)' 
+                        : c.target === 'SCHOLARSHIP'
+                        ? 'rgba(16,185,129,0.1)'
+                        : 'rgba(251,191,36,0.1)', 
+                      color: c.target === 'ALL' 
+                        ? '#64748b' 
+                        : c.target === 'RESUME' 
+                        ? 'var(--primary)' 
+                        : c.target === 'SCHOLARSHIP'
+                        ? '#10b981'
+                        : '#fbbf24', 
+                      border: '1px solid currentColor' 
+                    }}>
                       {c.target}
                     </span>
                   </td>
@@ -229,6 +249,7 @@ export default function CouponClient() {
                     <option value="ALL">All Services</option>
                     <option value="RESUME">Resume Templates</option>
                     <option value="PREMIUM">Premium Subscription</option>
+                    <option value="SCHOLARSHIP">Scholarship Test</option>
                   </select>
                 </div>
 

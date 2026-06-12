@@ -11,8 +11,8 @@ import { JobCard, Job } from '@/features/jobs/components/JobCard';
 const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Other'];
 const WORK_MODES      = ['On-site', 'Remote', 'Hybrid'];
 const CATEGORIES      = [
-  'Software Engineering', 'Design', 'Marketing', 'Sales',
-  'Finance', 'Human Resources', 'Customer Support', 'Operations',
+  'Technology', 'Finance', 'Healthcare', 'Marketing', 'Sales',
+  'HR', 'Operations', 'Education', 'Legal', 'Design', 'Data & Analytics', 'Other'
 ];
 const EDUCATION_OPTIONS = ['10th', '12th', 'Graduation', 'B.Tech', 'Masters', 'MBA', 'PhD'];
 const POSTED_DATE_OPTIONS = [
@@ -92,8 +92,15 @@ function CheckGroup({ options, selected, onChange }: {
             display: 'flex', alignItems: 'center', gap: '0.6rem',
             padding: '0.4rem 0.5rem', borderRadius: '0.5rem', cursor: 'pointer',
             background: active ? 'rgba(99,102,241,0.08)' : 'transparent',
-            transition: 'background 0.15s',
-          }}>
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (!active) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+          }}
+          onMouseLeave={(e) => {
+            if (!active) e.currentTarget.style.background = 'transparent';
+          }}
+          >
             <div style={{
               width: '15px', height: '15px', borderRadius: '4px', flexShrink: 0,
               border: `1.5px solid ${active ? '#6366f1' : 'var(--border)'}`,
@@ -296,7 +303,7 @@ export default function JobsPage() {
             <div className="jobs-search-item" style={{
               flex: '1 1 260px', display: 'flex', alignItems: 'center', gap: '0.6rem',
               background: 'var(--surface)', border: '1.5px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '0.7rem 1rem',
+              borderRadius: '16px', padding: '0.7rem 1rem',
             }}>
               <Search size={15} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
               <input
@@ -316,7 +323,7 @@ export default function JobsPage() {
             <div className="jobs-search-item" style={{
               flex: '0 1 200px', display: 'flex', alignItems: 'center', gap: '0.6rem',
               background: 'var(--surface)', border: '1.5px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '0.7rem 1rem',
+              borderRadius: '16px', padding: '0.7rem 1rem',
             }}>
               <MapPin size={15} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
               <input
@@ -336,7 +343,7 @@ export default function JobsPage() {
             <button
               onClick={() => setMobileSidebar(v => !v)}
               className="btn btn-outline jobs-filter-toggle jobs-search-item"
-              style={{ gap: '0.5rem', position: 'relative' }}
+              style={{ gap: '0.5rem', position: 'relative', borderRadius: '16px' }}
             >
               <SlidersHorizontal size={15} />
               Filters
@@ -388,7 +395,7 @@ export default function JobsPage() {
 
         {/* ── LEFT SIDEBAR (desktop) ── */}
         <div className="jobs-sidebar-panel">
-          <div className="card" style={{ padding: '1rem 1.25rem' }}>
+          <div className="card" style={{ padding: '1.25rem 1.5rem', borderRadius: '20px' }}>
             {Sidebar}
           </div>
         </div>
@@ -514,6 +521,10 @@ export default function JobsPage() {
           border: none !important;
           box-shadow: none !important;
           outline: none !important;
+        }
+        .jobs-search-item:focus-within {
+          border-color: rgba(99,102,241,0.5) !important;
+          box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important;
         }
 
         .jobs-sidebar-panel { display: block; }
