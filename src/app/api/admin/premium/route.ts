@@ -61,6 +61,7 @@ export async function GET(req: Request) {
         where: {
           status: 'COMPLETED',
           refId: { contains: 'PREMIUM' },
+          NOT: { refId: 'PREMIUM_CLAIM' },
         },
         select: {
           id: true, userId: true, amount: true,

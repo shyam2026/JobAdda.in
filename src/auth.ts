@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  basePath: "/api/auth",
   providers: [
     Credentials({
       credentials: {

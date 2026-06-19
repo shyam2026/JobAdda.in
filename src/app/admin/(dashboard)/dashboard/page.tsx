@@ -61,55 +61,87 @@ export default async function AdminDashboardPage() {
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const [
-    totalStudents,
-    totalCompanies,
-    totalJobs,
-    openJobs,
-    totalResumePurchases,
-    totalApplications,
-    applicationsByStatus,
-    revenueData,
-    topCompanies,
-    totalScholarships,
-    paidScholarships,
-    takenScholarships,
-    scholarshipScoreAggregate,
-  ] = await Promise.all([
-    prisma.user.count({ where: { role: 'STUDENT' } }),
-    (prisma.companyUser as any).count(),
-    prisma.job.count(),
-    prisma.job.count({ where: { status: 'OPEN' } }),
-    prisma.purchase.count({ where: { status: 'COMPLETED' } }),
-    prisma.application.count(),
-    prisma.application.groupBy({ by: ['status'], _count: { id: true } }),
-    prisma.transaction.aggregate({
-      where: { status: 'COMPLETED', type: 'CREDIT' },
-      _sum: { amount: true },
-    }),
-    // Top 3 companies by job count (active posting companies)
-    (prisma.companyUser as any).findMany({
-      select: {
-        id: true,
-        companyName: true,
-        slug: true,
-        logo: true,
-        industry: true,
-        _count: { select: { jobs: true } },
-      },
-      orderBy: { jobs: { _count: 'desc' } },
-      take: 3,
-    }),
-    prisma.scholarshipEntry.count(),
-    prisma.scholarshipEntry.count({ where: { paymentStatus: 'PAID' } }),
-    prisma.scholarshipEntry.count({ where: { examSubmitted: true } }),
-    prisma.scholarshipEntry.aggregate({
-      where: { examSubmitted: true },
-      _avg: { examScore: true }
-    })
-  ]);
+  // Run queries in small batches to stay within connection_limit=3
+  let totalStudents = 0, totalCompanies = 0, totalJobs = 0;
+  let openJobs = 0, totalResumePurchases = 0, totalApplications = 0;
+  let applicationsByStatus: any[] = [];
+  let resumeRevenueData = { _sum: { amount: null as number | null } };
+  let premiumRevenueData = { _sum: { amount: null as number | null } };
+  let topCompanies: any[] = [];
+  let totalScholarships = 0, paidScholarships = 0, takenScholarships = 0;
+  let scholarshipScoreAggregate = { _avg: { examScore: null as number | null } };
 
-  const totalRevenue = revenueData._sum.amount || 0;
+  try {
+    // Batch 1: Core user/company/job counts
+    [totalStudents, totalCompanies, totalJobs] = await Promise.all([
+      prisma.user.count({ where: { role: 'STUDENT' } }),
+      (prisma.companyUser as any).count(),
+      prisma.job.count(),
+    ]);
+  } catch (e) { console.error('Dashboard batch 1 failed:', (e as any)?.message); }
+
+  try {
+    // Batch 2: More counts
+    [openJobs, totalResumePurchases, totalApplications] = await Promise.all([
+      prisma.job.count({ where: { status: 'OPEN' } }),
+      prisma.purchase.count({ where: { status: 'COMPLETED' } }),
+      prisma.application.count(),
+    ]);
+  } catch (e) { console.error('Dashboard batch 2 failed:', (e as any)?.message); }
+
+  try {
+    // Batch 3: Aggregations + groupBy
+    [applicationsByStatus, resumeRevenueData, premiumRevenueData] = await Promise.all([
+      prisma.application.groupBy({ by: ['status'], _count: { id: true } }),
+      prisma.purchase.aggregate({
+        where: { status: 'COMPLETED' },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.aggregate({
+        where: {
+          status: 'COMPLETED',
+          OR: [
+            { type: { contains: 'PREMIUM' } },
+            { type: 'PREMIUM_UPGRADE' }
+          ]
+        },
+        _sum: { amount: true },
+      }),
+    ]);
+  } catch (e) { console.error('Dashboard batch 3 failed:', (e as any)?.message); }
+
+  try {
+    // Batch 4: Top companies + scholarship counts
+    [topCompanies, totalScholarships, paidScholarships] = await Promise.all([
+      (prisma.companyUser as any).findMany({
+        select: {
+          id: true,
+          companyName: true,
+          slug: true,
+          logo: true,
+          industry: true,
+          _count: { select: { jobs: true } },
+        },
+        orderBy: { jobs: { _count: 'desc' } },
+        take: 3,
+      }),
+      prisma.scholarshipEntry.count(),
+      prisma.scholarshipEntry.count({ where: { paymentStatus: 'PAID' } }),
+    ]);
+  } catch (e) { console.error('Dashboard batch 4 failed:', (e as any)?.message); }
+
+  try {
+    // Batch 5: Scholarship exam data
+    [takenScholarships, scholarshipScoreAggregate] = await Promise.all([
+      prisma.scholarshipEntry.count({ where: { examSubmitted: true } }),
+      prisma.scholarshipEntry.aggregate({
+        where: { examSubmitted: true },
+        _avg: { examScore: true }
+      }),
+    ]);
+  } catch (e) { console.error('Dashboard batch 5 failed:', (e as any)?.message); }
+
+  const totalRevenue = (resumeRevenueData._sum.amount || 0) + (premiumRevenueData._sum.amount || 0);
   const avgScholarshipScore = scholarshipScoreAggregate._avg.examScore || 0;
 
   const statusCount = (status: string) => {

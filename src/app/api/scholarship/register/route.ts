@@ -8,6 +8,47 @@ function genRegNo() {
   return result;
 }
 
+async function sendRegistrationSMS(to: string, name: string, regNo: string) {
+  const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'Candidate';
+  const username = process.env.SMS_USERNAME || 'gapsms01.trans';
+  const password = process.env.SMS_PASSWORD || 'f_vRA68q';
+  const from = process.env.SMS_FROM || 'JOADIN';
+
+  const template = process.env.SMS_REG_TEMPLATE || 'Dear {Name} Your registration for JobAdda.in Scholarship Test is successful. Your Registration ID is {RegNo}. Team JobAdda.in';
+  const dltContentId = process.env.SMS_REG_DLT_CONTENT_ID || '';
+  const dltPrincipalEntityId = process.env.SMS_REG_DLT_PRINCIPAL_ENTITY_ID || '1701178116898320542';
+
+  if (!dltContentId) {
+    console.log('[SMS REGISTRATION - SKIPPED] SMS_REG_DLT_CONTENT_ID not configured.');
+    return;
+  }
+
+  const msgText = template
+    .replace('{Name}', cleanName)
+    .replace('{RegNo}', regNo);
+
+  const url = new URL('https://pgapi.sparc.smartping.io/fe/api/v1/send');
+  url.searchParams.set('username', username);
+  url.searchParams.set('password', password);
+  url.searchParams.set('unicode', 'false');
+  url.searchParams.set('from', from);
+  url.searchParams.set('text', msgText);
+  url.searchParams.set('to', to);
+  url.searchParams.set('dltContentId', dltContentId);
+  url.searchParams.set('dltPrincipalEntityId', dltPrincipalEntityId);
+
+  try {
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: { 'accept': 'application/json' }
+    });
+    const data = await res.text();
+    console.log(`[SMS REGISTRATION - SENT] to: ${to}, response: ${data}`);
+  } catch (error) {
+    console.error(`[SMS REGISTRATION - ERROR] Failed to send registration SMS to ${to}:`, error);
+  }
+}
+
 // POST → register new applicant
 export async function POST(req: Request) {
   try {
@@ -25,12 +66,10 @@ export async function POST(req: Request) {
 
     const db = prisma as any;
 
-    // Verify both OTPs were verified
+    // Verify mobile OTP was verified
     const mobileOtp = await db.scholarshipOtp.findFirst({ where: { target: mobile, type: 'mobile' }, orderBy: { createdAt: 'desc' } });
-    const emailOtp = await db.scholarshipOtp.findFirst({ where: { target: email, type: 'email' }, orderBy: { createdAt: 'desc' } });
 
     if (!mobileOtp?.verified) return NextResponse.json({ error: 'Mobile OTP not verified' }, { status: 400 });
-    if (!emailOtp?.verified) return NextResponse.json({ error: 'Email OTP not verified' }, { status: 400 });
 
     // Check if already registered
     const existing = await db.scholarshipEntry.findFirst({ where: { mobile } });
@@ -46,6 +85,11 @@ export async function POST(req: Request) {
 
     const entry = await (db.scholarshipEntry as any).create({
       data: { name, fatherName, aadharNo: cleanAadhar, mobile, email, district, state, lastQualification, marksPercent, careerGoal, registrationNo, mobileVerified: true, emailVerified: true, passportImage },
+    });
+
+    // Send success SMS in the background
+    sendRegistrationSMS(mobile, name, entry.registrationNo).catch(err => {
+      console.error('Failed to send registration success SMS:', err);
     });
 
     return NextResponse.json({ success: true, registrationNo: entry.registrationNo });

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import nodemailer from 'nodemailer';
 
 const DAILY_LIMIT = 5;
 const OTP_EXPIRY_MIN = 10;
@@ -15,53 +14,64 @@ function isSameDay(d1: Date, d2: Date) {
     d1.getDate() === d2.getDate();
 }
 
-async function sendEmail(to: string, otp: string) {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+async function sendSMS(to: string, name: string, otp: string) {
+  const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'Candidate';
+  const msgText = `Dear ${cleanName} Your OTP for JobAdda.in Scholarship Registration is ${otp}. Please do not share this OTP with anyone. This OTP is valid for 10 Minutes. Team JobAdda.in`;
 
-  if (!host || !user || !pass) {
-    console.log(`[SCHOLARSHIP OTP - FALLBACK] Email: ${to} OTP: ${otp} (SMTP credentials missing)`);
-    return;
-  }
+  const username = process.env.SMS_USERNAME || 'gapsms01.trans';
+  const password = process.env.SMS_PASSWORD || 'f_vRA68q';
+  const from = process.env.SMS_FROM || 'JOADIN';
+  const dltContentId = process.env.SMS_DLT_CONTENT_ID || '1707178185523758730';
+  const dltPrincipalEntityId = process.env.SMS_DLT_PRINCIPAL_ENTITY_ID || '1701178116898320542';
+
+  const url = new URL('https://pgapi.sparc.smartping.io/fe/api/v1/send');
+  url.searchParams.set('username', username);
+  url.searchParams.set('password', password);
+  url.searchParams.set('unicode', 'false');
+  url.searchParams.set('from', from);
+  url.searchParams.set('text', msgText);
+  url.searchParams.set('to', to);
+  url.searchParams.set('dltContentId', dltContentId);
+  url.searchParams.set('dltPrincipalEntityId', dltPrincipalEntityId);
 
   try {
-    const transporter = nodemailer.createTransport({
-      host,
-      port: Number(process.env.SMTP_PORT || 587),
-      auth: { user, pass },
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: { 'accept': 'application/json' }
     });
-    await transporter.sendMail({
-      from: `"JobAdda Scholarship" <${user}>`,
-      to,
-      subject: 'Your OTP for Scholarship Registration',
-      html: `<p>Your OTP for JobAdda Scholarship Test registration is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for ${OTP_EXPIRY_MIN} minutes. Do not share with anyone.</p>`,
-    });
-    console.log(`[SCHOLARSHIP OTP - SENT] Sent email to: ${to}`);
+    const data = await res.text();
+    console.log(`[SMS OTP - SENT] to: ${to}, response: ${data}`);
   } catch (error) {
-    console.error(`[SCHOLARSHIP OTP - EMAIL ERROR] Failed to send email to ${to}:`, error);
-    console.log(`[SCHOLARSHIP OTP - FALLBACK] Email: ${to} OTP: ${otp} (SMTP error fallback)`);
+    console.error(`[SMS OTP - ERROR] Failed to send SMS to ${to}:`, error);
   }
 }
 
-// POST /api/scholarship/otp  body: { target, type: 'mobile'|'email', action: 'send'|'verify', otp? }
+// POST /api/scholarship/otp  body: { target, type: 'mobile'|'email', action: 'send'|'verify', otp?, name? }
 export async function POST(req: Request) {
   try {
-    const { target, type, action, otp } = await req.json();
+    const { target, type, action, otp, name } = await req.json();
     if (!target || !type || !action) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
 
     const db = prisma as any;
     const now = new Date();
 
     if (action === 'send') {
-      // Check daily limit
+      // Check 60s delay and daily limit
       const existing = await db.scholarshipOtp.findFirst({
         where: { target, type },
         orderBy: { createdAt: 'desc' },
       });
 
-      if (existing && isSameDay(new Date(existing.lastSentAt), now) && existing.sendCount >= DAILY_LIMIT) {
-        return NextResponse.json({ error: `OTP limit reached. Try again tomorrow.`, remaining: 0 }, { status: 429 });
+      if (existing) {
+        const timeDiff = now.getTime() - new Date(existing.lastSentAt).getTime();
+        if (timeDiff < 60 * 1000) {
+          const waitTime = Math.ceil((60 * 1000 - timeDiff) / 1000);
+          return NextResponse.json({ error: `Please wait ${waitTime} seconds before requesting another OTP.` }, { status: 429 });
+        }
+
+        if (isSameDay(new Date(existing.lastSentAt), now) && existing.sendCount >= DAILY_LIMIT) {
+          return NextResponse.json({ error: `OTP limit reached. Try again tomorrow.`, remaining: 0 }, { status: 429 });
+        }
       }
 
       const newOtp = genOtp();
@@ -79,11 +89,11 @@ export async function POST(req: Request) {
       }
 
       // Send OTP
-      if (type === 'email') {
-        await sendEmail(target, newOtp);
+      if (type === 'mobile') {
+        const displayName = name || 'Candidate';
+        await sendSMS(target, displayName, newOtp);
       } else {
-        // SMS: log for now (integrate SMS gateway here)
-        console.log(`[SCHOLARSHIP OTP] Mobile: ${target} OTP: ${newOtp}`);
+        console.log(`[SCHOLARSHIP OTP - UNUSED EMAIL] ${target} OTP: ${newOtp}`);
       }
 
       const record = await db.scholarshipOtp.findFirst({ where: { target, type }, orderBy: { createdAt: 'desc' } });

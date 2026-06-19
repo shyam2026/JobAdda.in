@@ -24,10 +24,23 @@ function ChatContent() {
 
   // Real-time premium check
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      setLoading(false);
+      return;
+    }
     if (status !== 'authenticated') return;
     fetch('/api/profile').then(r => r.json()).then(data => {
-      if (data && !data.error) setIsPremium(data.isPremium);
-    }).catch(() => {});
+      if (data && !data.error) {
+        setIsPremium(data.isPremium);
+        if (!data.isPremium) {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }).catch(() => {
+      setLoading(false);
+    });
   }, [user?.id, status]);
 
   // Poll Conversations

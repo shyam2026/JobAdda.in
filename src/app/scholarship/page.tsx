@@ -54,8 +54,8 @@ export default function ScholarshipPage() {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    const hTimer = setTimeout(() => setShowHeader(true), 3000);
-    const fTimer = setTimeout(() => setShowForm(true), 4000);
+    const hTimer = setTimeout(() => setShowHeader(true), 1000);
+    const fTimer = setTimeout(() => setShowForm(true), 2000);
     return () => {
       clearTimeout(hTimer);
       clearTimeout(fTimer);
@@ -82,19 +82,15 @@ export default function ScholarshipPage() {
 
   // OTP Fields
   const [mobileOtp, setMobileOtp] = useState('');
-  const [emailOtp, setEmailOtp] = useState('');
   const [isMobileVerified, setIsMobileVerified] = useState(false);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
 
   // Remaining OTP counts
   const [mobileOtpRemaining, setMobileOtpRemaining] = useState<number | null>(null);
-  const [emailOtpRemaining, setEmailOtpRemaining] = useState<number | null>(null);
+  const [mobileOtpCooldown, setMobileOtpCooldown] = useState(0);
 
   // Status
   const [sendingMobileOtp, setSendingMobileOtp] = useState(false);
-  const [sendingEmailOtp, setSendingEmailOtp] = useState(false);
   const [verifyingMobileOtp, setVerifyingMobileOtp] = useState(false);
-  const [verifyingEmailOtp, setVerifyingEmailOtp] = useState(false);
   const [registering, setRegistering] = useState(false);
 
   // Registration No
@@ -129,6 +125,15 @@ export default function ScholarshipPage() {
     }
   }, [toast]);
 
+  // Mobile OTP Cooldown timer
+  useEffect(() => {
+    if (mobileOtpCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setMobileOtpCooldown(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [mobileOtpCooldown]);
+
   // Load remaining OTP counts on query target change
   useEffect(() => {
     if (mobile.length === 10) {
@@ -139,67 +144,56 @@ export default function ScholarshipPage() {
     }
   }, [mobile]);
 
-  useEffect(() => {
-    if (email.includes('@')) {
-      fetch(`/api/scholarship/otp?target=${email}&type=email`)
-        .then(r => r.json())
-        .then(data => setEmailOtpRemaining(data.remaining))
-        .catch(() => {});
-    }
-  }, [email]);
-
-  const sendOtp = async (target: string, type: 'mobile' | 'email') => {
+  const sendOtp = async (target: string, customName?: string) => {
     if (!target) {
-      showToast(`Please enter your ${type}`, 'error');
+      showToast('Please enter your mobile number', 'error');
       return;
     }
-    const setter = type === 'mobile' ? setSendingMobileOtp : setSendingEmailOtp;
-    setter(true);
+    if (!customName && !name.trim()) {
+      showToast('Please enter your Full Name first.', 'error');
+      return;
+    }
+    setSendingMobileOtp(true);
     try {
       const res = await fetch('/api/scholarship/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target, type, action: 'send' })
+        body: JSON.stringify({ target, type: 'mobile', action: 'send', name: customName || name })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       
-      showToast(`OTP sent successfully to your ${type}!`, 'success');
-      if (type === 'mobile') {
-        setMobileOtpRemaining(data.remaining);
-      } else {
-        setEmailOtpRemaining(data.remaining);
-      }
+      showToast('OTP sent successfully to your mobile number!', 'success');
+      setMobileOtpRemaining(data.remaining);
+      setMobileOtpCooldown(60);
     } catch (e: any) {
       showToast(e.message || 'Failed to send OTP', 'error');
     } finally {
-      setter(false);
+      setSendingMobileOtp(false);
     }
   };
 
-  const verifyOtp = async (target: string, type: 'mobile' | 'email', code: string) => {
+  const verifyOtp = async (target: string, code: string) => {
     if (!code) {
       showToast('Please enter OTP', 'error');
       return;
     }
-    const setter = type === 'mobile' ? setVerifyingMobileOtp : setVerifyingEmailOtp;
-    setter(true);
+    setVerifyingMobileOtp(true);
     try {
       const res = await fetch('/api/scholarship/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target, type, action: 'verify', otp: code })
+        body: JSON.stringify({ target, type: 'mobile', action: 'verify', otp: code })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      showToast(`${type === 'mobile' ? 'Mobile number' : 'Email address'} verified successfully!`, 'success');
-      if (type === 'mobile') setIsMobileVerified(true);
-      else setIsEmailVerified(true);
+      showToast('Mobile number verified successfully!', 'success');
+      setIsMobileVerified(true);
     } catch (e: any) {
       showToast(e.message || 'Invalid OTP code', 'error');
     } finally {
-      setter(false);
+      setVerifyingMobileOtp(false);
     }
   };
 
@@ -244,8 +238,8 @@ export default function ScholarshipPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isMobileVerified || !isEmailVerified) {
-      showToast('Please verify both mobile and email OTPs first!', 'error');
+    if (!isMobileVerified) {
+      showToast('Please verify your mobile OTP first!', 'error');
       return;
     }
 
@@ -425,7 +419,7 @@ export default function ScholarshipPage() {
 
       setRetrievedEntry(data);
       // Send OTP to their mobile for verification
-      await sendOtp(data.mobile, 'mobile');
+      await sendOtp(data.mobile, data.name);
       setStep('retrieve-otp');
     } catch (e: any) {
       showToast(e.message || 'Registration details not found', 'error');
@@ -628,12 +622,12 @@ export default function ScholarshipPage() {
                 {!isMobileVerified ? (
                   <button 
                     type="button" 
-                    onClick={() => sendOtp(mobile, 'mobile')} 
-                    disabled={sendingMobileOtp || mobile.length !== 10} 
+                    onClick={() => sendOtp(mobile)} 
+                    disabled={sendingMobileOtp || mobile.length !== 10 || mobileOtpCooldown > 0} 
                     className="btn btn-primary btn-sm"
                     style={{ whiteSpace: 'nowrap' }}
                   >
-                    {sendingMobileOtp ? 'Sending...' : 'Send OTP'}
+                    {sendingMobileOtp ? 'Sending...' : mobileOtpCooldown > 0 ? `Resend in ${mobileOtpCooldown}s` : 'Send OTP'}
                   </button>
                 ) : (
                   <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={12} /> Verified</span>
@@ -654,7 +648,7 @@ export default function ScholarshipPage() {
                   <input type="text" value={mobileOtp} onChange={e => setMobileOtp(e.target.value.slice(0, 6))} placeholder="Enter 6-digit OTP" />
                   <button 
                     type="button" 
-                    onClick={() => verifyOtp(mobile, 'mobile', mobileOtp)} 
+                    onClick={() => verifyOtp(mobile, mobileOtp)} 
                     disabled={verifyingMobileOtp || mobileOtp.length !== 6}
                     className="btn btn-success btn-sm"
                   >
@@ -664,56 +658,17 @@ export default function ScholarshipPage() {
               </div>
             )}
 
-            {/* Email with OTP */}
+            {/* Email Address */}
             <div className="input-group">
               <label className="label">Email Address</label>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  placeholder="Enter email address" 
-                  disabled={isEmailVerified}
-                  required 
-                />
-                {!isEmailVerified ? (
-                  <button 
-                    type="button" 
-                    onClick={() => sendOtp(email, 'email')} 
-                    disabled={sendingEmailOtp || !email.includes('@')} 
-                    className="btn btn-primary btn-sm"
-                    style={{ whiteSpace: 'nowrap' }}
-                  >
-                    {sendingEmailOtp ? 'Sending...' : 'Send OTP'}
-                  </button>
-                ) : (
-                  <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={12} /> Verified</span>
-                )}
-              </div>
-              {!isEmailVerified && emailOtpRemaining !== null && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>
-                  Remaining attempts today: <strong style={{ color: 'var(--primary)' }}>{emailOtpRemaining}</strong>
-                </div>
-              )}
+              <input 
+                type="email" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                placeholder="Enter email address" 
+                required 
+              />
             </div>
-
-            {/* Email OTP Input */}
-            {!isEmailVerified && email.includes('@') && (
-              <div className="input-group anim-fade-up" style={{ background: 'var(--bg-3)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <label className="label">Enter Email OTP</label>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <input type="text" value={emailOtp} onChange={e => setEmailOtp(e.target.value.slice(0, 6))} placeholder="Enter 6-digit OTP" />
-                  <button 
-                    type="button" 
-                    onClick={() => verifyOtp(email, 'email', emailOtp)} 
-                    disabled={verifyingEmailOtp || emailOtp.length !== 6}
-                    className="btn btn-success btn-sm"
-                  >
-                    {verifyingEmailOtp ? '...' : 'Verify'}
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* State & District */}
             <div className="scholarship-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -853,7 +808,7 @@ export default function ScholarshipPage() {
             {/* Register button */}
             <button 
               type="submit" 
-              disabled={registering || !isMobileVerified || !isEmailVerified}
+              disabled={registering || !isMobileVerified}
               className="btn btn-primary"
               style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', justifyContent: 'center' }}
               suppressHydrationWarning
@@ -1028,6 +983,21 @@ export default function ScholarshipPage() {
             <button type="submit" className="btn btn-success" style={{ width: '100%', justifyContent: 'center' }}>
               Verify OTP & Proceed to Payment
             </button>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
+                {mobileOtpCooldown > 0 ? `Resend in ${mobileOtpCooldown}s` : ''}
+              </span>
+              <button
+                type="button"
+                onClick={() => sendOtp(retrievedEntry.mobile, retrievedEntry.name)}
+                disabled={sendingMobileOtp || mobileOtpCooldown > 0}
+                className="btn btn-ghost btn-sm"
+                style={{ color: 'var(--primary)', fontWeight: 'bold' }}
+              >
+                {sendingMobileOtp ? 'Sending...' : 'Resend OTP'}
+              </button>
+            </div>
 
             {/* Inline Notification Banner below Verify Button */}
             <InlineNotification toast={toast} onClose={() => setToast(null)} />
