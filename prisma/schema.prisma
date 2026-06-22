@@ -328,6 +328,7 @@ model ScholarshipEntry {
   proctorLog          String?  @db.LongText  // JSON array of { type, timestamp, details }
   cashCollectedBy     String?              // Name of admin/subadmin who collected cash
   cashCollectedById   String?              // ID of admin/subadmin who collected cash
+  emailSent       Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GraduationCap, Shield, Star, Wallet, Lock, Tag, X, CheckCircle, AlertTriangle, Loader2, Sun, BookOpen, Clock, Trophy, Banknote, Eye, EyeOff } from 'lucide-react';
+import { GraduationCap, Shield, Star, Wallet, Lock, Tag, X, CheckCircle, AlertTriangle, Loader2, Sun, BookOpen, Clock, Trophy, Banknote, Eye, EyeOff, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { INDIA_STATES } from '@/lib/india-states';
 import WavingIndianFlag from '@/components/WavingIndianFlag';
@@ -635,6 +635,7 @@ export default function ScholarshipPage() {
 
       <div className={`card-form-animated ${showForm ? 'visible' : ''}`}>
       {step === 'form' && (
+        <>
         <div className="card card-p">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
             <h3 style={{ margin: 0, fontWeight: 800 }}>Registration Form</h3>
@@ -746,6 +747,9 @@ export default function ScholarshipPage() {
                 placeholder="Enter email address" 
                 required 
               />
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.25rem', display: 'block', lineHeight: 1.4 }}>
+                Make sure the email is correct as you will receive your registration ID and confirmation message on it.
+              </span>
             </div>
 
             {/* State & District */}
@@ -897,8 +901,127 @@ export default function ScholarshipPage() {
             {/* Inline Notification Banner below Register Button */}
             <InlineNotification toast={toast} onClose={() => setToast(null)} />
           </form>
-        </div>
-      )}
+         </div>
+
+          {/* Support and Already Registered cards below the main form */}
+          <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Check Results Card */}
+            {/* <div 
+              className="card card-p" 
+              style={{ 
+                padding: '1.5rem', 
+                background: 'rgba(34, 197, 94, 0.05)', 
+                border: '1px solid rgba(34, 197, 94, 0.15)',
+                borderRadius: '16px',
+                textAlign: 'left',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}
+            >
+              <div style={{ flex: 1, minWidth: '250px' }}>
+                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Check Exam Results</h4>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-3)' }}>
+                  View your scholarship test scores, correct/wrong answers, merit rank, and prize status.
+                </p>
+              </div>
+              <Link 
+                href="/scholarship/result" 
+                style={{ 
+                  padding: '0.6rem 1.25rem', 
+                  fontSize: '0.82rem', 
+                  height: 'auto', 
+                  backgroundColor: '#22c55e', 
+                  color: '#ffffff', 
+                  border: 'none', 
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                Check Test Result
+              </Link>
+            </div> */}
+
+            {/* Already Registered / Check Status Card */}
+            <div 
+              className="card card-p" 
+              style={{ 
+                padding: '1.5rem', 
+                background: 'rgba(99, 102, 241, 0.03)', 
+                border: '1px solid rgba(99, 102, 241, 0.12)',
+                borderRadius: '16px',
+                textAlign: 'left',
+               display: 'flex',
+               justifyContent: 'space-between',
+               alignItems: 'center',
+               flexWrap: 'wrap',
+               gap: '1rem'
+             }}
+           >
+             <div style={{ flex: 1, minWidth: '250px' }}>
+               <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Already Registered?</h4>
+               <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-3)' }}>
+                 Check status, resume pending payment, or retrieve your registration ID.
+               </p>
+             </div>
+             <button 
+               type="button" 
+               onClick={() => setStep('retrieve')} 
+               className="btn btn-primary"
+               style={{ padding: '0.6rem 1.25rem', fontSize: '0.82rem', height: 'auto' }}
+             >
+               Check Status / Resume Payment
+             </button>
+           </div>
+
+           {/* Support / Help Card for payment issues */}
+           <div 
+             className="card card-p" 
+             style={{ 
+               padding: '1.5rem', 
+               background: 'rgba(255, 255, 255, 0.02)', 
+               border: '1px solid rgba(255, 255, 255, 0.06)',
+               borderRadius: '16px',
+               textAlign: 'left'
+             }}
+           >
+             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+               <div style={{
+                 width: '32px',
+                 height: '32px',
+                 borderRadius: '50%',
+                 background: 'rgba(99, 102, 241, 0.1)',
+                 color: 'var(--primary-light)',
+                 display: 'flex',
+                 alignItems: 'center',
+                 justifyContent: 'center'
+               }}>
+                 <Mail size={16} />
+               </div>
+               <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Payment Help & Support</h4>
+             </div>
+             
+             <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
+               Kindly email us at <a href="mailto:payment@jobadda.in" style={{ color: 'var(--primary-light)', fontWeight: 700, textDecoration: 'underline' }}>payment@jobadda.in</a> with a <strong>screenshot</strong> of your transaction:
+             </p>
+             
+             <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.82rem', color: 'var(--text-3)', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
+               <li>If you are facing any payment-related issues</li>
+               <li>If you paid the amount but did not receive a confirmation</li>
+               <li>If you are experiencing any issue in making the payment</li>
+               <li>If you have any other payment related queries or concerns</li>
+             </ul>
+           </div>
+         </div>
+        </>
+       )}
 
       {step === 'payment' && (
         <div className="card card-p anim-fade-up">
@@ -1123,33 +1246,75 @@ export default function ScholarshipPage() {
       )}
 
       {step === 'retrieve' && (
-        <div className="card card-p anim-fade-up">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-            <h3 style={{ margin: 0, fontWeight: 800 }}>Resume Payment</h3>
-            <button onClick={() => setStep('form')} className="btn btn-ghost btn-sm" style={{ fontSize: '0.8rem' }}>
-              Back to Form
-            </button>
+        <>
+          <div className="card card-p anim-fade-up">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontWeight: 800 }}>Resume Payment</h3>
+              <button onClick={() => setStep('form')} className="btn btn-ghost btn-sm" style={{ fontSize: '0.8rem' }}>
+                Back to Form
+              </button>
+            </div>
+
+            <form onSubmit={handleRetrieveLookup} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="input-group">
+                <label className="label">Registration ID or Mobile Number</label>
+                <input 
+                  type="text" 
+                  value={retrieveQuery} 
+                  onChange={e => setRetrieveQuery(e.target.value)} 
+                  placeholder="Enter JA-XXXXXXXX or 10-digit mobile" 
+                  required 
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                Lookup Registration & Send OTP
+              </button>
+
+              {/* Inline Notification Banner below Retrieve Button */}
+              <InlineNotification toast={toast} onClose={() => setToast(null)} />
+            </form>
           </div>
 
-          <form onSubmit={handleRetrieveLookup} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div className="input-group">
-              <label className="label">Registration ID or Mobile Number</label>
-              <input 
-                type="text" 
-                value={retrieveQuery} 
-                onChange={e => setRetrieveQuery(e.target.value)} 
-                placeholder="Enter JA-XXXXXXXX or 10-digit mobile" 
-                required 
-              />
+          {/* Support / Help Card for payment issues */}
+          <div 
+            className="card card-p anim-fade-up" 
+            style={{ 
+              marginTop: '1.5rem', 
+              padding: '1.5rem', 
+              background: 'rgba(255, 255, 255, 0.02)', 
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: '16px',
+              textAlign: 'left'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'rgba(99, 102, 241, 0.1)',
+                color: 'var(--primary-light)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Mail size={16} />
+              </div>
+              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Payment Help & Support</h4>
             </div>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-              Lookup Registration & Send OTP
-            </button>
-
-            {/* Inline Notification Banner below Retrieve Button */}
-            <InlineNotification toast={toast} onClose={() => setToast(null)} />
-          </form>
-        </div>
+            
+            <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
+              Kindly email us at <a href="mailto:payment@jobadda.in" style={{ color: 'var(--primary-light)', fontWeight: 700, textDecoration: 'underline' }}>payment@jobadda.in</a> with a <strong>screenshot</strong> of your transaction:
+            </p>
+            
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.82rem', color: 'var(--text-3)', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
+              <li>If you are facing any payment-related issues</li>
+              <li>If you paid the amount but did not receive a confirmation</li>
+              <li>If you are experiencing any issue in making the payment</li>
+              <li>If you have any other payment related queries or concerns</li>
+            </ul>
+          </div>
+        </>
       )}
 
       {step === 'retrieve-otp' && (

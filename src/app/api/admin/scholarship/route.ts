@@ -137,6 +137,7 @@ export async function GET(req: Request) {
       'Math Score': e.examSubmitted ? e.examMathScore : '',
       'Reasoning Score': e.examSubmitted ? e.examReasoningScore : '',
       'CA Score': e.examSubmitted ? e.examCaScore : '',
+      'Email Sent': e.emailSent ? 'Yes' : 'No',
       'Registered At': new Date(e.createdAt).toLocaleString('en-IN'),
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -189,4 +190,46 @@ export async function GET(req: Request) {
     highestScore,
     collectors
   });
+}
+
+export async function POST(req: Request) {
+  const admin = await checkAdmin();
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { registrationNo, paymentId, orderId, amount, couponCode } = await req.json();
+
+    if (!registrationNo || !paymentId) {
+      return NextResponse.json({ error: 'Registration number and Payment ID are required' }, { status: 400 });
+    }
+
+    const db = (await import('@/lib/prisma')).default as any;
+    const entry = await db.scholarshipEntry.findUnique({ where: { registrationNo } });
+    if (!entry) {
+      return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
+    }
+
+    // Update the database entry to match online paid
+    const updatedEntry = await db.scholarshipEntry.update({
+      where: { registrationNo },
+      data: {
+        paymentStatus: 'PAID',
+        paymentId: paymentId.trim(),
+        orderId: orderId?.trim() || 'manual_order',
+        amount: amount !== undefined ? Number(amount) : 49,
+        couponCode: couponCode?.trim() || null
+      }
+    });
+
+    // Send confirmation email in the background
+    const { sendScholarshipConfirmationEmail } = await import('@/lib/scholarship-mail');
+    sendScholarshipConfirmationEmail(updatedEntry.email, updatedEntry.name, updatedEntry.mobile, updatedEntry.registrationNo).catch(err => {
+      console.error('Failed to send scholarship confirmation email:', err);
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    console.error('ADMIN_SCHOLARSHIP_MARK_PAID_ERROR', e);
+    return NextResponse.json({ error: 'Server error: ' + e.message }, { status: 500 });
+  }
 }

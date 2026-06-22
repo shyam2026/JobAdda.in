@@ -19,8 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    const host = req.headers.get('host') || '';
-    const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || process.env.NODE_ENV === 'development';
+    const isLocal = process.env.NODE_ENV === 'development';
 
     if (isLocal && registrationNo === 'JA-DEBUG') {
       // Return template questions directly for local test mode

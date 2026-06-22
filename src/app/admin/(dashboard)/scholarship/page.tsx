@@ -19,6 +19,74 @@ export default function AdminScholarshipPage() {
     snapshots: Array<{ timestamp: string; image: string }>;
   } | null>(null);
 
+  // Mark Paid States
+  const [markPaidEntry, setMarkPaidEntry] = useState<any | null>(null);
+  const [markPaidPaymentId, setMarkPaidPaymentId] = useState('');
+  const [markPaidOrderId, setMarkPaidOrderId] = useState('');
+  const [markPaidAmount, setMarkPaidAmount] = useState('49');
+  const [markPaidCouponCode, setMarkPaidCouponCode] = useState('');
+  const [submittingMarkPaid, setSubmittingMarkPaid] = useState(false);
+  const [markPaidError, setMarkPaidError] = useState('');
+
+  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+
+  const handleSendEmail = async (regNo: string) => {
+    setSendingEmailId(regNo);
+    try {
+      const res = await fetch('/api/admin/scholarship/resend-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationNo: regNo })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send email');
+      alert('Confirmation email sent successfully!');
+      fetchEntries();
+    } catch (err: any) {
+      alert(err.message || 'Failed to send email');
+    } finally {
+      setSendingEmailId(null);
+    }
+  };
+
+  const handleMarkPaidSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!markPaidEntry) return;
+    if (!markPaidPaymentId.trim()) {
+      setMarkPaidError('Payment ID is required.');
+      return;
+    }
+    setSubmittingMarkPaid(true);
+    setMarkPaidError('');
+    try {
+      const res = await fetch('/api/admin/scholarship', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationNo: markPaidEntry.registrationNo,
+          paymentId: markPaidPaymentId,
+          orderId: markPaidOrderId || undefined,
+          amount: Number(markPaidAmount) || 49,
+          couponCode: markPaidCouponCode || undefined
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update payment status');
+      
+      // Success! Reset states, close modal, and refresh list
+      setMarkPaidEntry(null);
+      setMarkPaidPaymentId('');
+      setMarkPaidOrderId('');
+      setMarkPaidAmount('49');
+      setMarkPaidCouponCode('');
+      fetchEntries();
+    } catch (err: any) {
+      setMarkPaidError(err.message || 'Error occurred while updating');
+    } finally {
+      setSubmittingMarkPaid(false);
+    }
+  };
+
   const toggleExpand = (id: string) => {
     setExpandedCards(prev => ({
       ...prev,
@@ -444,17 +512,52 @@ export default function AdminScholarshipPage() {
                   {/* Right Side: Payment status & Chevron */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                     {entry.paymentStatus === 'PAID' ? (
-                      <span style={{ 
-                        color: '#34d399', 
-                        background: 'rgba(16, 185, 129, 0.08)', 
-                        padding: '0.15rem 0.4rem', 
-                        borderRadius: '4px', 
-                        fontWeight: 800,
-                        fontSize: '0.68rem',
-                        border: '1px solid rgba(16, 185, 129, 0.15)'
-                      }}>
-                        PAID
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ 
+                          color: '#34d399', 
+                          background: 'rgba(16, 185, 129, 0.08)', 
+                          padding: '0.15rem 0.4rem', 
+                          borderRadius: '4px', 
+                          fontWeight: 800,
+                          fontSize: '0.68rem',
+                          border: '1px solid rgba(16, 185, 129, 0.15)'
+                        }}>
+                          PAID
+                        </span>
+                        {entry.emailSent ? (
+                          <span style={{ 
+                            color: '#34d399', 
+                            background: 'rgba(16, 185, 129, 0.08)', 
+                            padding: '0.15rem 0.4rem', 
+                            borderRadius: '4px', 
+                            fontWeight: 800,
+                            fontSize: '0.68rem',
+                            border: '1px solid rgba(16, 185, 129, 0.15)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.2rem'
+                          }} title="Confirmation email sent successfully">
+                            <span>Email Sent</span>
+                            <span>✓</span>
+                          </span>
+                        ) : (
+                          <span style={{ 
+                            color: '#fb923c', 
+                            background: 'rgba(249, 115, 22, 0.08)', 
+                            padding: '0.15rem 0.4rem', 
+                            borderRadius: '4px', 
+                            fontWeight: 800,
+                            fontSize: '0.68rem',
+                            border: '1px solid rgba(249, 115, 22, 0.15)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.2rem'
+                          }} title="Confirmation email not sent yet">
+                            <span>Email Pending</span>
+                            <span>✉</span>
+                          </span>
+                        )}
+                      </div>
                     ) : (
                       <span style={{ 
                         color: '#fbbf24', 
@@ -629,6 +732,33 @@ export default function AdminScholarshipPage() {
                             <strong>{new Date(entry.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
                           </div>
 
+                          {entry.paymentStatus !== 'PAID' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMarkPaidEntry(entry);
+                                setMarkPaidError('');
+                              }}
+                              className="btn btn-primary"
+                              style={{
+                                marginTop: '0.65rem',
+                                width: '100%',
+                                padding: '0.4rem 0.6rem',
+                                fontSize: '0.72rem',
+                                height: 'auto',
+                                borderRadius: '6px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.3rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <CheckCircle2 size={12} />
+                              Mark Online Paid
+                            </button>
+                          )}
+
                           {entry.paymentStatus === 'PAID' && (
                             <>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -676,6 +806,40 @@ export default function AdminScholarshipPage() {
                                   <span style={{ color: 'var(--success)', fontWeight: 600 }}>{entry.couponCode}</span>
                                 </div>
                               )}
+                              
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await handleSendEmail(entry.registrationNo);
+                                }}
+                                disabled={sendingEmailId === entry.registrationNo}
+                                className="btn btn-outline"
+                                style={{
+                                  marginTop: '0.65rem',
+                                  width: '100%',
+                                  padding: '0.4rem 0.6rem',
+                                  fontSize: '0.72rem',
+                                  height: 'auto',
+                                  borderRadius: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.3rem',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {sendingEmailId === entry.registrationNo ? (
+                                  <>
+                                    <Loader2 className="animate-spin" size={12} />
+                                    <span>Sending...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Mail size={12} />
+                                    <span>{entry.emailSent ? 'Resend Confirmation Email' : 'Send Confirmation Email'}</span>
+                                  </>
+                                )}
+                              </button>
                             </>
                           )}
                         </div>
@@ -785,6 +949,163 @@ export default function AdminScholarshipPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MARK ONLINE PAID MODAL */}
+      {markPaidEntry && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 11000,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem'
+        }}>
+          <div className="card" style={{
+            maxWidth: '500px',
+            width: '100%',
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem',
+            border: '1px solid var(--border)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
+            backgroundColor: '#0f172a'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)' }}>Mark Online Paid (Razorpay)</h3>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.2rem' }}>
+                  Candidate: <strong>{markPaidEntry.name}</strong> ({markPaidEntry.registrationNo})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMarkPaidEntry(null)}
+                className="btn btn-ghost"
+                style={{ minWidth: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.75rem', height: 'auto' }}
+              >
+                Cancel
+              </button>
+            </div>
+
+            <form onSubmit={handleMarkPaidSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="input-group">
+                <label className="label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-2)' }}>Razorpay Payment ID *</label>
+                <input 
+                  type="text" 
+                  value={markPaidPaymentId} 
+                  onChange={e => setMarkPaidPaymentId(e.target.value)} 
+                  placeholder="e.g. pay_P1rW3d8z7x3y2a" 
+                  required 
+                  style={{
+                    width: '100%',
+                    height: '38px',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.85rem',
+                    borderRadius: '8px',
+                    background: 'var(--bg-3)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-1)',
+                    marginTop: '0.25rem'
+                  }}
+                />
+              </div>
+
+              <div className="input-group">
+                <label className="label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-2)' }}>Razorpay Order ID (Optional)</label>
+                <input 
+                  type="text" 
+                  value={markPaidOrderId} 
+                  onChange={e => setMarkPaidOrderId(e.target.value)} 
+                  placeholder="e.g. order_P1rV9a4b2c1d3e" 
+                  style={{
+                    width: '100%',
+                    height: '38px',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.85rem',
+                    borderRadius: '8px',
+                    background: 'var(--bg-3)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-1)',
+                    marginTop: '0.25rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-2)' }}>Amount Paid (₹) *</label>
+                  <input 
+                    type="number" 
+                    value={markPaidAmount} 
+                    onChange={e => setMarkPaidAmount(e.target.value)} 
+                    placeholder="49" 
+                    required 
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      padding: '0.5rem 0.75rem',
+                      fontSize: '0.85rem',
+                      borderRadius: '8px',
+                      background: 'var(--bg-3)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-1)',
+                      marginTop: '0.25rem'
+                    }}
+                  />
+                </div>
+                <div className="input-group">
+                  <label className="label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-2)' }}>Coupon Used (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={markPaidCouponCode} 
+                    onChange={e => setMarkPaidCouponCode(e.target.value.toUpperCase())} 
+                    placeholder="e.g. IND50" 
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      padding: '0.5rem 0.75rem',
+                      fontSize: '0.85rem',
+                      borderRadius: '8px',
+                      background: 'var(--bg-3)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-1)',
+                      marginTop: '0.25rem',
+                      textTransform: 'uppercase'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {markPaidError && (
+                <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
+                  ⚠️ {markPaidError}
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={submittingMarkPaid || !markPaidPaymentId.trim()}
+                className="btn btn-primary" 
+                style={{ 
+                  width: '100%', 
+                  justifyContent: 'center', 
+                  marginTop: '0.75rem', 
+                  padding: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                {submittingMarkPaid ? <Loader2 className="animate-spin" size={16} /> : 'Confirm Payment & Mark Paid'}
+              </button>
+            </form>
           </div>
         </div>
       )}

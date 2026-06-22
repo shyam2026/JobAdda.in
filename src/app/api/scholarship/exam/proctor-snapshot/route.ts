@@ -10,8 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing registrationNo" }, { status: 400 });
     }
 
-    const host = req.headers.get('host') || '';
-    const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || process.env.NODE_ENV === 'development';
+    const isLocal = process.env.NODE_ENV === 'development';
 
     if (isLocal && registrationNo === 'JA-DEBUG') {
       if (type === 'event' && event) {

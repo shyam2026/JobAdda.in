@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     const timestamp = Date.now();
     const collectorName = isSuper ? 'Admin' : (adminRecord.name || adminRecord.email);
 
-    await db.scholarshipEntry.update({
+    const updatedEntry = await db.scholarshipEntry.update({
       where: { registrationNo },
       data: {
         paymentStatus: 'PAID',
@@ -113,6 +113,12 @@ export async function POST(req: Request) {
         cashCollectedBy: collectorName,
         cashCollectedById: adminRecord.id,
       },
+    });
+
+    // Send confirmation email in the background
+    const { sendScholarshipConfirmationEmail } = await import('@/lib/scholarship-mail');
+    sendScholarshipConfirmationEmail(updatedEntry.email, updatedEntry.name, updatedEntry.mobile, updatedEntry.registrationNo).catch(err => {
+      console.error('Failed to send scholarship confirmation email:', err);
     });
 
     return NextResponse.json({
