@@ -28,6 +28,15 @@ export default function AdminScholarshipPage() {
   const [submittingMarkPaid, setSubmittingMarkPaid] = useState(false);
   const [markPaidError, setMarkPaidError] = useState('');
 
+  // Mark Cash Paid States
+  const [markCashPaidEntry, setMarkCashPaidEntry] = useState<any | null>(null);
+  const [markCashPaidPasscode, setMarkCashPaidPasscode] = useState('');
+  const [markCashPaidAmount, setMarkCashPaidAmount] = useState('49');
+  const [markCashPaidCouponCode, setMarkCashPaidCouponCode] = useState('');
+  const [submittingMarkCashPaid, setSubmittingMarkCashPaid] = useState(false);
+  const [markCashPaidError, setMarkCashPaidError] = useState('');
+  const [showCashPasscode, setShowCashPasscode] = useState(false);
+
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
   const handleSendEmail = async (regNo: string) => {
@@ -46,6 +55,42 @@ export default function AdminScholarshipPage() {
       alert(err.message || 'Failed to send email');
     } finally {
       setSendingEmailId(null);
+    }
+  };
+
+  const handleMarkCashPaidSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!markCashPaidEntry) return;
+    if (!markCashPaidPasscode.trim()) {
+      setMarkCashPaidError('Admin passcode is required.');
+      return;
+    }
+    setSubmittingMarkCashPaid(true);
+    setMarkCashPaidError('');
+    try {
+      const res = await fetch('/api/scholarship/payment/cash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationNo: markCashPaidEntry.registrationNo,
+          passcode: markCashPaidPasscode,
+          amount: Number(markCashPaidAmount) || 49,
+          couponCode: markCashPaidCouponCode || undefined
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update cash payment status');
+      
+      // Success! Reset states, close modal, and refresh list
+      setMarkCashPaidEntry(null);
+      setMarkCashPaidPasscode('');
+      setMarkCashPaidAmount('49');
+      setMarkCashPaidCouponCode('');
+      fetchEntries();
+    } catch (err: any) {
+      setMarkCashPaidError(err.message || 'Error occurred while updating');
+    } finally {
+      setSubmittingMarkCashPaid(false);
     }
   };
 
@@ -621,7 +666,7 @@ export default function AdminScholarshipPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-3)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.6rem' }}>
                           <Compass size={13} color="var(--primary-light)" /> Career Goal
                         </div>
-                        <div className="goal-quote" style={{ flex: 1 }}>
+                        <div className="goal-quote">
                           {entry.careerGoal && entry.careerGoal !== 'na' ? `"${entry.careerGoal}"` : 'No career goal specified.'}
                         </div>
                       </div>
@@ -733,30 +778,57 @@ export default function AdminScholarshipPage() {
                           </div>
 
                           {entry.paymentStatus !== 'PAID' && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setMarkPaidEntry(entry);
-                                setMarkPaidError('');
-                              }}
-                              className="btn btn-primary"
-                              style={{
-                                marginTop: '0.65rem',
-                                width: '100%',
-                                padding: '0.4rem 0.6rem',
-                                fontSize: '0.72rem',
-                                height: 'auto',
-                                borderRadius: '6px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.3rem',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              <CheckCircle2 size={12} />
-                              Mark Online Paid
-                            </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.65rem' }}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMarkPaidEntry(entry);
+                                  setMarkPaidError('');
+                                }}
+                                className="btn btn-primary"
+                                style={{
+                                  width: '100%',
+                                  padding: '0.4rem 0.6rem',
+                                  fontSize: '0.72rem',
+                                  height: 'auto',
+                                  borderRadius: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.3rem',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <CheckCircle2 size={12} />
+                                Mark Online Paid
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMarkCashPaidEntry(entry);
+                                  setMarkCashPaidError('');
+                                }}
+                                className="btn"
+                                style={{
+                                  width: '100%',
+                                  padding: '0.4rem 0.6rem',
+                                  fontSize: '0.72rem',
+                                  height: 'auto',
+                                  borderRadius: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.3rem',
+                                  cursor: 'pointer',
+                                  background: 'rgba(16, 185, 129, 0.1)',
+                                  color: '#10b981',
+                                  border: '1px solid rgba(16, 185, 129, 0.2)'
+                                }}
+                              >
+                                <Banknote size={12} />
+                                Mark Cash Paid
+                              </button>
+                            </div>
                           )}
 
                           {entry.paymentStatus === 'PAID' && (
@@ -1110,6 +1182,166 @@ export default function AdminScholarshipPage() {
         </div>
       )}
 
+      {/* MARK CASH PAID MODAL */}
+      {markCashPaidEntry && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 11000,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem'
+        }}>
+          <div className="card" style={{
+            maxWidth: '500px',
+            width: '100%',
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem',
+            border: '1px solid var(--border)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
+            backgroundColor: '#0f172a'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)' }}>Mark Cash Paid</h3>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.2rem' }}>
+                  Candidate: <strong>{markCashPaidEntry.name}</strong> ({markCashPaidEntry.registrationNo})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMarkCashPaidEntry(null)}
+                className="btn btn-ghost"
+                style={{ minWidth: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.75rem', height: 'auto' }}
+              >
+                Cancel
+              </button>
+            </div>
+
+            <form onSubmit={handleMarkCashPaidSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="input-group">
+                <label className="label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-2)' }}>Admin Passcode *</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showCashPasscode ? "text" : "password"} 
+                    value={markCashPaidPasscode} 
+                    onChange={e => setMarkCashPaidPasscode(e.target.value)} 
+                    placeholder="Enter admin cash passcode" 
+                    required 
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      padding: '0.5rem 2.5rem 0.5rem 0.75rem',
+                      fontSize: '0.85rem',
+                      borderRadius: '8px',
+                      background: 'var(--bg-3)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-1)',
+                      marginTop: '0.25rem'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCashPasscode(!showCashPasscode)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-3)',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      marginTop: '0.1rem'
+                    }}
+                  >
+                    {showCashPasscode ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="input-group">
+                  <label className="label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-2)' }}>Amount Collected (₹) *</label>
+                  <input 
+                    type="number" 
+                    value={markCashPaidAmount} 
+                    onChange={e => setMarkCashPaidAmount(e.target.value)} 
+                    placeholder="49" 
+                    required 
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      padding: '0.5rem 0.75rem',
+                      fontSize: '0.85rem',
+                      borderRadius: '8px',
+                      background: 'var(--bg-3)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-1)',
+                      marginTop: '0.25rem'
+                    }}
+                  />
+                </div>
+                <div className="input-group">
+                  <label className="label" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-2)' }}>Coupon Used (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={markCashPaidCouponCode} 
+                    onChange={e => setMarkCashPaidCouponCode(e.target.value.toUpperCase())} 
+                    placeholder="e.g. IND50" 
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      padding: '0.5rem 0.75rem',
+                      fontSize: '0.85rem',
+                      borderRadius: '8px',
+                      background: 'var(--bg-3)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-1)',
+                      marginTop: '0.25rem',
+                      textTransform: 'uppercase'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {markCashPaidError && (
+                <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
+                  ⚠️ {markCashPaidError}
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={submittingMarkCashPaid || !markCashPaidPasscode.trim()}
+                className="btn" 
+                style={{ 
+                  width: '100%', 
+                  justifyContent: 'center', 
+                  marginTop: '0.75rem', 
+                  padding: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: '#10b981',
+                  color: '#fff',
+                  fontWeight: 700
+                }}
+              >
+                {submittingMarkCashPaid ? <Loader2 className="animate-spin" size={16} /> : 'Confirm Cash Payment & Mark Paid'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <style>{`
         .candidate-card {
           display: flex;
@@ -1143,7 +1375,8 @@ export default function AdminScholarshipPage() {
         .candidate-card-col {
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
+          justify-content: flex-start;
+          gap: 0.5rem;
         }
         .candidate-card-col + .candidate-card-col {
           border-left: 1px solid rgba(255, 255, 255, 0.04);

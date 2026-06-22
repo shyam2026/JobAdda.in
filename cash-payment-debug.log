@@ -1,3 +1,0 @@
-[2026-06-22T13:03:39.366Z] Incoming cash payment request : {"user":{"name":"Super Admin","email":"admin@jobadda.in","id":"cmoh7hcnk0000vg2o4wo7awfj","role":"SUPERADMIN","portalType":"admin","profileImage":null,"isPremium":false,"premiumUntil":null}}
-[2026-06-22T13:03:39.397Z] Request body parsed : {"body":{"registrationNo":"JA-A944NGBA","passcode":"JA$csh#8Xp2qL9vR","couponCode":null,"amount":49}}
-[2026-06-22T13:03:39.398Z] Comparing passcode : {"entered":"JA$csh#8Xp2qL9vR","configured":"JA$csh#8Xp2qL9vR"}

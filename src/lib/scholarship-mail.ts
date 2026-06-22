@@ -20,9 +20,9 @@ export async function sendScholarshipConfirmationEmail(to: string, name: string,
     });
 
     const mailOptions = {
-      from: `"JobAdda.in No-Reply" <${user}>`,
+      from: `"JobAdda.in" <${user}>`,
       to,
-      subject: 'Scholorship Confirmation Mail from JobAdda.in',
+      subject: 'Scholarship Confirmation Mail from JobAdda.in',
       html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -43,7 +43,7 @@ export async function sendScholarshipConfirmationEmail(to: string, name: string,
       <!-- Celebration Badge -->
       <div style="text-align: center; margin-bottom: 25px;">
         <span style="display: inline-block; background-color: #dcfce7; color: #166534; font-size: 12px; font-weight: 700; padding: 6px 16px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
-          Payment & Registration Confirmed
+          Registration Confirmed
         </span>
       </div>
       
@@ -53,7 +53,7 @@ export async function sendScholarshipConfirmationEmail(to: string, name: string,
       </p>
       
       <p style="font-size: 15px; line-height: 1.6; color: #475569; margin-bottom: 20px;">
-        We are pleased to inform you that your payment has been successfully verified, and your registration for the <strong>JobAdda.in Scholarship Test</strong> is now officially confirmed.
+        We are pleased to inform you that your registration for the <strong>JobAdda.in Scholarship Test</strong> is now officially confirmed.
       </p>
       
       <!-- Candidate Details Card -->
@@ -88,7 +88,7 @@ export async function sendScholarshipConfirmationEmail(to: string, name: string,
       <!-- Exam Information Notice Box -->
       <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 20px; margin: 24px 0;">
         <h4 style="margin: 0 0 8px 0; color: #b45309; font-size: 15px; font-weight: 700;">
-          📅 Important Exam Schedule & Details
+          Important Exam Schedule & Details
         </h4>
         <p style="margin: 0 0 10px 0; font-size: 14px; color: #78350f; line-height: 1.6;">
           The scholarship exam will be held online on <strong>15th August 2026</strong>. 
