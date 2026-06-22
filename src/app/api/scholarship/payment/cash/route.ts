@@ -69,6 +69,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Registration number and passcode are required' }, { status: 400 });
     }
 
+    const cleanPasscode = (raw: string): string => {
+      return raw
+        .replace(/^["']|["']$/g, '') // Strip surrounding quotes
+        .replace(/\\/g, '')          // Strip backslash escapes (e.g. Hostinger escaping #)
+        .trim();                     // Trim leading/trailing whitespace
+    };
+
     // 4. Verify passcode (checks: Env -> cash-passcode.txt file -> Hardcoded Fallback)
     let validPasscode = '';
     let source = 'fallback';
@@ -76,7 +83,7 @@ export async function POST(req: Request) {
     // Attempt 1: From process.env
     if (process.env.SCHOLARSHIP_ADMIN_CASH_PASSCODE) {
       const rawEnv = process.env.SCHOLARSHIP_ADMIN_CASH_PASSCODE;
-      validPasscode = rawEnv.trim().replace(/^["']|["']$/g, '');
+      validPasscode = cleanPasscode(rawEnv);
       if (validPasscode) source = 'env';
     }
 
@@ -86,7 +93,7 @@ export async function POST(req: Request) {
         const filePath = path.join(process.cwd(), 'cash-passcode.txt');
         if (fs.existsSync(filePath)) {
           const rawFile = fs.readFileSync(filePath, 'utf8');
-          validPasscode = rawFile.trim().replace(/^["']|["']$/g, '');
+          validPasscode = cleanPasscode(rawFile);
           if (validPasscode) source = 'file';
         }
       } catch (err) {
@@ -100,7 +107,7 @@ export async function POST(req: Request) {
       source = 'fallback_JA';
     }
 
-    const enteredPasscode = passcode.trim();
+    const enteredPasscode = cleanPasscode(passcode);
     logDebug("Comparing passcode", { entered: enteredPasscode, configured: validPasscode, source });
 
     if (enteredPasscode !== validPasscode) {
