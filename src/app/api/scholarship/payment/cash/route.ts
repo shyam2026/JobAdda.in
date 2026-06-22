@@ -75,9 +75,13 @@ export async function POST(req: Request) {
     const enteredPasscode = passcode.trim();
 
     logDebug("Comparing passcode", { entered: enteredPasscode, configured: validPasscode, rawConfigured: rawConfiguredPasscode });
-    if (!validPasscode || enteredPasscode !== validPasscode) {
-      logDebug("Passcode mismatch or not configured", { entered: enteredPasscode, configured: validPasscode, rawConfigured: rawConfiguredPasscode });
-      return NextResponse.json({ error: 'Invalid admin passcode' }, { status: 403 });
+    if (!validPasscode) {
+      logDebug("Passcode not configured on server");
+      return NextResponse.json({ error: 'Invalid admin passcode (Server environment variable SCHOLARSHIP_ADMIN_CASH_PASSCODE is empty or not loaded)' }, { status: 403 });
+    }
+    if (enteredPasscode !== validPasscode) {
+      logDebug("Passcode mismatch", { entered: enteredPasscode, configured: validPasscode });
+      return NextResponse.json({ error: `Invalid admin passcode (Entered length: ${enteredPasscode.length}, Configured length: ${validPasscode.length})` }, { status: 403 });
     }
 
     // 5. Find scholarship entry
