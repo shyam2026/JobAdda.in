@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Download, GraduationCap, CheckCircle2, XCircle, Loader2, Mail, Phone, MapPin, User, Award, Compass, BarChart2, Copy, Check, ChevronDown, ChevronUp, Camera } from 'lucide-react';
+import { Search, Download, GraduationCap, CheckCircle2, XCircle, Loader2, Mail, Phone, MapPin, User, Award, Compass, BarChart2, Copy, Check, ChevronDown, ChevronUp, Camera, Banknote } from 'lucide-react';
 
 export default function AdminScholarshipPage() {
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
+  const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid' | 'cash'>('all');
   const [examFilter, setExamFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [sortBy, setSortBy] = useState<string>('date_desc');
-  const [stats, setStats] = useState({ total: 0, paid: 0, unpaid: 0 });
+  const [stats, setStats] = useState({ total: 0, paid: 0, unpaid: 0, cashPaid: 0 });
   const [examStats, setExamStats] = useState({ attempted: 0, avgScore: 0, maxScore: 0 });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
@@ -48,23 +48,28 @@ export default function AdminScholarshipPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const [selectedCollector, setSelectedCollector] = useState<string>('');
+  const [collectorsList, setCollectorsList] = useState<string[]>([]);
+
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}`);
+      const res = await fetch(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}&collector=${selectedCollector}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setEntries(data.entries || []);
       setStats({
         total: data.total || 0,
         paid: data.paid || 0,
-        unpaid: data.unpaid || 0
+        unpaid: data.unpaid || 0,
+        cashPaid: data.cashPaid || 0
       });
       setExamStats({
         attempted: data.examAttemptedCount || 0,
         avgScore: data.averageScore || 0,
         maxScore: data.highestScore || 0
       });
+      setCollectorsList(data.collectors || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -74,7 +79,7 @@ export default function AdminScholarshipPage() {
 
   useEffect(() => {
     fetchEntries();
-  }, [filter, examFilter, sortBy]);
+  }, [filter, examFilter, sortBy, selectedCollector]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +87,7 @@ export default function AdminScholarshipPage() {
   };
 
   const handleExport = () => {
-    window.open(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}&export=xlsx`, '_blank');
+    window.open(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}&collector=${selectedCollector}&export=xlsx`, '_blank');
   };
 
   return (
@@ -100,7 +105,7 @@ export default function AdminScholarshipPage() {
       </div>
 
       {/* Stats Summary Card Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+      <div className="stats-grid" style={{ marginBottom: '2rem' }}>
         <div className="card card-p">
           <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', textTransform: 'uppercase', fontWeight: 700 }}>Total Registered</div>
           <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-1)', marginTop: '0.25rem' }}>{stats.total}</div>
@@ -125,6 +130,10 @@ export default function AdminScholarshipPage() {
             <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>{examStats.maxScore.toFixed(1)}</span>
           </div>
         </div>
+        <div className="card card-p" style={{ borderLeft: '4px solid #10b981' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', textTransform: 'uppercase', fontWeight: 700 }}>💵 Cash Paid</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#10b981', marginTop: '0.25rem' }}>{stats.cashPaid}</div>
+        </div>
       </div>
 
       {/* Advanced Search & Filter Controls */}
@@ -138,28 +147,62 @@ export default function AdminScholarshipPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fee:</span>
               <div style={{ display: 'flex', background: 'var(--bg-3)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                {(['all', 'paid', 'unpaid'] as const).map(option => (
+                {(['all', 'paid', 'unpaid', 'cash'] as const).map(option => (
                   <button
                     key={option}
-                    onClick={() => setFilter(option)}
+                    onClick={() => {
+                      setFilter(option);
+                      if (option !== 'cash') {
+                        setSelectedCollector('');
+                      }
+                    }}
                     className="btn"
                     style={{
                       padding: '0.35rem 0.75rem',
                       fontSize: '0.72rem',
                       height: 'auto',
                       borderRadius: '6px',
-                      background: filter === option ? 'var(--bg-2)' : 'transparent',
-                      color: filter === option ? 'var(--text-1)' : 'var(--text-3)',
+                      background: filter === option ? (option === 'cash' ? 'rgba(16,185,129,0.15)' : 'var(--bg-2)') : 'transparent',
+                      color: filter === option ? (option === 'cash' ? '#10b981' : 'var(--text-1)') : 'var(--text-3)',
                       boxShadow: filter === option ? 'var(--shadow)' : 'none',
                       border: 'none',
                       cursor: 'pointer'
                     }}
                   >
-                    {option.toUpperCase()}
+                    {option === 'cash' ? '💵 CASH' : option.toUpperCase()}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Collected By Filter (Only visible when filter === 'cash') */}
+            {filter === 'cash' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', animation: 'slideDown 0.2s ease forwards' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Collected By:</span>
+                <select
+                  value={selectedCollector}
+                  onChange={e => setSelectedCollector(e.target.value)}
+                  style={{
+                    height: '34px',
+                    padding: '0 1.75rem 0 0.75rem',
+                    fontSize: '0.75rem',
+                    borderRadius: '8px',
+                    background: 'var(--bg-3)',
+                    border: '1px solid rgba(16, 185, 129, 0.25)',
+                    color: '#10b981',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="" style={{ color: 'var(--text-2)' }}>All Admins</option>
+                  {collectorsList.map(name => (
+                    <option key={name} value={name} style={{ color: 'var(--text-2)' }}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Exam Filter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -592,6 +635,41 @@ export default function AdminScholarshipPage() {
                                 <span style={{ color: 'var(--text-3)' }}>Fee Paid:</span>
                                 <strong>₹{entry.amount}</strong>
                               </div>
+                              {entry.paymentId?.startsWith('CASH_') && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ color: 'var(--text-3)' }}>Mode:</span>
+                                  <span style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    gap: '0.3rem',
+                                    color: '#10b981', 
+                                    background: 'rgba(16, 185, 129, 0.1)', 
+                                    padding: '0.1rem 0.45rem', 
+                                    borderRadius: '4px', 
+                                    fontWeight: 700,
+                                    fontSize: '0.72rem',
+                                    border: '1px solid rgba(16, 185, 129, 0.2)'
+                                  }}>
+                                    <Banknote size={12} /> Cash
+                                  </span>
+                                </div>
+                              )}
+                              {entry.cashCollectedBy && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ color: 'var(--text-3)' }}>Collected By:</span>
+                                  <span style={{ 
+                                    color: '#a78bfa', 
+                                    fontWeight: 700, 
+                                    fontSize: '0.75rem',
+                                    background: 'rgba(167, 139, 250, 0.08)',
+                                    padding: '0.1rem 0.4rem',
+                                    borderRadius: '4px',
+                                    border: '1px solid rgba(167, 139, 250, 0.15)'
+                                  }}>
+                                    {entry.cashCollectedBy}
+                                  </span>
+                                </div>
+                              )}
                               {entry.couponCode && (
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <span style={{ color: 'var(--text-3)' }}>Coupon:</span>
@@ -795,11 +873,26 @@ export default function AdminScholarshipPage() {
           overflow-y: auto;
           scrollbar-width: thin;
         }
-        .exam-pill-row > div {
+         .exam-pill-row > div {
           background: rgba(255, 255, 255, 0.02);
           padding: 0.25rem 0.5rem;
           border-radius: 4px;
           border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 1.25rem;
+        }
+        @media (max-width: 1200px) {
+          .stats-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 640px) {
+          .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
         }
       `}</style>
     </div>

@@ -18,6 +18,7 @@ export async function GET(req: Request) {
   const examFilter = searchParams.get('examFilter') || 'all';
   const sortBy = searchParams.get('sortBy') || 'date_desc';
   const search = searchParams.get('search') || '';
+  const collector = searchParams.get('collector') || '';
   const export_ = searchParams.get('export') === 'xlsx';
 
   const db = (await import('@/lib/prisma')).default as any;
@@ -25,6 +26,13 @@ export async function GET(req: Request) {
   const where: any = {};
   if (filter === 'paid') where.paymentStatus = 'PAID';
   if (filter === 'unpaid') where.paymentStatus = 'PENDING';
+  if (filter === 'cash') {
+    where.paymentStatus = 'PAID';
+    where.paymentId = { startsWith: 'CASH_' };
+    if (collector && collector !== 'all') {
+      where.cashCollectedBy = collector;
+    }
+  }
   if (examFilter === 'completed') where.examSubmitted = true;
   if (examFilter === 'pending') where.examSubmitted = false;
   if (search) {
@@ -115,6 +123,8 @@ export async function GET(req: Request) {
       'Marks %': e.marksPercent,
       'Career Goal': e.careerGoal,
       'Payment Status': e.paymentStatus,
+      'Payment Mode': e.paymentId?.startsWith('CASH_') ? 'Cash' : (e.paymentStatus === 'PAID' ? 'Online' : '-'),
+      'Cash Collected By': e.cashCollectedBy || '',
       Amount: e.amount || '',
       'Coupon Used': e.couponCode || '',
       'Exam Taken': e.examSubmitted ? 'Yes' : 'No',
@@ -143,6 +153,7 @@ export async function GET(req: Request) {
 
   const total = await db.scholarshipEntry.count();
   const paid = await db.scholarshipEntry.count({ where: { paymentStatus: 'PAID' } });
+  const cashPaid = await db.scholarshipEntry.count({ where: { paymentStatus: 'PAID', paymentId: { startsWith: 'CASH_' } } });
   
   const examAttemptedCount = await db.scholarshipEntry.count({ where: { examSubmitted: true } });
   const scoreAggregate = await db.scholarshipEntry.aggregate({
@@ -153,13 +164,29 @@ export async function GET(req: Request) {
   const averageScore = scoreAggregate._avg.examScore || 0;
   const highestScore = scoreAggregate._max.examScore || 0;
 
+  // Fetch unique names of admins who have collected cash
+  const collectorsData = await db.scholarshipEntry.findMany({
+    where: {
+      paymentStatus: 'PAID',
+      paymentId: { startsWith: 'CASH_' },
+      cashCollectedBy: { not: null }
+    },
+    distinct: ['cashCollectedBy'],
+    select: {
+      cashCollectedBy: true
+    }
+  });
+  const collectors = collectorsData.map((c: any) => c.cashCollectedBy).filter(Boolean);
+
   return NextResponse.json({ 
     entries, 
     total, 
     paid, 
     unpaid: total - paid, 
+    cashPaid,
     examAttemptedCount, 
     averageScore, 
-    highestScore 
+    highestScore,
+    collectors
   });
 }

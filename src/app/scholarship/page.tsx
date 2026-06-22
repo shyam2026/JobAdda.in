@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GraduationCap, Shield, Star, Wallet, Lock, Tag, X, CheckCircle, AlertTriangle, Loader2, Sun, BookOpen, Clock, Trophy } from 'lucide-react';
+import { GraduationCap, Shield, Star, Wallet, Lock, Tag, X, CheckCircle, AlertTriangle, Loader2, Sun, BookOpen, Clock, Trophy, Banknote, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { INDIA_STATES } from '@/lib/india-states';
 import WavingIndianFlag from '@/components/WavingIndianFlag';
+import { useSession } from 'next-auth/react';
 
 declare const Razorpay: any;
 
@@ -79,6 +80,7 @@ export default function ScholarshipPage() {
   const [passportImage, setPassportImage] = useState('');
   const [passportImageName, setPassportImageName] = useState('');
   const [passportImageError, setPassportImageError] = useState('');
+  const [mobileError, setMobileError] = useState('');
 
   // OTP Fields
   const [mobileOtp, setMobileOtp] = useState('');
@@ -110,6 +112,30 @@ export default function ScholarshipPage() {
   const [retrieveOtpCode, setRetrieveOtpCode] = useState('');
   const [sendingRetrieveOtp, setSendingRetrieveOtp] = useState(false);
   const [verifyingRetrieveOtp, setVerifyingRetrieveOtp] = useState(false);
+
+  // Admin Cash Payment States
+  const { data: session } = useSession();
+  const [canCollectCash, setCanCollectCash] = useState(false);
+  const [showCashForm, setShowCashForm] = useState(false);
+  const [cashPasscode, setCashPasscode] = useState('');
+  const [cashPaymentLoading, setCashPaymentLoading] = useState(false);
+  const [showCashPasscode, setShowCashPasscode] = useState(false);
+
+  // Check admin permission for cash collection on mount
+  useEffect(() => {
+    const checkCashPermission = async () => {
+      try {
+        const res = await fetch('/api/admin/check-permission?module=cash-collection');
+        const data = await res.json();
+        setCanCollectCash(data.allowed === true);
+      } catch {
+        setCanCollectCash(false);
+      }
+    };
+    if (session?.user && (session.user as any).portalType === 'admin') {
+      checkCashPermission();
+    }
+  }, [session]);
 
   // Custom Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -144,7 +170,7 @@ export default function ScholarshipPage() {
     }
   }, [mobile]);
 
-  const sendOtp = async (target: string, customName?: string) => {
+  const sendOtp = async (target: string, customName?: string, purpose?: string) => {
     if (!target) {
       showToast('Please enter your mobile number', 'error');
       return;
@@ -154,20 +180,33 @@ export default function ScholarshipPage() {
       return;
     }
     setSendingMobileOtp(true);
+    setMobileError('');
     try {
       const res = await fetch('/api/scholarship/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target, type: 'mobile', action: 'send', name: customName || name })
+        body: JSON.stringify({ target, type: 'mobile', action: 'send', name: customName || name, purpose })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        const errorMsg = data.error || '';
+        if (errorMsg.toLowerCase().includes('already registered')) {
+          setMobileError(errorMsg);
+          return;
+        }
+        throw new Error(errorMsg);
+      }
       
       showToast('OTP sent successfully to your mobile number!', 'success');
       setMobileOtpRemaining(data.remaining);
       setMobileOtpCooldown(60);
     } catch (e: any) {
-      showToast(e.message || 'Failed to send OTP', 'error');
+      const msg = e.message || '';
+      if (msg.toLowerCase().includes('already registered')) {
+        setMobileError(msg);
+      } else {
+        showToast(msg || 'Failed to send OTP', 'error');
+      }
     } finally {
       setSendingMobileOtp(false);
     }
@@ -400,6 +439,34 @@ export default function ScholarshipPage() {
     }
   };
 
+  const handleCashPayment = async () => {
+    if (!cashPasscode.trim()) {
+      showToast('Please enter the admin passcode', 'error');
+      return;
+    }
+    setCashPaymentLoading(true);
+    try {
+      const res = await fetch('/api/scholarship/payment/cash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationNo,
+          passcode: cashPasscode,
+          couponCode: appliedCoupon?.code || null,
+          amount: finalPrice,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Cash payment failed');
+      localStorage.setItem('scholarship_applied', 'true');
+      setStep('success');
+    } catch (e: any) {
+      showToast(e.message || 'Cash payment failed', 'error');
+    } finally {
+      setCashPaymentLoading(false);
+    }
+  };
+
   const handleRetrieveLookup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!retrieveQuery.trim()) {
@@ -419,7 +486,7 @@ export default function ScholarshipPage() {
 
       setRetrievedEntry(data);
       // Send OTP to their mobile for verification
-      await sendOtp(data.mobile, data.name);
+      await sendOtp(data.mobile, data.name, 'recovery');
       setStep('retrieve-otp');
     } catch (e: any) {
       showToast(e.message || 'Registration details not found', 'error');
@@ -614,7 +681,10 @@ export default function ScholarshipPage() {
                 <input 
                   type="tel" 
                   value={mobile} 
-                  onChange={e => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))} 
+                  onChange={e => {
+                    setMobile(e.target.value.replace(/\D/g, '').slice(0, 10));
+                    setMobileError('');
+                  }} 
                   placeholder="10-digit mobile number" 
                   disabled={isMobileVerified}
                   required 
@@ -633,6 +703,14 @@ export default function ScholarshipPage() {
                   <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={12} /> Verified</span>
                 )}
               </div>
+              
+              {mobileError && (
+                <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.25rem', lineHeight: '1.4' }}>
+                  <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                  <span>{mobileError}</span>
+                </div>
+              )}
+
               {!isMobileVerified && mobileOtpRemaining !== null && (
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>
                   Remaining attempts today: <strong style={{ color: 'var(--primary)' }}>{mobileOtpRemaining}</strong>
@@ -900,6 +978,122 @@ export default function ScholarshipPage() {
             {paymentLoading ? <Loader2 className="animate-spin" /> : `Final Submission`}
           </button>
 
+          {/* Admin Cash Payment Section — ONLY visible to authorized admin/subadmin */}
+          {canCollectCash && (
+            <div style={{ marginTop: '1.5rem' }}>
+              {/* Divider */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.5rem 0 1.25rem' }}>
+                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Admin Only</span>
+                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+              </div>
+
+              {!showCashForm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowCashForm(true)}
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    background: 'rgba(16, 185, 129, 0.08)',
+                    border: '1px dashed rgba(16, 185, 129, 0.35)',
+                    borderRadius: '12px',
+                    color: '#10b981',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <Banknote size={18} />
+                  Admin: Pay via Cash
+                </button>
+              ) : (
+                <div
+                  className="anim-fade-up"
+                  style={{
+                    background: 'rgba(16, 185, 129, 0.04)',
+                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                    borderRadius: '14px',
+                    padding: '1.25rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <Shield size={16} color="#10b981" />
+                    <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#10b981' }}>Cash Payment Verification</span>
+                    <button
+                      type="button"
+                      onClick={() => { setShowCashForm(false); setCashPasscode(''); setShowCashPasscode(false); }}
+                      style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', alignItems: 'center' }}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  <div className="input-group" style={{ marginBottom: '1rem' }}>
+                    <label className="label" style={{ fontSize: '0.82rem', fontWeight: 700 }}>Secret Admin Passcode</label>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type={showCashPasscode ? "text" : "password"}
+                        value={cashPasscode}
+                        onChange={e => setCashPasscode(e.target.value)}
+                        placeholder="Enter admin passcode"
+                        style={{ fontSize: '0.9rem', width: '100%', paddingRight: '2.5rem' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCashPasscode(!showCashPasscode)}
+                        style={{
+                          position: 'absolute',
+                          right: '0.75rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: 'var(--text-3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '0.25rem',
+                        }}
+                      >
+                        {showCashPasscode ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCashPayment}
+                    disabled={cashPaymentLoading || !cashPasscode.trim()}
+                    className="btn"
+                    style={{
+                      width: '100%',
+                      padding: '0.85rem 1rem',
+                      justifyContent: 'center',
+                      background: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontWeight: 800,
+                      fontSize: '0.9rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      cursor: cashPaymentLoading || !cashPasscode.trim() ? 'not-allowed' : 'pointer',
+                      opacity: cashPaymentLoading || !cashPasscode.trim() ? 0.6 : 1,
+                    }}
+                  >
+                    {cashPaymentLoading ? <Loader2 className="animate-spin" size={18} /> : <><Banknote size={18} /> Confirm Cash Payment — ₹{finalPrice}</>}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Inline Notification Banner below Payment Button */}
           <InlineNotification toast={toast} onClose={() => setToast(null)} />
         </div>
@@ -990,7 +1184,7 @@ export default function ScholarshipPage() {
               </span>
               <button
                 type="button"
-                onClick={() => sendOtp(retrievedEntry.mobile, retrievedEntry.name)}
+                onClick={() => sendOtp(retrievedEntry.mobile, retrievedEntry.name, 'recovery')}
                 disabled={sendingMobileOtp || mobileOtpCooldown > 0}
                 className="btn btn-ghost btn-sm"
                 style={{ color: 'var(--primary)', fontWeight: 'bold' }}

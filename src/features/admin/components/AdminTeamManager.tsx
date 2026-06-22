@@ -15,6 +15,7 @@ const AVAILABLE_MODULES = [
   { id: 'companies', label: 'Companies' },
   { id: 'jobs', label: 'Jobs' },
   { id: 'transactions', label: 'Transactions' },
+  { id: 'cash-collection', label: 'Cash Collection' },
 ];
 
 function formatDate(d: string) {

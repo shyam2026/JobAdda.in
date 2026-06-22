@@ -49,13 +49,24 @@ async function sendSMS(to: string, name: string, otp: string) {
 // POST /api/scholarship/otp  body: { target, type: 'mobile'|'email', action: 'send'|'verify', otp?, name? }
 export async function POST(req: Request) {
   try {
-    const { target, type, action, otp, name } = await req.json();
+    const { target, type, action, otp, name, purpose } = await req.json();
     if (!target || !type || !action) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
 
     const db = prisma as any;
     const now = new Date();
 
     if (action === 'send') {
+      if (type === 'mobile' && purpose !== 'recovery') {
+        const alreadyRegistered = await db.scholarshipEntry.findFirst({
+          where: { mobile: target }
+        });
+        if (alreadyRegistered) {
+          return NextResponse.json({
+            error: 'This mobile number is already registered. If you already registered, please click "Already Registered?" to retrieve your details.'
+          }, { status: 400 });
+        }
+      }
+
       // Check 60s delay and daily limit
       const existing = await db.scholarshipOtp.findFirst({
         where: { target, type },
