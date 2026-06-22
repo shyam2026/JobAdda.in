@@ -69,11 +69,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Registration number and passcode are required' }, { status: 400 });
     }
 
-    // 4. Verify passcode against environment variable
-    const validPasscode = process.env.SCHOLARSHIP_ADMIN_CASH_PASSCODE;
-    logDebug("Comparing passcode", { entered: passcode, configured: validPasscode });
-    if (!validPasscode || passcode !== validPasscode) {
-      logDebug("Passcode mismatch or not configured", { entered: passcode, configured: validPasscode });
+    // 4. Verify passcode against environment variable (trimming & stripping potential surrounding quotes)
+    const rawConfiguredPasscode = process.env.SCHOLARSHIP_ADMIN_CASH_PASSCODE || '';
+    const validPasscode = rawConfiguredPasscode.trim().replace(/^["']|["']$/g, '');
+    const enteredPasscode = passcode.trim();
+
+    logDebug("Comparing passcode", { entered: enteredPasscode, configured: validPasscode, rawConfigured: rawConfiguredPasscode });
+    if (!validPasscode || enteredPasscode !== validPasscode) {
+      logDebug("Passcode mismatch or not configured", { entered: enteredPasscode, configured: validPasscode, rawConfigured: rawConfiguredPasscode });
       return NextResponse.json({ error: 'Invalid admin passcode' }, { status: 403 });
     }
 
