@@ -16,15 +16,15 @@ const DISCOUNTED_PRICE = 49;
 const InlineNotification = ({ toast, onClose }: { toast: any; onClose: () => void }) => {
   if (!toast) return null;
   return (
-    <div 
+    <div
       className="anim-fade-up"
-      style={{ 
+      style={{
         marginTop: '1.25rem',
-        background: toast.type === 'success' ? 'rgba(16,185,129,0.1)' : toast.type === 'error' ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)', 
+        background: toast.type === 'success' ? 'rgba(16,185,129,0.1)' : toast.type === 'error' ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)',
         border: `1px solid ${toast.type === 'success' ? 'rgba(16,185,129,0.3)' : toast.type === 'error' ? 'rgba(239,68,68,0.3)' : 'rgba(99,102,241,0.3)'}`,
-        color: toast.type === 'success' ? '#10b981' : toast.type === 'error' ? '#ef4444' : '#6366f1', 
-        padding: '0.85rem 1rem', 
-        borderRadius: '10px', 
+        color: toast.type === 'success' ? '#10b981' : toast.type === 'error' ? '#ef4444' : '#6366f1',
+        padding: '0.85rem 1rem',
+        borderRadius: '10px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -38,9 +38,9 @@ const InlineNotification = ({ toast, onClose }: { toast: any; onClose: () => voi
         {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
         <span>{toast.message}</span>
       </div>
-      <button 
+      <button
         type="button"
-        onClick={onClose} 
+        onClick={onClose}
         style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '0.2rem', display: 'flex', alignItems: 'center' }}
       >
         <X size={14} />
@@ -166,7 +166,7 @@ export default function ScholarshipPage() {
       fetch(`/api/scholarship/otp?target=${mobile}&type=mobile`)
         .then(r => r.json())
         .then(data => setMobileOtpRemaining(data.remaining))
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [mobile]);
 
@@ -196,7 +196,7 @@ export default function ScholarshipPage() {
         }
         throw new Error(errorMsg);
       }
-      
+
       showToast('OTP sent successfully to your mobile number!', 'success');
       setMobileOtpRemaining(data.remaining);
       setMobileOtpCooldown(60);
@@ -578,335 +578,335 @@ export default function ScholarshipPage() {
         }
       `}</style>
       <div style={{ position: 'relative', maxWidth: '720px', margin: '7rem auto 4rem', padding: '0 1.5rem', zIndex: 1 }} className="anim-fade-up">
-      
-      {/* Header Banner Card */}
-      <div className={`card card-header-animated card-header-custom ${showHeader ? 'visible' : ''}`} style={{ textAlign: 'center', marginBottom: '2rem', padding: '2.25rem 1.5rem', borderRadius: '20px' }}>
-        
-        {/* Independence Day Special Badge */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 1rem', borderRadius: '9999px', backgroundColor: '#FFFFFF', border: '1px solid rgba(249,115,22,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '1.25rem' }}>
-          <Sun size={16} color="#F97316" fill="#F97316" />
-          <span style={{ color: '#F97316', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em' }}>INDEPENDENCE DAY SPECIAL</span>
+
+        {/* Header Banner Card */}
+        <div className={`card card-header-animated card-header-custom ${showHeader ? 'visible' : ''}`} style={{ textAlign: 'center', marginBottom: '2rem', padding: '2.25rem 1.5rem', borderRadius: '20px' }}>
+
+          {/* Independence Day Special Badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 1rem', borderRadius: '9999px', backgroundColor: '#FFFFFF', border: '1px solid rgba(249,115,22,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '1.25rem' }}>
+            <Sun size={16} color="#F97316" fill="#F97316" />
+            <span style={{ color: '#F97316', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em' }}>INDEPENDENCE DAY SPECIAL</span>
+          </div>
+
+          {/* Title */}
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.65rem', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+            <span style={{ color: '#F97316' }}>Scholarship </span>
+            <span style={{ color: '#FFFFFF' }}>Test </span>
+            <span style={{ color: '#22C55E' }}>2026</span>
+          </h1>
+
+          {/* Subtitle / Test Date with Saffron and Green Dashes */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', marginBottom: '1.75rem', fontSize: '1rem', fontWeight: 700 }}>
+            <span style={{ display: 'inline-flex', gap: '4px' }}>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
+            </span>
+            <span style={{ color: '#818CF8' }}>Test Date: 15th August 2026</span>
+            <span style={{ display: 'inline-flex', gap: '4px' }}>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
+              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
+            </span>
+          </div>
+
+          {/* Stats Row */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.25rem', marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#22C55E', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(34,197,94,0.2)' }}>
+                <BookOpen size={16} />
+              </div>
+              <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 MCQs</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F97316', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(249,115,22,0.2)' }}>
+                <Clock size={16} />
+              </div>
+              <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 Minutes</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#6366F1', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(99,102,241,0.2)' }}>
+                <Trophy size={16} />
+              </div>
+              <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>Win ₹15,000</span>
+            </div>
+          </div>
         </div>
 
-        {/* Title */}
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.65rem', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
-          <span style={{ color: '#F97316' }}>Scholarship </span>
-          <span style={{ color: '#FFFFFF' }}>Test </span>
-          <span style={{ color: '#22C55E' }}>2026</span>
-        </h1>
-
-        {/* Subtitle / Test Date with Saffron and Green Dashes */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', marginBottom: '1.75rem', fontSize: '1rem', fontWeight: 700 }}>
-          <span style={{ display: 'inline-flex', gap: '4px' }}>
-            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
-            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
-          </span>
-          <span style={{ color: '#818CF8' }}>Test Date: 15th August 2026</span>
-          <span style={{ display: 'inline-flex', gap: '4px' }}>
-            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
-            <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
-          </span>
-        </div>
-
-        {/* Stats Row */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.25rem', marginTop: '0.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#22C55E', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(34,197,94,0.2)' }}>
-              <BookOpen size={16} />
-            </div>
-            <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 MCQs</span>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F97316', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(249,115,22,0.2)' }}>
-              <Clock size={16} />
-            </div>
-            <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 Minutes</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#6366F1', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(99,102,241,0.2)' }}>
-              <Trophy size={16} />
-            </div>
-            <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>Win ₹15,000</span>
-          </div>
-        </div>
-      </div>
-
-      <div className={`card-form-animated ${showForm ? 'visible' : ''}`}>
-      {step === 'form' && (
-        <>
-        <div className="card card-p">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-            <h3 style={{ margin: 0, fontWeight: 800 }}>Registration Form</h3>
-            <button onClick={() => setStep('retrieve')} className="btn btn-ghost btn-sm" style={{ fontSize: '0.8rem' }}>
-              Already Registered?
-            </button>
-          </div>
-
-          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {/* Name */}
-            <div className="input-group">
-              <label className="label">Full Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Enter full name" required />
-            </div>
-
-            {/* Father's Name & Aadhar No */}
-            <div className="scholarship-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="input-group">
-                <label className="label">Father&apos;s Name</label>
-                <input 
-                  type="text" 
-                  value={fatherName} 
-                  onChange={e => setFatherName(e.target.value)} 
-                  placeholder="Enter father's name" 
-                  required 
-                />
-              </div>
-              <div className="input-group">
-                <label className="label">Aadhar Number</label>
-                <input 
-                  type="text" 
-                  value={aadharNo} 
-                  onChange={e => setAadharNo(e.target.value.replace(/\D/g, '').slice(0, 12))} 
-                  placeholder="12-digit Aadhar number" 
-                  required 
-                />
-              </div>
-            </div>
-
-            {/* Mobile with OTP */}
-            <div className="input-group">
-              <label className="label">Mobile Number</label>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <input 
-                  type="tel" 
-                  value={mobile} 
-                  onChange={e => {
-                    setMobile(e.target.value.replace(/\D/g, '').slice(0, 10));
-                    setMobileError('');
-                  }} 
-                  placeholder="10-digit mobile number" 
-                  disabled={isMobileVerified}
-                  required 
-                />
-                {!isMobileVerified ? (
-                  <button 
-                    type="button" 
-                    onClick={() => sendOtp(mobile)} 
-                    disabled={sendingMobileOtp || mobile.length !== 10 || mobileOtpCooldown > 0} 
-                    className="btn btn-primary btn-sm"
-                    style={{ whiteSpace: 'nowrap' }}
-                  >
-                    {sendingMobileOtp ? 'Sending...' : mobileOtpCooldown > 0 ? `Resend in ${mobileOtpCooldown}s` : 'Send OTP'}
-                  </button>
-                ) : (
-                  <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={12} /> Verified</span>
-                )}
-              </div>
-              
-              {mobileError && (
-                <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.25rem', lineHeight: '1.4' }}>
-                  <AlertTriangle size={14} style={{ flexShrink: 0 }} />
-                  <span>{mobileError}</span>
-                </div>
-              )}
-
-              {!isMobileVerified && mobileOtpRemaining !== null && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>
-                  Remaining attempts today: <strong style={{ color: 'var(--primary)' }}>{mobileOtpRemaining}</strong>
-                </div>
-              )}
-            </div>
-
-            {/* Mobile OTP Input */}
-            {!isMobileVerified && mobile.length === 10 && (
-              <div className="input-group anim-fade-up" style={{ background: 'var(--bg-3)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <label className="label">Enter Mobile OTP</label>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <input type="text" value={mobileOtp} onChange={e => setMobileOtp(e.target.value.slice(0, 6))} placeholder="Enter 6-digit OTP" />
-                  <button 
-                    type="button" 
-                    onClick={() => verifyOtp(mobile, mobileOtp)} 
-                    disabled={verifyingMobileOtp || mobileOtp.length !== 6}
-                    className="btn btn-success btn-sm"
-                  >
-                    {verifyingMobileOtp ? '...' : 'Verify'}
+        <div className={`card-form-animated ${showForm ? 'visible' : ''}`}>
+          {step === 'form' && (
+            <>
+              <div className="card card-p">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                  <h3 style={{ margin: 0, fontWeight: 800 }}>Registration Form</h3>
+                  <button onClick={() => setStep('retrieve')} className="btn btn-ghost btn-sm" style={{ fontSize: '0.8rem' }}>
+                    Already Registered?
                   </button>
                 </div>
-              </div>
-            )}
 
-            {/* Email Address */}
-            <div className="input-group">
-              <label className="label">Email Address</label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
-                placeholder="Enter email address" 
-                required 
-              />
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.25rem', display: 'block', lineHeight: 1.4 }}>
-                Make sure the email is correct as you will receive your registration ID and confirmation message on it.
-              </span>
-            </div>
-
-            {/* State & District */}
-            <div className="scholarship-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="input-group">
-                <label className="label">State</label>
-                <select 
-                  value={state} 
-                  onChange={e => { setState(e.target.value); setDistrict(''); }} 
-                  required 
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-3)', color: 'var(--text-1)' }}
-                >
-                  <option value="">Select State</option>
-                  {Object.keys(INDIA_STATES).map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="input-group">
-                <label className="label">District</label>
-                <select 
-                  value={district} 
-                  onChange={e => setDistrict(e.target.value)} 
-                  required 
-                  disabled={!state}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-3)', color: 'var(--text-1)' }}
-                >
-                  <option value="">Select District</option>
-                  {state && INDIA_STATES[state]?.map((d: string) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Qualification & Marks */}
-            <div className="scholarship-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="input-group">
-                <label className="label">Last Qualification</label>
-                <select 
-                  value={lastQualification} 
-                  onChange={e => setLastQualification(e.target.value)} 
-                  required 
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-3)', color: 'var(--text-1)' }}
-                >
-                  <option value="">Select Qualification</option>
-                  <option value="10th">10th</option>
-                  <option value="12th">12th</option>
-                  <option value="Graduate">Graduate</option>
-                  <option value="Post-Graduate">Post-Graduate</option>
-                </select>
-              </div>
-              <div className="input-group">
-                <label className="label">Marks %</label>
-                <input type="text" value={marksPercent} onChange={e => setMarksPercent(e.target.value)} placeholder="e.g. 78% or 8.2 CGPA" required />
-              </div>
-            </div>
-
-            {/* Career Goal */}
-            <div className="input-group">
-              <label className="label">Career Goal</label>
-              <textarea value={careerGoal} onChange={e => setCareerGoal(e.target.value)} placeholder="Describe your career goals..." rows={3} required />
-            </div>
-
-            {/* Passport Size Image */}
-            <div className="input-group">
-              <label className="label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Passport Size Image <span style={{ color: '#ef4444' }}>*</span></span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 400 }}>JPG, JPEG, PNG (Max 500KB)</span>
-              </label>
-              
-              <input 
-                type="file" 
-                id="passport-upload" 
-                accept=".jpg,.jpeg,.png" 
-                onChange={handleFileChange} 
-                style={{ display: 'none' }} 
-              />
-              
-              {!passportImage ? (
-                <label 
-                  htmlFor="passport-upload"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '2px dashed var(--border)',
-                    borderRadius: '8px',
-                    padding: '1.5rem',
-                    cursor: 'pointer',
-                    background: 'var(--bg-3)',
-                    transition: 'border-color 0.2s, background-color 0.2s',
-                    textAlign: 'center'
-                  }}
-                >
-                  <span style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>📷</span>
-                  <span style={{ fontSize: '0.88rem', color: 'var(--text-2)', fontWeight: 600 }}>Click to Upload Passport Photo</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>Only JPG, JPEG, or PNG formats</span>
-                </label>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-3)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <img 
-                    src={passportImage} 
-                    alt="Passport Preview" 
-                    style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border)' }} 
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{passportImageName}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>Uploaded successfully</div>
+                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  {/* Name */}
+                  <div className="input-group">
+                    <label className="label">Full Name</label>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Enter full name" required />
                   </div>
-                  <button 
-                    type="button" 
-                    onClick={() => { setPassportImage(''); setPassportImageName(''); }} 
-                    className="btn btn-ghost btn-sm"
-                    style={{ color: '#ef4444', padding: '0.25rem', minWidth: 'auto', display: 'flex', alignItems: 'center' }}
+
+                  {/* Father's Name & Aadhar No */}
+                  <div className="scholarship-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="input-group">
+                      <label className="label">Father&apos;s Name</label>
+                      <input
+                        type="text"
+                        value={fatherName}
+                        onChange={e => setFatherName(e.target.value)}
+                        placeholder="Enter father's name"
+                        required
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label className="label">Aadhar Number</label>
+                      <input
+                        type="text"
+                        value={aadharNo}
+                        onChange={e => setAadharNo(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                        placeholder="12-digit Aadhar number"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mobile with OTP */}
+                  <div className="input-group">
+                    <label className="label">Mobile Number</label>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <input
+                        type="tel"
+                        value={mobile}
+                        onChange={e => {
+                          setMobile(e.target.value.replace(/\D/g, '').slice(0, 10));
+                          setMobileError('');
+                        }}
+                        placeholder="10-digit mobile number"
+                        disabled={isMobileVerified}
+                        required
+                      />
+                      {!isMobileVerified ? (
+                        <button
+                          type="button"
+                          onClick={() => sendOtp(mobile)}
+                          disabled={sendingMobileOtp || mobile.length !== 10 || mobileOtpCooldown > 0}
+                          className="btn btn-primary btn-sm"
+                          style={{ whiteSpace: 'nowrap' }}
+                        >
+                          {sendingMobileOtp ? 'Sending...' : mobileOtpCooldown > 0 ? `Resend in ${mobileOtpCooldown}s` : 'Send OTP'}
+                        </button>
+                      ) : (
+                        <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={12} /> Verified</span>
+                      )}
+                    </div>
+
+                    {mobileError && (
+                      <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.25rem', lineHeight: '1.4' }}>
+                        <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                        <span>{mobileError}</span>
+                      </div>
+                    )}
+
+                    {!isMobileVerified && mobileOtpRemaining !== null && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>
+                        Remaining attempts today: <strong style={{ color: 'var(--primary)' }}>{mobileOtpRemaining}</strong>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile OTP Input */}
+                  {!isMobileVerified && mobile.length === 10 && (
+                    <div className="input-group anim-fade-up" style={{ background: 'var(--bg-3)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                      <label className="label">Enter Mobile OTP</label>
+                      <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <input type="text" value={mobileOtp} onChange={e => setMobileOtp(e.target.value.slice(0, 6))} placeholder="Enter 6-digit OTP" />
+                        <button
+                          type="button"
+                          onClick={() => verifyOtp(mobile, mobileOtp)}
+                          disabled={verifyingMobileOtp || mobileOtp.length !== 6}
+                          className="btn btn-success btn-sm"
+                        >
+                          {verifyingMobileOtp ? '...' : 'Verify'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Email Address */}
+                  <div className="input-group">
+                    <label className="label">Email Address</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="Enter email address"
+                      required
+                    />
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.25rem', display: 'block', lineHeight: 1.4 }}>
+                      Make sure the email is correct as you will receive your registration ID and confirmation message on it.
+                    </span>
+                  </div>
+
+                  {/* State & District */}
+                  <div className="scholarship-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="input-group">
+                      <label className="label">State</label>
+                      <select
+                        value={state}
+                        onChange={e => { setState(e.target.value); setDistrict(''); }}
+                        required
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-3)', color: 'var(--text-1)' }}
+                      >
+                        <option value="">Select State</option>
+                        {Object.keys(INDIA_STATES).map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label className="label">District</label>
+                      <select
+                        value={district}
+                        onChange={e => setDistrict(e.target.value)}
+                        required
+                        disabled={!state}
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-3)', color: 'var(--text-1)' }}
+                      >
+                        <option value="">Select District</option>
+                        {state && INDIA_STATES[state]?.map((d: string) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Qualification & Marks */}
+                  <div className="scholarship-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="input-group">
+                      <label className="label">Last Qualification</label>
+                      <select
+                        value={lastQualification}
+                        onChange={e => setLastQualification(e.target.value)}
+                        required
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-3)', color: 'var(--text-1)' }}
+                      >
+                        <option value="">Select Qualification</option>
+                        <option value="10th">10th</option>
+                        <option value="12th">12th</option>
+                        <option value="Graduate">Graduate</option>
+                        <option value="Post-Graduate">Post-Graduate</option>
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label className="label">Marks %</label>
+                      <input type="text" value={marksPercent} onChange={e => setMarksPercent(e.target.value)} placeholder="e.g. 78% or 8.2 CGPA" required />
+                    </div>
+                  </div>
+
+                  {/* Career Goal */}
+                  <div className="input-group">
+                    <label className="label">Career Goal</label>
+                    <textarea value={careerGoal} onChange={e => setCareerGoal(e.target.value)} placeholder="Describe your career goals..." rows={3} required />
+                  </div>
+
+                  {/* Passport Size Image */}
+                  <div className="input-group">
+                    <label className="label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>Passport Size Image <span style={{ color: '#ef4444' }}>*</span></span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 400 }}>JPG, JPEG, PNG (Max 500KB)</span>
+                    </label>
+
+                    <input
+                      type="file"
+                      id="passport-upload"
+                      accept=".jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+
+                    {!passportImage ? (
+                      <label
+                        htmlFor="passport-upload"
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '2px dashed var(--border)',
+                          borderRadius: '8px',
+                          padding: '1.5rem',
+                          cursor: 'pointer',
+                          background: 'var(--bg-3)',
+                          transition: 'border-color 0.2s, background-color 0.2s',
+                          textAlign: 'center'
+                        }}
+                      >
+                        <span style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>📷</span>
+                        <span style={{ fontSize: '0.88rem', color: 'var(--text-2)', fontWeight: 600 }}>Click to Upload Passport Photo</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>Only JPG, JPEG, or PNG formats</span>
+                      </label>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-3)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                        <img
+                          src={passportImage}
+                          alt="Passport Preview"
+                          style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border)' }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{passportImageName}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>Uploaded successfully</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setPassportImage(''); setPassportImageName(''); }}
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: '#ef4444', padding: '0.25rem', minWidth: 'auto', display: 'flex', alignItems: 'center' }}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+
+                    {passportImageError && (
+                      <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <AlertTriangle size={14} /> {passportImageError}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Terms checkbox */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <input type="checkbox" id="terms" required style={{ marginTop: '0.2rem' }} />
+                    <label htmlFor="terms" style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
+                      I agree to the <Link href="/scholarship-terms" target="_blank" style={{ color: 'var(--primary)', fontWeight: '600' }}>Scholarship Test Terms & Conditions</Link>.
+                    </label>
+                  </div>
+
+                  {/* Register button */}
+                  <button
+                    type="submit"
+                    disabled={registering || !isMobileVerified}
+                    className="btn btn-primary"
+                    style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', justifyContent: 'center' }}
+                    suppressHydrationWarning
                   >
-                    <X size={16} />
+                    {registering ? <Loader2 className="animate-spin" /> : 'Submit Your Application'}
                   </button>
-                </div>
-              )}
 
-              {passportImageError && (
-                <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <AlertTriangle size={14} /> {passportImageError}
-                </div>
-              )}
-            </div>
+                  {/* Inline Notification Banner below Register Button */}
+                  <InlineNotification toast={toast} onClose={() => setToast(null)} />
+                </form>
+              </div>
 
-            {/* Terms checkbox */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <input type="checkbox" id="terms" required style={{ marginTop: '0.2rem' }} />
-              <label htmlFor="terms" style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
-                I agree to the <Link href="/scholarship-terms" target="_blank" style={{ color: 'var(--primary)', fontWeight: '600' }}>Scholarship Test Terms & Conditions</Link>.
-              </label>
-            </div>
-
-            {/* Register button */}
-            <button 
-              type="submit" 
-              disabled={registering || !isMobileVerified}
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', justifyContent: 'center' }}
-              suppressHydrationWarning
-            >
-              {registering ? <Loader2 className="animate-spin" /> : 'Submit Your Application'}
-            </button>
-
-            {/* Inline Notification Banner below Register Button */}
-            <InlineNotification toast={toast} onClose={() => setToast(null)} />
-          </form>
-         </div>
-
-          {/* Support and Already Registered cards below the main form */}
-          <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Check Results Card */}
-            {/* <div 
+              {/* Support and Already Registered cards below the main form */}
+              <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {/* Check Results Card */}
+                {/* <div 
               className="card card-p" 
               style={{ 
                 padding: '1.5rem', 
@@ -949,423 +949,423 @@ export default function ScholarshipPage() {
               </Link>
             </div> */}
 
-            {/* Already Registered / Check Status Card */}
-            <div 
-              className="card card-p" 
-              style={{ 
-                padding: '1.5rem', 
-                background: 'rgba(99, 102, 241, 0.03)', 
-                border: '1px solid rgba(99, 102, 241, 0.12)',
-                borderRadius: '16px',
-                textAlign: 'left',
-               display: 'flex',
-               justifyContent: 'space-between',
-               alignItems: 'center',
-               flexWrap: 'wrap',
-               gap: '1rem'
-             }}
-           >
-             <div style={{ flex: 1, minWidth: '250px' }}>
-               <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Already Registered?</h4>
-               <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-3)' }}>
-                 Check status, resume pending payment, or retrieve your registration ID.
-               </p>
-             </div>
-             <button 
-               type="button" 
-               onClick={() => setStep('retrieve')} 
-               className="btn btn-primary"
-               style={{ padding: '0.6rem 1.25rem', fontSize: '0.82rem', height: 'auto' }}
-             >
-               Check Status / Resume Payment
-             </button>
-           </div>
-
-           {/* Support / Help Card for payment issues */}
-           <div 
-             className="card card-p" 
-             style={{ 
-               padding: '1.5rem', 
-               background: 'rgba(255, 255, 255, 0.02)', 
-               border: '1px solid rgba(255, 255, 255, 0.06)',
-               borderRadius: '16px',
-               textAlign: 'left'
-             }}
-           >
-             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
-               <div style={{
-                 width: '32px',
-                 height: '32px',
-                 borderRadius: '50%',
-                 background: 'rgba(99, 102, 241, 0.1)',
-                 color: 'var(--primary-light)',
-                 display: 'flex',
-                 alignItems: 'center',
-                 justifyContent: 'center'
-               }}>
-                 <Mail size={16} />
-               </div>
-               <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Payment Help & Support</h4>
-             </div>
-             
-             <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
-               Kindly email us at <a href="mailto:payment@jobadda.in" style={{ color: 'var(--primary-light)', fontWeight: 700, textDecoration: 'underline' }}>payment@jobadda.in</a> with a <strong>screenshot</strong> of your transaction:
-             </p>
-             
-             <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.82rem', color: 'var(--text-3)', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
-               <li>If you are facing any payment-related issues</li>
-               <li>If you paid the amount but did not receive a confirmation</li>
-               <li>If you are experiencing any issue in making the payment</li>
-               <li>If you have any other payment related queries or concerns</li>
-             </ul>
-           </div>
-         </div>
-        </>
-       )}
-
-      {step === 'payment' && (
-        <div className="card card-p anim-fade-up">
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>Successfully Registered</span>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: '0 0 0.5rem' }}>Registration ID: {registrationNo}</h2>
-            <p style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>Please complete the registration fee payment to activate your slot.</p>
-          </div>
-
-          {/* Coupon Input */}
-          <div style={{ marginBottom: '1.5rem', background: 'var(--bg-3)', padding: '1.25rem', borderRadius: '14px', border: '1px solid var(--border)' }}>
-            <label className="label" style={{ fontWeight: 700 }}>Apply Coupon Code</label>
-            {appliedCoupon ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)' }}>
-                <Tag size={16} color="#10b981" />
-                <span style={{ flex: 1, fontWeight: 700, color: '#10b981', fontSize: '0.9rem' }}>
-                  {appliedCoupon.code} — {appliedCoupon.type === 'FREE' ? '100% OFF' : `${appliedCoupon.discount}% OFF`}
-                </span>
-                <button onClick={() => { setAppliedCoupon(null); setFinalPrice(DISCOUNTED_PRICE); setCouponCode(''); }} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
-                  <X size={15} />
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input
-                  type="text"
-                  placeholder="Enter coupon code"
-                  value={couponCode}
-                  onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
-                  style={{ textTransform: 'uppercase' }}
-                />
-                <button
-                  type="button"
-                  onClick={handleApplyCoupon}
-                  disabled={applyingCoupon || !couponCode.trim()}
-                  className="btn btn-primary btn-sm"
-                >
-                  {applyingCoupon ? '...' : 'Apply'}
-                </button>
-              </div>
-            )}
-            {couponError && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
-                <AlertTriangle size={13} color="#ef4444" />
-                <p style={{ color: '#ef4444', fontSize: '0.75rem', margin: 0 }}>{couponError}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Pricing Box */}
-          <div style={{ background: 'var(--bg-3)', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>Online Exam Platform Fee</span>
-              <span style={{ color: 'var(--text-1)', fontWeight: 600 }}>₹{DISCOUNTED_PRICE}</span>
-            </div>
-            {appliedCoupon && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>Coupon Discount ({appliedCoupon.code})</span>
-                <span style={{ color: '#10b981', fontWeight: 600 }}>
-                  {appliedCoupon.type === 'FREE' ? `-₹${DISCOUNTED_PRICE}` : `-${appliedCoupon.discount}%`}
-                </span>
-              </div>
-            )}
-            <div style={{ height: '1px', background: 'var(--border)', margin: '0.75rem 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 800 }}>Amount Pay</span>
-              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>₹{finalPrice}</span>
-            </div>
-          </div>
-
-          <button 
-            onClick={handlePayment} 
-            disabled={paymentLoading} 
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '1rem', justifyContent: 'center' }}
-          >
-            {paymentLoading ? <Loader2 className="animate-spin" /> : `Final Submission`}
-          </button>
-
-          {/* Admin Cash Payment Section — ONLY visible to authorized admin/subadmin */}
-          {canCollectCash && (
-            <div style={{ marginTop: '1.5rem' }}>
-              {/* Divider */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.5rem 0 1.25rem' }}>
-                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Admin Only</span>
-                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-              </div>
-
-              {!showCashForm ? (
-                <button
-                  type="button"
-                  onClick={() => setShowCashForm(true)}
-                  style={{
-                    width: '100%',
-                    padding: '0.85rem 1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    background: 'rgba(16, 185, 129, 0.08)',
-                    border: '1px dashed rgba(16, 185, 129, 0.35)',
-                    borderRadius: '12px',
-                    color: '#10b981',
-                    fontSize: '0.88rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <Banknote size={18} />
-                  Admin: Pay via Cash
-                </button>
-              ) : (
+                {/* Already Registered / Check Status Card */}
                 <div
-                  className="anim-fade-up"
+                  className="card card-p"
                   style={{
-                    background: 'rgba(16, 185, 129, 0.04)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    borderRadius: '14px',
-                    padding: '1.25rem',
+                    padding: '1.5rem',
+                    background: 'rgba(99, 102, 241, 0.03)',
+                    border: '1px solid rgba(99, 102, 241, 0.12)',
+                    borderRadius: '16px',
+                    textAlign: 'left',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '1rem'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                    <Shield size={16} color="#10b981" />
-                    <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#10b981' }}>Cash Payment Verification</span>
-                    <button
-                      type="button"
-                      onClick={() => { setShowCashForm(false); setCashPasscode(''); setShowCashPasscode(false); }}
-                      style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', alignItems: 'center' }}
-                    >
-                      <X size={16} />
-                    </button>
+                  <div style={{ flex: 1, minWidth: '250px' }}>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Already Registered?</h4>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-3)' }}>
+                      Check status, resume pending payment, or retrieve your registration ID.
+                    </p>
                   </div>
-
-                  <div className="input-group" style={{ marginBottom: '1rem' }}>
-                    <label className="label" style={{ fontSize: '0.82rem', fontWeight: 700 }}>Secret Admin Passcode</label>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                      <input
-                        type={showCashPasscode ? "text" : "password"}
-                        value={cashPasscode}
-                        onChange={e => setCashPasscode(e.target.value)}
-                        placeholder="Enter admin passcode"
-                        style={{ fontSize: '0.9rem', width: '100%', paddingRight: '2.5rem' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCashPasscode(!showCashPasscode)}
-                        style={{
-                          position: 'absolute',
-                          right: '0.75rem',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--text-3)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '0.25rem',
-                        }}
-                      >
-                        {showCashPasscode ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </div>
-
                   <button
                     type="button"
-                    onClick={handleCashPayment}
-                    disabled={cashPaymentLoading || !cashPasscode.trim()}
-                    className="btn"
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 1rem',
-                      justifyContent: 'center',
-                      background: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontWeight: 800,
-                      fontSize: '0.9rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      cursor: cashPaymentLoading || !cashPasscode.trim() ? 'not-allowed' : 'pointer',
-                      opacity: cashPaymentLoading || !cashPasscode.trim() ? 0.6 : 1,
-                    }}
+                    onClick={() => setStep('retrieve')}
+                    className="btn btn-primary"
+                    style={{ padding: '0.6rem 1.25rem', fontSize: '0.82rem', height: 'auto' }}
                   >
-                    {cashPaymentLoading ? <Loader2 className="animate-spin" size={18} /> : <><Banknote size={18} /> Confirm Cash Payment — ₹{finalPrice}</>}
+                    Check Status / Resume Payment
                   </button>
                 </div>
+
+                {/* Support / Help Card for payment issues */}
+                <div
+                  className="card card-p"
+                  style={{
+                    padding: '1.5rem',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    borderRadius: '16px',
+                    textAlign: 'left'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(99, 102, 241, 0.1)',
+                      color: 'var(--primary-light)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Mail size={16} />
+                    </div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Payment Help & Support</h4>
+                  </div>
+
+                  <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
+                    Kindly email us at <a href="mailto:payment@jobadda.in" style={{ color: 'var(--primary-light)', fontWeight: 700, textDecoration: 'underline' }}>payment@jobadda.in</a> with a <strong>screenshot</strong> of your transaction:
+                  </p>
+
+                  <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.82rem', color: 'var(--text-3)', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
+                    <li>If you are facing any payment-related issues</li>
+                    <li>If you paid the amount but did not receive a confirmation</li>
+                    <li>If you are experiencing any issue in making the payment</li>
+                    <li>If you have any other payment related queries or concerns</li>
+                  </ul>
+                </div>
+              </div>
+            </>
+          )}
+
+          {step === 'payment' && (
+            <div className="card card-p anim-fade-up">
+              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>Successfully Registered</span>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: '0 0 0.5rem' }}>Registration ID: {registrationNo}</h2>
+                <p style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>Please complete the registration fee payment to activate your slot.</p>
+              </div>
+
+              {/* Coupon Input */}
+              <div style={{ marginBottom: '1.5rem', background: 'var(--bg-3)', padding: '1.25rem', borderRadius: '14px', border: '1px solid var(--border)' }}>
+                <label className="label" style={{ fontWeight: 700 }}>Apply Coupon Code</label>
+                {appliedCoupon ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                    <Tag size={16} color="#10b981" />
+                    <span style={{ flex: 1, fontWeight: 700, color: '#10b981', fontSize: '0.9rem' }}>
+                      {appliedCoupon.code} — {appliedCoupon.type === 'FREE' ? '100% OFF' : `${appliedCoupon.discount}% OFF`}
+                    </span>
+                    <button onClick={() => { setAppliedCoupon(null); setFinalPrice(DISCOUNTED_PRICE); setCouponCode(''); }} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                      <X size={15} />
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input
+                      type="text"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                      style={{ textTransform: 'uppercase' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={applyingCoupon || !couponCode.trim()}
+                      className="btn btn-primary btn-sm"
+                    >
+                      {applyingCoupon ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
+                    <AlertTriangle size={13} color="#ef4444" />
+                    <p style={{ color: '#ef4444', fontSize: '0.75rem', margin: 0 }}>{couponError}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Pricing Box */}
+              <div style={{ background: 'var(--bg-3)', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>Online Exam Platform Fee</span>
+                  <span style={{ color: 'var(--text-1)', fontWeight: 600 }}>₹{DISCOUNTED_PRICE}</span>
+                </div>
+                {appliedCoupon && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>Coupon Discount ({appliedCoupon.code})</span>
+                    <span style={{ color: '#10b981', fontWeight: 600 }}>
+                      {appliedCoupon.type === 'FREE' ? `-₹${DISCOUNTED_PRICE}` : `-${appliedCoupon.discount}%`}
+                    </span>
+                  </div>
+                )}
+                <div style={{ height: '1px', background: 'var(--border)', margin: '0.75rem 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 800 }}>Amount Pay</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>₹{finalPrice}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={handlePayment}
+                disabled={paymentLoading}
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '1rem', justifyContent: 'center' }}
+              >
+                {paymentLoading ? <Loader2 className="animate-spin" /> : `Final Submission`}
+              </button>
+
+              {/* Admin Cash Payment Section — ONLY visible to authorized admin/subadmin */}
+              {canCollectCash && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  {/* Divider */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.5rem 0 1.25rem' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Admin Only</span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                  </div>
+
+                  {!showCashForm ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowCashForm(true)}
+                      style={{
+                        width: '100%',
+                        padding: '0.85rem 1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        background: 'rgba(16, 185, 129, 0.08)',
+                        border: '1px dashed rgba(16, 185, 129, 0.35)',
+                        borderRadius: '12px',
+                        color: '#10b981',
+                        fontSize: '0.88rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Banknote size={18} />
+                      Admin: Pay via Cash
+                    </button>
+                  ) : (
+                    <div
+                      className="anim-fade-up"
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.04)',
+                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                        borderRadius: '14px',
+                        padding: '1.25rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <Shield size={16} color="#10b981" />
+                        <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#10b981' }}>Cash Payment Verification</span>
+                        <button
+                          type="button"
+                          onClick={() => { setShowCashForm(false); setCashPasscode(''); setShowCashPasscode(false); }}
+                          style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', alignItems: 'center' }}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+
+                      <div className="input-group" style={{ marginBottom: '1rem' }}>
+                        <label className="label" style={{ fontSize: '0.82rem', fontWeight: 700 }}>Secret Admin Passcode</label>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                          <input
+                            type={showCashPasscode ? "text" : "password"}
+                            value={cashPasscode}
+                            onChange={e => setCashPasscode(e.target.value)}
+                            placeholder="Enter admin passcode"
+                            style={{ fontSize: '0.9rem', width: '100%', paddingRight: '2.5rem' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCashPasscode(!showCashPasscode)}
+                            style={{
+                              position: 'absolute',
+                              right: '0.75rem',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: 'var(--text-3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '0.25rem',
+                            }}
+                          >
+                            {showCashPasscode ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleCashPayment}
+                        disabled={cashPaymentLoading || !cashPasscode.trim()}
+                        className="btn"
+                        style={{
+                          width: '100%',
+                          padding: '0.85rem 1rem',
+                          justifyContent: 'center',
+                          background: '#10b981',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '10px',
+                          fontWeight: 800,
+                          fontSize: '0.9rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          cursor: cashPaymentLoading || !cashPasscode.trim() ? 'not-allowed' : 'pointer',
+                          opacity: cashPaymentLoading || !cashPasscode.trim() ? 0.6 : 1,
+                        }}
+                      >
+                        {cashPaymentLoading ? <Loader2 className="animate-spin" size={18} /> : <><Banknote size={18} /> Confirm Cash Payment — ₹{finalPrice}</>}
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
+
+              {/* Inline Notification Banner below Payment Button */}
+              <InlineNotification toast={toast} onClose={() => setToast(null)} />
             </div>
           )}
 
-          {/* Inline Notification Banner below Payment Button */}
-          <InlineNotification toast={toast} onClose={() => setToast(null)} />
-        </div>
-      )}
-
-      {step === 'success' && (
-        <div className="card card-p anim-fade-up" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16,185,129,0.1)', color: 'var(--success)', marginBottom: '1.5rem' }}>
-            <CheckCircle size={32} />
-          </div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 900, marginBottom: '0.5rem' }}>Registration Successful!</h2>
-          <p style={{ color: 'var(--text-3)', marginBottom: '1.5rem' }}>
-            Your registration fee has been received. Save your Registration ID below:
-          </p>
-          <div style={{ background: 'var(--bg-3)', padding: '1rem 2rem', borderRadius: '12px', fontSize: '1.5rem', fontWeight: 900, letterSpacing: '0.05em', color: 'var(--text-1)', display: 'inline-block', border: '1px solid var(--border)', marginBottom: '2rem' }}>
-            {registrationNo}
-          </div>
-          <div>
-            <Link href="/" className="btn btn-primary" style={{ display: 'inline-flex', alignSelf: 'center' }}>
-              Go to Homepage
-            </Link>
-          </div>
-
-          {/* Inline Notification Banner below Success link */}
-          <InlineNotification toast={toast} onClose={() => setToast(null)} />
-        </div>
-      )}
-
-      {step === 'retrieve' && (
-        <>
-          <div className="card card-p anim-fade-up">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-              <h3 style={{ margin: 0, fontWeight: 800 }}>Resume Payment</h3>
-              <button onClick={() => setStep('form')} className="btn btn-ghost btn-sm" style={{ fontSize: '0.8rem' }}>
-                Back to Form
-              </button>
-            </div>
-
-            <form onSubmit={handleRetrieveLookup} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="input-group">
-                <label className="label">Registration ID or Mobile Number</label>
-                <input 
-                  type="text" 
-                  value={retrieveQuery} 
-                  onChange={e => setRetrieveQuery(e.target.value)} 
-                  placeholder="Enter JA-XXXXXXXX or 10-digit mobile" 
-                  required 
-                />
+          {step === 'success' && (
+            <div className="card card-p anim-fade-up" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16,185,129,0.1)', color: 'var(--success)', marginBottom: '1.5rem' }}>
+                <CheckCircle size={32} />
               </div>
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                Lookup Registration & Send OTP
-              </button>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 900, marginBottom: '0.5rem' }}>Registration Successful!</h2>
+              <p style={{ color: 'var(--text-3)', marginBottom: '1.5rem' }}>
+                Your registration fee has been received. Save your Registration ID below:
+              </p>
+              <div style={{ background: 'var(--bg-3)', padding: '1rem 2rem', borderRadius: '12px', fontSize: '1.5rem', fontWeight: 900, letterSpacing: '0.05em', color: 'var(--text-1)', display: 'inline-block', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+                {registrationNo}
+              </div>
+              <div>
+                <Link href="/" className="btn btn-primary" style={{ display: 'inline-flex', alignSelf: 'center' }}>
+                  Go to Homepage
+                </Link>
+              </div>
 
-              {/* Inline Notification Banner below Retrieve Button */}
+              {/* Inline Notification Banner below Success link */}
               <InlineNotification toast={toast} onClose={() => setToast(null)} />
-            </form>
-          </div>
+            </div>
+          )}
 
-          {/* Support / Help Card for payment issues */}
-          <div 
-            className="card card-p anim-fade-up" 
-            style={{ 
-              marginTop: '1.5rem', 
-              padding: '1.5rem', 
-              background: 'rgba(255, 255, 255, 0.02)', 
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-              borderRadius: '16px',
-              textAlign: 'left'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'rgba(99, 102, 241, 0.1)',
-                color: 'var(--primary-light)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Mail size={16} />
+          {step === 'retrieve' && (
+            <>
+              <div className="card card-p anim-fade-up">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                  <h3 style={{ margin: 0, fontWeight: 800 }}>Resume Payment</h3>
+                  <button onClick={() => setStep('form')} className="btn btn-ghost btn-sm" style={{ fontSize: '0.8rem' }}>
+                    Back to Form
+                  </button>
+                </div>
+
+                <form onSubmit={handleRetrieveLookup} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div className="input-group">
+                    <label className="label">Registration ID or Mobile Number</label>
+                    <input
+                      type="text"
+                      value={retrieveQuery}
+                      onChange={e => setRetrieveQuery(e.target.value)}
+                      placeholder="Enter JA-XXXXXXXX or 10-digit mobile"
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                    Lookup Registration & Send OTP
+                  </button>
+
+                  {/* Inline Notification Banner below Retrieve Button */}
+                  <InlineNotification toast={toast} onClose={() => setToast(null)} />
+                </form>
               </div>
-              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Payment Help & Support</h4>
-            </div>
-            
-            <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
-              Kindly email us at <a href="mailto:payment@jobadda.in" style={{ color: 'var(--primary-light)', fontWeight: 700, textDecoration: 'underline' }}>payment@jobadda.in</a> with a <strong>screenshot</strong> of your transaction:
-            </p>
-            
-            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.82rem', color: 'var(--text-3)', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
-              <li>If you are facing any payment-related issues</li>
-              <li>If you paid the amount but did not receive a confirmation</li>
-              <li>If you are experiencing any issue in making the payment</li>
-              <li>If you have any other payment related queries or concerns</li>
-            </ul>
-          </div>
-        </>
-      )}
 
-      {step === 'retrieve-otp' && (
-        <div className="card card-p anim-fade-up">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-            <h3 style={{ margin: 0, fontWeight: 800 }}>Verify Ownership</h3>
-          </div>
-
-          <form onSubmit={handleVerifyRetrieve} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ padding: '0.75rem 1rem', background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)', borderRadius: '10px', fontSize: '0.85rem', color: 'var(--text-3)' }}>
-              An OTP has been sent to candidate <strong style={{ color: 'var(--text-1)' }}>{retrievedEntry?.name}</strong>'s mobile number: <strong>******{retrievedEntry?.mobile.slice(-4)}</strong>
-            </div>
-
-            <div className="input-group">
-              <label className="label">Enter Mobile OTP</label>
-              <input 
-                type="text" 
-                value={retrieveOtpCode} 
-                onChange={e => setRetrieveOtpCode(e.target.value.slice(0, 6))} 
-                placeholder="Enter 6-digit OTP" 
-                required 
-              />
-            </div>
-
-            <button type="submit" className="btn btn-success" style={{ width: '100%', justifyContent: 'center' }}>
-              Verify OTP & Proceed to Payment
-            </button>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
-                {mobileOtpCooldown > 0 ? `Resend in ${mobileOtpCooldown}s` : ''}
-              </span>
-              <button
-                type="button"
-                onClick={() => sendOtp(retrievedEntry.mobile, retrievedEntry.name, 'recovery')}
-                disabled={sendingMobileOtp || mobileOtpCooldown > 0}
-                className="btn btn-ghost btn-sm"
-                style={{ color: 'var(--primary)', fontWeight: 'bold' }}
+              {/* Support / Help Card for payment issues */}
+              <div
+                className="card card-p anim-fade-up"
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '1.5rem',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '16px',
+                  textAlign: 'left'
+                }}
               >
-                {sendingMobileOtp ? 'Sending...' : 'Resend OTP'}
-              </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'rgba(99, 102, 241, 0.1)',
+                    color: 'var(--primary-light)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Mail size={16} />
+                  </div>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Payment Help & Support</h4>
+                </div>
+
+                <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
+                  Kindly email us at <a href="mailto:payment@jobadda.in" style={{ color: 'var(--primary-light)', fontWeight: 700, textDecoration: 'underline' }}>payment@jobadda.in</a> with a <strong>screenshot</strong> of your transaction:
+                </p>
+
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.82rem', color: 'var(--text-3)', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
+                  <li>If you are facing any payment-related issues</li>
+                  <li>If you paid the amount but did not receive a confirmation</li>
+                  <li>If you are experiencing any issue in making the payment</li>
+                  <li>If you have any other payment related queries or concerns</li>
+                </ul>
+              </div>
+            </>
+          )}
+
+          {step === 'retrieve-otp' && (
+            <div className="card card-p anim-fade-up">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                <h3 style={{ margin: 0, fontWeight: 800 }}>Verify Ownership</h3>
+              </div>
+
+              <form onSubmit={handleVerifyRetrieve} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ padding: '0.75rem 1rem', background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)', borderRadius: '10px', fontSize: '0.85rem', color: 'var(--text-3)' }}>
+                  An OTP has been sent to candidate <strong style={{ color: 'var(--text-1)' }}>{retrievedEntry?.name}</strong>'s mobile number: <strong>******{retrievedEntry?.mobile.slice(-4)}</strong>
+                </div>
+
+                <div className="input-group">
+                  <label className="label">Enter Mobile OTP</label>
+                  <input
+                    type="text"
+                    value={retrieveOtpCode}
+                    onChange={e => setRetrieveOtpCode(e.target.value.slice(0, 6))}
+                    placeholder="Enter 6-digit OTP"
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-success" style={{ width: '100%', justifyContent: 'center' }}>
+                  Verify OTP & Proceed to Payment
+                </button>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
+                    {mobileOtpCooldown > 0 ? `Resend in ${mobileOtpCooldown}s` : ''}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => sendOtp(retrievedEntry.mobile, retrievedEntry.name, 'recovery')}
+                    disabled={sendingMobileOtp || mobileOtpCooldown > 0}
+                    className="btn btn-ghost btn-sm"
+                    style={{ color: 'var(--primary)', fontWeight: 'bold' }}
+                  >
+                    {sendingMobileOtp ? 'Sending...' : 'Resend OTP'}
+                  </button>
+                </div>
+
+                {/* Inline Notification Banner below Verify Button */}
+                <InlineNotification toast={toast} onClose={() => setToast(null)} />
+              </form>
             </div>
-
-            {/* Inline Notification Banner below Verify Button */}
-            <InlineNotification toast={toast} onClose={() => setToast(null)} />
-          </form>
+          )}
         </div>
-      )}
-      </div>
 
-    </div>
+      </div>
     </div>
   );
 }

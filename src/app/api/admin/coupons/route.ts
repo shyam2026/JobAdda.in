@@ -48,9 +48,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Discount must be between 1 and 100 for PERCENT coupons' }, { status: 400 });
     }
 
+    const normalizedCode = code.trim().toUpperCase();
+
+    // Explicit duplicate check (case-insensitive) before create
+    const existing = await (prisma as any).coupon.findFirst({
+      where: { code: normalizedCode },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { error: `Coupon code "${normalizedCode}" already exists. Please use a different code.` },
+        { status: 409 }
+      );
+    }
+
     const coupon = await (prisma as any).coupon.create({
       data: {
-        code: code.trim().toUpperCase(),
+        code: normalizedCode,
         type,
         discount: type === 'PERCENT' ? parseInt(discount) : null,
         usageLimit: usageLimit ? parseInt(usageLimit) : 100,

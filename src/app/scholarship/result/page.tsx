@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GraduationCap, Award, Trophy, Search, Loader2, Mail, ExternalLink, Sun, Sparkles, HelpCircle, ArrowLeft } from 'lucide-react';
+import { Trophy, Search, Loader2, Mail, ExternalLink, Sparkles, HelpCircle, ArrowLeft, CheckCircle2, AlertCircle, Star, BookOpen, Target } from 'lucide-react';
 import Link from 'next/link';
 
 function maskMobile(mobile: string) {
@@ -14,9 +14,7 @@ function maskMobile(mobile: string) {
 function maskEmail(email: string) {
   if (!email || !email.includes('@')) return '';
   const [local, domain] = email.split('@');
-  if (local.length <= 2) {
-    return local.charAt(0) + '***@' + domain;
-  }
+  if (local.length <= 2) return local.charAt(0) + '***@' + domain;
   return local.charAt(0) + '***' + local.charAt(local.length - 1) + '@' + domain;
 }
 
@@ -29,341 +27,178 @@ export default function ScholarshipResultPage() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lookup.trim()) return;
-
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
+    setLoading(true); setError(null); setResult(null);
     try {
       const res = await fetch(`/api/scholarship/result?lookup=${encodeURIComponent(lookup.trim())}`);
       const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Failed to fetch result');
-      } else {
-        setResult(data);
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+      if (!res.ok) setError(data.error || 'Failed to fetch result');
+      else setResult(data);
+    } catch { setError('Something went wrong. Please try again.'); }
+    finally { setLoading(false); }
   };
 
   const getPrizeDetails = (rank: number) => {
-    if (rank === 1) {
-      return {
-        title: '1st Rank Winner! 🥇',
-        prize: '₹15,000 Cash Scholarship',
-        color: '#F97316',
-        bg: 'rgba(249, 115, 22, 0.08)',
-        border: 'rgba(249, 115, 22, 0.25)',
-      };
-    }
-    if (rank === 2) {
-      return {
-        title: '2nd Rank Winner! 🥈',
-        prize: '₹12,000 Cash Scholarship',
-        color: '#E2E8F0',
-        bg: 'rgba(226, 232, 240, 0.08)',
-        border: 'rgba(226, 232, 240, 0.25)',
-      };
-    }
-    if (rank === 3) {
-      return {
-        title: '3rd Rank Winner! 🥉',
-        prize: '₹10,000 Cash Scholarship',
-        color: '#CD7F32',
-        bg: 'rgba(205, 127, 50, 0.08)',
-        border: 'rgba(205, 127, 50, 0.25)',
-      };
-    }
-    if (rank >= 4 && rank <= 10) {
-      return {
-        title: `${rank}th Rank Winner! 🏅`,
-        prize: '₹5,000 Cash Scholarship',
-        color: '#6366F1',
-        bg: 'rgba(99, 102, 241, 0.08)',
-        border: 'rgba(99, 102, 241, 0.25)',
-      };
-    }
-    if (rank >= 11 && rank <= 200) {
-      return {
-        title: `${rank}th Rank Holder! 🏅`,
-        prize: 'Flat ₹15,000 Course Discount',
-        description: 'Get Flat ₹15,000 Discount on Data Analyst & Business Analyst Courses, offered by Microsoft Education Partner.',
-        color: '#10B981',
-        bg: 'rgba(16, 185, 129, 0.08)',
-        border: 'rgba(16, 185, 129, 0.25)',
-      };
-    }
+    if (rank === 1) return { title: '1st Rank Winner!', prize: '₹15,000 Cash Scholarship', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.3)', emoji: '🥇' };
+    if (rank === 2) return { title: '2nd Rank Winner!', prize: '₹12,000 Cash Scholarship', color: '#94A3B8', bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.25)', emoji: '🥈' };
+    if (rank === 3) return { title: '3rd Rank Winner!', prize: '₹10,000 Cash Scholarship', color: '#CD7F32', bg: 'rgba(205,127,50,0.08)', border: 'rgba(205,127,50,0.3)', emoji: '🥉' };
+    if (rank >= 4 && rank <= 10) return { title: `${rank}th Rank Winner!`, prize: '₹5,000 Cash Scholarship', color: '#6366F1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.25)', emoji: '🏅' };
+    if (rank >= 11 && rank <= 200) return { title: `${rank}th Rank Holder!`, prize: 'Flat ₹15,000 Course Discount', description: 'Get Flat ₹15,000 Discount on Data Analyst & Business Analyst Courses, offered by Microsoft Education Partner.', color: '#10B981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.25)', emoji: '🏅' };
     return null;
   };
 
   return (
-    <div className="patriotic-bg-container" style={{ position: 'relative', minHeight: '100vh', width: '100%', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-1)' }}>
       <style>{`
-        .patriotic-bg-container::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-image: url('/patriotic_bg.jpg');
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          background-attachment: fixed;
-          opacity: 0.75;
-          z-index: 0;
-          pointer-events: none;
-        }
-        .card {
-          background: var(--bg-2) !important;
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-        }
-        .card:hover {
-          transform: none !important;
+        .result-container { max-width: 700px; margin: 0 auto; padding: 7rem 1.25rem 4rem; }
+        .result-hero { background: linear-gradient(135deg, rgba(249,115,22,0.1) 0%, rgba(34,197,94,0.07) 100%); border: 1px solid var(--border); border-radius: 24px; padding: 2.5rem 2rem; text-align: center; margin-bottom: 2rem; }
+        .result-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.25); color: #F97316; border-radius: 9999px; padding: 0.35rem 1rem; font-size: 0.75rem; font-weight: 800; margin-bottom: 1.25rem; letter-spacing: 0.04em; }
+        .result-h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 900; line-height: 1.2; margin: 0 0 0.5rem; }
+        .result-sub { color: var(--text-3); font-size: 0.9rem; }
+        .search-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
+        .search-form { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 220px; padding: 1rem 1.25rem; border-radius: 14px; background: var(--bg-3); border: 1.5px solid var(--border); color: var(--text-1); font-size: 0.95rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+        .search-input:focus { border-color: var(--primary); }
+        .search-btn { display: flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #fff; border: none; border-radius: 14px; padding: 1rem 1.75rem; font-size: 1rem; font-weight: 800; cursor: pointer; font-family: inherit; white-space: nowrap; transition: opacity 0.2s; }
+        .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .error-box { margin-top: 1.25rem; background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 1rem 1.25rem; color: #F87171; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .result-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem; }
+        .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+        .score-box { background: var(--bg-3); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+        .score-label { font-size: 0.75rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+        .score-val { font-size: 2.2rem; font-weight: 900; line-height: 1; }
+        .prize-box { border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden; }
+        .prize-trophy { position: absolute; right: -12px; bottom: -12px; opacity: 0.08; }
+        .not-submitted { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 20px; padding: 2.5rem 2rem; text-align: center; }
+        .support-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 20px; padding: 1.75rem; margin-top: 1.5rem; }
+        .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem; }
+        @media (max-width: 480px) {
+          .result-container { padding: 6rem 1rem 3rem; }
+          .score-grid { grid-template-columns: 1fr; }
+          .search-btn { width: 100%; justify-content: center; }
+          .search-input { min-width: 100%; }
         }
       `}</style>
 
-      <div style={{ position: 'relative', maxWidth: '700px', margin: '7rem auto 4rem', padding: '0 1.5rem', zIndex: 1 }} className="anim-fade-up">
-        {/* Back Link */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <Link href="/scholarship" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-3)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none', transition: 'color 0.2s' }}>
-            <ArrowLeft size={16} />
-            Back to Scholarship
-          </Link>
-        </div>
+      <div className="result-container">
+        {/* Back */}
+        <Link href="/scholarship" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-3)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', marginBottom: '1.75rem' }}>
+          <ArrowLeft size={16} /> Back to Scholarship
+        </Link>
 
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          {/* Independence Day Special Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 1rem', borderRadius: '9999px', backgroundColor: '#FFFFFF', border: '1px solid rgba(249,115,22,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '1.25rem' }}>
-            <Sun size={16} color="#F97316" fill="#F97316" />
-            <span style={{ color: '#F97316', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em' }}>INDEPENDENCE DAY SPECIAL</span>
-          </div>
-
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '0.5rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+        {/* Hero */}
+        <div className="result-hero">
+          <div className="result-badge">🏆 INDEPENDENCE DAY SPECIAL 2026</div>
+          <h1 className="result-h1">
             <span style={{ color: '#F97316' }}>Scholarship </span>
-            <span style={{ color: '#FFFFFF' }}>Test </span>
-            <span style={{ color: '#22C55E' }}>Result 2026</span>
+            <span style={{ color: 'var(--text-1)' }}>Test </span>
+            <span style={{ color: '#22C55E' }}>Result</span>
           </h1>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', fontSize: '1rem', fontWeight: 700 }}>
-            <span style={{ display: 'inline-flex', gap: '4px' }}>
-              <span style={{ width: '10px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
-              <span style={{ width: '10px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
-            </span>
-            <span style={{ color: '#818CF8' }}>Check Your Merit & Rank</span>
-            <span style={{ display: 'inline-flex', gap: '4px' }}>
-              <span style={{ width: '10px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
-              <span style={{ width: '10px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
-            </span>
-          </div>
+          <p className="result-sub">Enter your Registration ID or Mobile Number to check your score & rank</p>
         </div>
 
-        {/* Search Card */}
-        <div className="card card-p" style={{ padding: '2rem', marginBottom: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
-          <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div className="input-group">
-              <label className="label" style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>Registered Mobile Number or Registration ID</label>
-              <div style={{ position: 'relative', display: 'flex', gap: '0.75rem' }}>
-                <input 
-                  type="text" 
-                  value={lookup} 
-                  onChange={e => setLookup(e.target.value)} 
-                  placeholder="e.g. JA-XYZ12345 or 9876543210" 
-                  required 
-                  style={{ 
-                    flex: 1, 
-                    padding: '0.85rem 1rem 0.85rem 2.5rem', 
-                    borderRadius: '12px', 
-                    background: 'var(--bg-3)', 
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-1)',
-                    fontSize: '0.95rem'
-                  }}
-                />
-                <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-                <button 
-                  type="submit" 
-                  disabled={loading} 
-                  className="btn btn-primary"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1.5rem', height: 'auto', justifyContent: 'center' }}
-                >
-                  {loading ? <Loader2 size={16} className="animate-spin" /> : 'Search'}
-                </button>
-              </div>
-            </div>
+        {/* Search */}
+        <div className="search-card">
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Target size={20} color="var(--primary-light)" /> Check Your Result
+          </h2>
+          <form onSubmit={handleSearch} className="search-form">
+            <input className="search-input" type="text" value={lookup} onChange={e => setLookup(e.target.value)} placeholder="e.g. JA-XYZ12345 or 9876543210" required />
+            <button type="submit" disabled={loading} className="search-btn">
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <><Search size={18} /> Search</>}
+            </button>
           </form>
-
-          {error && (
-            <div style={{ marginTop: '1.25rem', padding: '1rem', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#F87171', fontSize: '0.88rem', fontWeight: 600 }}>
-              {error}
-            </div>
-          )}
+          {error && <div className="error-box"><AlertCircle size={16} />{error}</div>}
         </div>
 
-        {/* Result Details Display */}
+        {/* Results */}
         {result && (
-          <div className="anim-fade-up">
+          <>
             {!result.examSubmitted ? (
-              <div className="card card-p" style={{ padding: '2rem', textAlign: 'center', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.02)', marginBottom: '1.5rem' }}>
+              <div className="not-submitted">
                 <HelpCircle size={48} color="#EF4444" style={{ margin: '0 auto 1rem' }} />
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.5rem 0' }}>Result Not Available</h3>
-                <p style={{ color: 'var(--text-3)', fontSize: '0.9rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
-                  Candidate <strong>{result.candidate.name}</strong> ({maskMobile(result.candidate.mobile)}) is registered, but has not submitted the scholarship exam.
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.5rem' }}>Result Not Available</h3>
+                <p style={{ color: 'var(--text-3)', fontSize: '0.9rem', margin: '0 0 1.25rem', lineHeight: 1.6 }}>
+                  Candidate <strong style={{ color: 'var(--text-1)' }}>{result.candidate.name}</strong> ({maskMobile(result.candidate.mobile)}) is registered but has not submitted the scholarship exam.
                 </p>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-2)', background: 'var(--bg-3)', padding: '0.85rem', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                  If you have already appeared for the test and believe this is an error, please email us with details.
+                <div style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.85rem 1rem', fontSize: '0.85rem', color: 'var(--text-2)' }}>
+                  If you already appeared and believe this is an error, please email us with details.
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {/* Main Candidate Card */}
-                <div className="card card-p" style={{ padding: '2rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                  <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1.25rem', marginBottom: '1.25rem' }}>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--primary-light)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-                      Scholarship Test 2026 Result
-                    </div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>
-                      {result.candidate.name}
-                    </h2>
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', flexWrap: 'wrap', fontSize: '0.85rem', color: 'var(--text-3)' }}>
-                      <span><strong>Reg ID:</strong> {result.candidate.registrationNo}</span>
-                      <span>•</span>
-                      <span><strong>Mobile:</strong> {maskMobile(result.candidate.mobile)}</span>
-                      <span>•</span>
-                      <span><strong>Email:</strong> {maskEmail(result.candidate.email)}</span>
-                    </div>
+              <div className="result-card">
+                {/* Header */}
+                <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1.25rem', marginBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--primary-light)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem' }}>Scholarship Test 2026 — Official Result</div>
+                  <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--text-1)', margin: '0 0 0.4rem' }}>{result.candidate.name}</h2>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.82rem', color: 'var(--text-3)' }}>
+                    <span>📋 <strong>Reg ID:</strong> {result.candidate.registrationNo}</span>
+                    <span>📱 {maskMobile(result.candidate.mobile)}</span>
+                    <span>✉️ {maskEmail(result.candidate.email)}</span>
                   </div>
-
-                  {/* Score & Rank Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
-                    {/* Score */}
-                    <div style={{ padding: '1.25rem', background: 'var(--bg-3)', borderRadius: '14px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>Your Score</span>
-                      <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-1)' }}>
-                        {result.examScore} <span style={{ fontSize: '1.2rem', color: 'var(--text-3)', fontWeight: 600 }}>/ 150</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem', color: 'var(--text-2)', marginTop: '0.25rem' }}>
-                        <span style={{ color: 'var(--success)' }}><strong>Correct:</strong> {result.examCorrect}</span>
-                        <span style={{ color: 'var(--error)' }}><strong>Incorrect:</strong> {result.examWrong}</span>
-                      </div>
-                    </div>
-
-                    {/* Rank */}
-                    <div style={{ padding: '1.25rem', background: 'var(--bg-3)', borderRadius: '14px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>All India Rank</span>
-                      <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--primary-light)' }}>
-                        #{result.rank}
-                      </div>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-2)', marginTop: '0.25rem' }}>
-                        Based on official tie-breaker rules
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Prize / Scholarship Notice */}
-                  {(() => {
-                    const prize = getPrizeDetails(result.rank);
-                    if (prize) {
-                      return (
-                        <div 
-                          style={{ 
-                            padding: '1.5rem', 
-                            background: prize.bg, 
-                            border: `1px solid ${prize.border}`, 
-                            borderRadius: '14px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.5rem',
-                            position: 'relative',
-                            overflow: 'hidden'
-                          }}
-                        >
-                          <div style={{ position: 'absolute', right: '-10px', bottom: '-10px', opacity: 0.1, color: prize.color }}>
-                            <Trophy size={80} />
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: prize.color, fontWeight: 800, fontSize: '1.05rem' }}>
-                            <Sparkles size={18} />
-                            <span>{prize.title}</span>
-                          </div>
-                          <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: 'var(--text-1)' }}>
-                            Congratulations! You qualified for: {prize.prize}
-                          </p>
-                          {prize.description && (
-                            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.4 }}>
-                              {prize.description}
-                            </p>
-                          )}
-                          <div style={{ marginTop: '0.5rem', fontSize: '0.82rem' }}>
-                            <Link href="/scholarship-terms" target="_blank" style={{ color: prize.color, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'underline' }}>
-                              View prize disbursement terms <ExternalLink size={12} />
-                            </Link>
-                          </div>
-                        </div>
-                      );
-                    } else {
-                      return (
-                        <div style={{ padding: '1.25rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border)', borderRadius: '14px', color: 'var(--text-2)', fontSize: '0.88rem', lineHeight: 1.5 }}>
-                          <p style={{ margin: '0 0 0.5rem 0', fontWeight: 700, color: 'var(--text-1)' }}>Thank you for participating!</p>
-                          Your rank is outside the scholarship prize bracket. Don't be discouraged—every attempt is a step closer to success. Keep learning and growing!
-                          <div style={{ marginTop: '0.5rem' }}>
-                            <Link href="/scholarship-terms" target="_blank" style={{ color: 'var(--primary-light)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'underline' }}>
-                              View prize bracket guidelines <ExternalLink size={12} />
-                            </Link>
-                          </div>
-                        </div>
-                      );
-                    }
-                  })()}
                 </div>
+
+                {/* Score & Rank */}
+                <div className="score-grid">
+                  <div className="score-box">
+                    <div className="score-label">Your Score</div>
+                    <div className="score-val" style={{ color: 'var(--text-1)' }}>{result.examScore}<span style={{ fontSize: '1.2rem', color: 'var(--text-3)', fontWeight: 600 }}>/150</span></div>
+                    <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                      <span style={{ color: '#22C55E', fontWeight: 700 }}>✓ {result.examCorrect} Correct</span>
+                      <span style={{ color: '#EF4444', fontWeight: 700 }}>✗ {result.examWrong} Wrong</span>
+                    </div>
+                  </div>
+                  <div className="score-box">
+                    <div className="score-label">All India Rank</div>
+                    <div className="score-val" style={{ color: 'var(--primary-light)' }}>#{result.rank}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.5rem' }}>Based on official tie-breaker rules</div>
+                  </div>
+                </div>
+
+                {/* Prize */}
+                {(() => {
+                  const prize = getPrizeDetails(result.rank);
+                  if (prize) return (
+                    <div className="prize-box" style={{ background: prize.bg, border: `1px solid ${prize.border}` }}>
+                      <div className="prize-trophy"><Trophy size={90} color={prize.color} /></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: prize.color, fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+                        <Sparkles size={18} /> {prize.emoji} {prize.title}
+                      </div>
+                      <p style={{ margin: '0 0 0.4rem', fontSize: '1.15rem', fontWeight: 900, color: 'var(--text-1)' }}>🎉 Congratulations! You qualified for: {prize.prize}</p>
+                      {prize.description && <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>{prize.description}</p>}
+                      <Link href="/scholarship-terms" target="_blank" style={{ color: prize.color, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.82rem', textDecoration: 'underline' }}>
+                        View prize disbursement terms <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                  );
+                  return (
+                    <div style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.25rem' }}>
+                      <p style={{ margin: '0 0 0.5rem', fontWeight: 700, color: 'var(--text-1)' }}>Thank you for participating! 🙏</p>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', color: 'var(--text-2)', lineHeight: 1.5 }}>Your rank is outside the scholarship prize bracket. Keep learning and growing!</p>
+                      <Link href="/scholarship-terms" target="_blank" style={{ color: 'var(--primary-light)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.82rem', textDecoration: 'underline' }}>
+                        View prize bracket guidelines <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                  );
+                })()}
               </div>
             )}
-          </div>
+          </>
         )}
 
-        {/* Support and Queries Footer Card */}
-        <div 
-          className="card card-p" 
-          style={{ 
-            padding: '1.5rem', 
-            background: 'rgba(255, 255, 255, 0.02)', 
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '16px',
-            textAlign: 'left',
-            marginTop: '1.5rem'
-          }}
-        >
+        {/* Support */}
+        <div className="support-card">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
-            <div style={{ 
-              width: '32px', 
-              height: '32px', 
-              borderRadius: '50%', 
-              background: 'rgba(99, 102, 241, 0.1)', 
-              color: 'var(--primary-light)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center' 
-            }}>
-              <Mail size={16} />
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', color: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Mail size={18} />
             </div>
             <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Result Queries & Support</h4>
           </div>
-          
-          <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
-            For any queries or concerns regarding your results, please contact us at:
-          </p>
-          
-          <div style={{ background: 'var(--bg-3)', padding: '0.85rem 1.25rem', borderRadius: '12px', border: '1px solid var(--border)', display: 'inline-block' }}>
-            <a href="mailto:result@jobadda.in" style={{ color: 'var(--primary-light)', fontWeight: 800, fontSize: '0.95rem', textDecoration: 'underline' }}>
-              result@jobadda.in
-            </a>
-          </div>
+          <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.6 }}>For any result-related queries or concerns, please contact us at:</p>
+          <a href="mailto:result@jobadda.in" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(99,102,241,0.08)', color: 'var(--primary-light)', fontWeight: 800, fontSize: '0.95rem', padding: '0.65rem 1.25rem', borderRadius: '10px', textDecoration: 'none', border: '1px solid rgba(99,102,241,0.2)' }}>
+            ✉️ result@jobadda.in
+          </a>
         </div>
+        
       </div>
     </div>
   );

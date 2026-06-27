@@ -22,11 +22,16 @@ export async function PATCH(req: Request, { params }: Params) {
     }
 
     const { id } = await params;
-    const { isActive } = await req.json();
+    const body = await req.json();
+    
+    const dataToUpdate: any = {};
+    if (body.isActive !== undefined) dataToUpdate.isActive = body.isActive;
+    if (body.usageLimit !== undefined) dataToUpdate.usageLimit = parseInt(body.usageLimit);
+    if (body.expiresAt !== undefined) dataToUpdate.expiresAt = body.expiresAt ? new Date(body.expiresAt) : null;
 
     const coupon = await (prisma as any).coupon.update({
       where: { id },
-      data: { isActive },
+      data: dataToUpdate,
     });
 
     return NextResponse.json(coupon);

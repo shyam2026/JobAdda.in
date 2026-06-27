@@ -10,7 +10,6 @@ export async function GET(req: Request) {
     }
 
     const db = prisma as any;
-    
     // Find the candidate using registration number or mobile number
     const candidate = await db.scholarshipEntry.findFirst({
       where: {
