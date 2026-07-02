@@ -363,7 +363,7 @@ export default function ScholarshipPage() {
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
-      document.body.appendChild(script);
+      document.head.appendChild(script);
     });
 
   const handlePayment = async () => {
@@ -392,7 +392,7 @@ export default function ScholarshipPage() {
       }
 
       const isLoaded = await loadRazorpayScript();
-      if (!isLoaded) throw new Error('Razorpay SDK failed to load');
+      if (!isLoaded) throw new Error('Payment gateway failed to load. Please disable ad-blockers or check your connection.');
 
       const options = {
         key: orderData.keyId,

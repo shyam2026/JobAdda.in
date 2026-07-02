@@ -5,6 +5,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { OrganizationSchema, WebSiteSchema } from "@/components/StructuredData";
+import Script from "next/script";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -117,6 +118,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WebSiteSchema />
       </head>
       <body style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }} suppressHydrationWarning>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         <Providers>
           <LayoutWrapper>
             {children}

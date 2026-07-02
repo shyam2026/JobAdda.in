@@ -111,7 +111,7 @@ export default function PremiumUpgradePage() {
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
-      document.body.appendChild(script);
+      document.head.appendChild(script);
     });
 
   const handlePurchase = async () => {
@@ -154,7 +154,7 @@ export default function PremiumUpgradePage() {
     try {
       const loaded = await loadRazorpayScript();
       if (!loaded) {
-        setNotif({ type: 'error', msg: 'Razorpay SDK failed to load' });
+        setNotif({ type: 'error', msg: 'Payment gateway failed to load. Please disable ad-blockers or check your connection.' });
         setLoading(false);
         return;
       }
