@@ -114,7 +114,7 @@ export async function GET(req: Request) {
       'Registration No': e.registrationNo,
       Name: e.name,
       "Father's Name": e.fatherName || '',
-      'Aadhar No': e.aadharNo || '',
+      'Aadhar/PAN/Voter ID': e.aadharNo || '',
       Mobile: e.mobile,
       Email: e.email,
       District: e.district,

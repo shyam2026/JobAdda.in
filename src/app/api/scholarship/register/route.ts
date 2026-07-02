@@ -55,14 +55,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, fatherName, aadharNo, mobile, email, district, state, lastQualification, marksPercent, careerGoal, passportImage } = body;
 
-    if (!name || !fatherName || !aadharNo || !mobile || !email || !district || !state || !lastQualification || !marksPercent || !careerGoal || !passportImage) {
+    if (!name || !fatherName || !mobile || !email || !district || !state || !lastQualification || !marksPercent || !careerGoal || !passportImage) {
       return NextResponse.json({ error: 'All fields required, including passport photo' }, { status: 400 });
     }
 
-    const cleanAadhar = aadharNo.replace(/\s/g, '');
-    if (cleanAadhar.length !== 12 || !/^\d+$/.test(cleanAadhar)) {
-      return NextResponse.json({ error: 'Aadhar Number must be exactly 12 numeric digits' }, { status: 400 });
-    }
+    const cleanAadhar = aadharNo ? String(aadharNo).trim() : '';
 
     const db = prisma as any;
 

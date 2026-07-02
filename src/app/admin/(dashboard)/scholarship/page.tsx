@@ -655,7 +655,7 @@ export default function AdminScholarshipPage() {
                           {entry.aadharNo && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               <span style={{ fontSize: '0.75rem', flexShrink: 0 }}>💳</span> 
-                              <span style={{ color: 'var(--text-3)' }}>Aadhar:</span> <strong style={{ fontWeight: 600 }}>{entry.aadharNo}</strong>
+                              <span style={{ color: 'var(--text-3)' }}>ID:</span> <strong style={{ fontWeight: 600 }}>{entry.aadharNo}</strong>
                             </div>
                           )}
                         </div>

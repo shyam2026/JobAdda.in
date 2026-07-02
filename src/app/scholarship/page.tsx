@@ -236,18 +236,53 @@ export default function ScholarshipPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let { width, height } = img;
+          const MAX_SIZE = 800;
+
+          if (width > height && width > MAX_SIZE) {
+            height = Math.round(height * (MAX_SIZE / width));
+            width = MAX_SIZE;
+          } else if (height > MAX_SIZE) {
+            width = Math.round(width * (MAX_SIZE / height));
+            height = MAX_SIZE;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject('No canvas context');
+          
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let quality = 0.9;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // roughly check if size > 500kb (dataUrl length * 0.75 gives approx bytes)
+          while (dataUrl.length * 0.75 > 500 * 1024 && quality > 0.1) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject('Failed to load image');
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = () => reject('Failed to read file');
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setPassportImageError('');
     if (!file) return;
-
-    // Check size (500KB = 500 * 1024 bytes)
-    if (file.size > 500 * 1024) {
-      setPassportImageError('Image size must be less than 500KB');
-      setPassportImage('');
-      setPassportImageName('');
-      return;
-    }
 
     // Check extension / format (allowed formats: jpg, png, jpeg)
     const validExtensions = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -261,18 +296,28 @@ export default function ScholarshipPage() {
       return;
     }
 
-    // Read file as Base64
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setPassportImage(reader.result);
-        setPassportImageName(file.name);
+    try {
+      if (file.size > 500 * 1024 || file.type.startsWith('image/')) {
+        // Compress image
+        const compressedDataUrl = await compressImage(file);
+        setPassportImage(compressedDataUrl);
+        setPassportImageName('compressed_' + file.name);
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            setPassportImage(reader.result);
+            setPassportImageName(file.name);
+          }
+        };
+        reader.onerror = () => setPassportImageError('Failed to read file');
+        reader.readAsDataURL(file);
       }
-    };
-    reader.onerror = () => {
-      setPassportImageError('Failed to read file');
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setPassportImageError('Error processing image');
+      setPassportImage('');
+      setPassportImageName('');
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -282,11 +327,7 @@ export default function ScholarshipPage() {
       return;
     }
 
-    const cleanAadhar = aadharNo.replace(/\s/g, '');
-    if (cleanAadhar.length !== 12 || !/^\d+$/.test(cleanAadhar)) {
-      showToast("Aadhar Number must be exactly 12 numeric digits.", "error");
-      return;
-    }
+    const cleanAadhar = aadharNo ? aadharNo.trim() : '';
 
     if (!passportImage) {
       showToast("Please upload your passport size image.", "error");
@@ -664,13 +705,12 @@ export default function ScholarshipPage() {
                       />
                     </div>
                     <div className="input-group">
-                      <label className="label">Aadhar Number</label>
+                      <label className="label">Aadhar / PAN / Voter ID <span style={{fontSize: '0.75rem', color: 'var(--text-3)'}}>(Optional)</span></label>
                       <input
                         type="text"
                         value={aadharNo}
-                        onChange={e => setAadharNo(e.target.value.replace(/\D/g, '').slice(0, 12))}
-                        placeholder="12-digit Aadhar number"
-                        required
+                        onChange={e => setAadharNo(e.target.value.toUpperCase())}
+                        placeholder="Enter ID number (Optional)"
                       />
                     </div>
                   </div>
@@ -818,38 +858,67 @@ export default function ScholarshipPage() {
                   <div className="input-group">
                     <label className="label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span>Passport Size Image <span style={{ color: '#ef4444' }}>*</span></span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 400 }}>JPG, JPEG, PNG (Max 500KB)</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 400 }}>JPG, PNG (Auto-compressed)</span>
                     </label>
 
                     <input
                       type="file"
-                      id="passport-upload"
-                      accept=".jpg,.jpeg,.png"
+                      id="gallery-upload"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                    <input
+                      type="file"
+                      id="camera-upload"
+                      accept="image/*"
+                      capture="user"
                       onChange={handleFileChange}
                       style={{ display: 'none' }}
                     />
 
                     {!passportImage ? (
-                      <label
-                        htmlFor="passport-upload"
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '2px dashed var(--border)',
-                          borderRadius: '8px',
-                          padding: '1.5rem',
-                          cursor: 'pointer',
-                          background: 'var(--bg-3)',
-                          transition: 'border-color 0.2s, background-color 0.2s',
-                          textAlign: 'center'
-                        }}
-                      >
-                        <span style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>📷</span>
-                        <span style={{ fontSize: '0.88rem', color: 'var(--text-2)', fontWeight: 600 }}>Click to Upload Passport Photo</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>Only JPG, JPEG, or PNG formats</span>
-                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <label
+                          htmlFor="gallery-upload"
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '2px dashed var(--border)',
+                            borderRadius: '8px',
+                            padding: '1.25rem 0.5rem',
+                            cursor: 'pointer',
+                            background: 'var(--bg-3)',
+                            transition: 'border-color 0.2s, background-color 0.2s',
+                            textAlign: 'center'
+                          }}
+                        >
+                          <span style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>📁</span>
+                          <span style={{ fontSize: '0.82rem', color: 'var(--text-2)', fontWeight: 600 }}>Gallery</span>
+                        </label>
+                        
+                        <label
+                          htmlFor="camera-upload"
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '2px dashed var(--border)',
+                            borderRadius: '8px',
+                            padding: '1.25rem 0.5rem',
+                            cursor: 'pointer',
+                            background: 'var(--bg-3)',
+                            transition: 'border-color 0.2s, background-color 0.2s',
+                            textAlign: 'center'
+                          }}
+                        >
+                          <span style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>📷</span>
+                          <span style={{ fontSize: '0.82rem', color: 'var(--text-2)', fontWeight: 600 }}>Take Selfie</span>
+                        </label>
+                      </div>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-3)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
                         <img
