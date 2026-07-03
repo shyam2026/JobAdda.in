@@ -67,8 +67,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.isPremium = (user as any).isPremium || false;
         token.premiumUntil = (user as any).premiumUntil || null;
       }
-      // Re-fetch premium status from DB on session update (after purchase)
-      if ((trigger === 'update' || trigger === 'signIn') && token.id) {
+      // Always re-fetch premium status from DB so it stays in sync
+      // This runs on every JWT refresh (page load, session check, etc.)
+      if (token.id && (token.portalType === 'student' || !token.portalType)) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },

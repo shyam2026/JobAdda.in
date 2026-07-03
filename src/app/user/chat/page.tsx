@@ -17,7 +17,7 @@ function ChatContent() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [isPremium, setIsPremium] = useState(user?.isPremium || false);
+  const [isPremium, setIsPremium] = useState<boolean | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mobileViewList = !activeConv;
@@ -45,7 +45,7 @@ function ChatContent() {
 
   // Poll Conversations
   useEffect(() => {
-    if (!isPremium) return;
+    if (isPremium !== true) return;
     
     const fetchConvs = async () => {
       try {
@@ -159,11 +159,11 @@ function ChatContent() {
     return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || isPremium === null) {
     return <div className="flex-center" style={{ height: '60vh' }}><Loader2 size={32} className="spin" color="var(--primary)" /></div>;
   }
 
-  if (!isPremium) {
+  if (isPremium === false) {
     return (
       <div className="flex-center" style={{ height: '60vh', flexDirection: 'column', textAlign: 'center' }}>
         <MessageSquare size={48} color="var(--text-3)" style={{ marginBottom: '1rem', opacity: 0.5 }} />

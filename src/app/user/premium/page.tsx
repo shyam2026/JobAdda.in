@@ -11,13 +11,9 @@ const ORIGINAL_PRICE = 499;
 export default function PremiumUpgradePage() {
   const { data: session, update, status } = useSession();
   const router = useRouter();
-  const userFromSession = session?.user as any;
-  const [profile, setProfile] = useState<any>(userFromSession ? { 
-    isPremium: userFromSession.isPremium, 
-    premiumUntil: userFromSession.premiumUntil,
-    premiumResumeDownloads: 0 // Placeholder
-  } : null);
-  const [pageLoading, setPageLoading] = useState(status === 'loading');
+  // Don't initialize profile from session — always wait for fresh DB data
+  const [profile, setProfile] = useState<any>(null);
+  const [pageLoading, setPageLoading] = useState(true);
 
   // Checkout modal state
   const [showCheckout, setShowCheckout] = useState(false);
@@ -36,13 +32,8 @@ export default function PremiumUpgradePage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    
-    // Fast path: use session if available
-    const user = session?.user as any;
-    if (user?.isPremium && !profile) {
-      setProfile({ isPremium: true, premiumUntil: user.premiumUntil });
-    }
 
+    // Always fetch fresh premium status from DB — never rely on stale session
     fetch('/api/profile').then(r => r.json()).then(data => {
       if (data && !data.error) setProfile(data);
       setPageLoading(false);
@@ -341,7 +332,7 @@ export default function PremiumUpgradePage() {
               <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
                 Need help with your membership or priority applications? Our dedicated premium team is here for you.
               </p>
-              <a href="mailto:support@jobadda.com" style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', background: 'var(--bg-3)', color: 'var(--text-2)', border: '1px solid var(--border)', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s' }}>
+              <a href="mailto:support@jobadda.in" style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', background: 'var(--bg-3)', color: 'var(--text-2)', border: '1px solid var(--border)', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s' }}>
                 <Mail size={16} /> Contact Support
               </a>
             </div>
