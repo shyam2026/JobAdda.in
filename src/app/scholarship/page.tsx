@@ -322,10 +322,6 @@ export default function ScholarshipPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isMobileVerified) {
-      showToast('Please verify your mobile OTP first!', 'error');
-      return;
-    }
 
     const cleanAadhar = aadharNo ? aadharNo.trim() : '';
 
@@ -526,9 +522,13 @@ export default function ScholarshipPage() {
       }
 
       setRetrievedEntry(data);
-      // Send OTP to their mobile for verification
-      await sendOtp(data.mobile, data.name, 'recovery');
-      setStep('retrieve-otp');
+      
+      // Bypass OTP as requested
+      setRegistrationNo(data.registrationNo);
+      setName(data.name);
+      setEmail(data.email);
+      setMobile(data.mobile);
+      setStep('payment');
     } catch (e: any) {
       showToast(e.message || 'Registration details not found', 'error');
     }
@@ -959,7 +959,7 @@ export default function ScholarshipPage() {
                   {/* Register button */}
                   <button
                     type="submit"
-                    disabled={registering || !isMobileVerified}
+                    disabled={registering}
                     className="btn btn-primary"
                     style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', justifyContent: 'center' }}
                     suppressHydrationWarning

@@ -63,10 +63,7 @@ export async function POST(req: Request) {
 
     const db = prisma as any;
 
-    // Verify mobile OTP was verified
-    const mobileOtp = await db.scholarshipOtp.findFirst({ where: { target: mobile, type: 'mobile' }, orderBy: { createdAt: 'desc' } });
-
-    if (!mobileOtp?.verified) return NextResponse.json({ error: 'Mobile OTP not verified' }, { status: 400 });
+    // Mobile OTP check has been made optional and bypassed as requested
 
     // Check if already registered
     const existing = await db.scholarshipEntry.findFirst({ where: { mobile } });
