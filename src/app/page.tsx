@@ -5,6 +5,9 @@ import { Search, MapPin, Briefcase, TrendingUp, ChevronDown, Star, Zap, Shield, 
 import Link from 'next/link';
 import { JobCard } from '@/features/jobs/components/JobCard';
 import { FAQSchema } from '@/components/StructuredData';
+import { EXAM_START_TIME, EXAM_END_TIME, getScholarshipPhase, ScholarshipPhase } from '@/lib/scholarship-schedule';
+
+const REGISTRATION_CUTOFF = new Date('2026-08-14T22:00:00+05:30').getTime();
 
 const WavingImageFlag = ({ width = 24, height = 16 }: { width?: number; height?: number }) => (
   <img 
@@ -63,6 +66,11 @@ export default function HomePage() {
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [scholarshipPhase, setScholarshipPhase] = useState<ScholarshipPhase>('REGISTRATION_OPEN');
+
+  useEffect(() => {
+    setScholarshipPhase(getScholarshipPhase());
+  }, []);
 
   useEffect(() => {
     // 1. Check local storage
@@ -454,19 +462,35 @@ export default function HomePage() {
             <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))', color: 'var(--primary)', marginBottom: '1.25rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
               <GraduationCap size={32} />
             </div>
+
             <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', width: '100%', position: 'relative' }}>
-              Scholarship Test 2026
+              {scholarshipPhase === 'RESULT_LIVE' ? 'Scholarship Results LIVE 🏆' : scholarshipPhase === 'RESULT_WAITING' ? 'Scholarship Result 2026' : 'Scholarship Test 2026'}
               <span style={{ display: 'inline-block', position: 'relative', top: '-6px' }}>
                 <WavingImageFlag width={22} height={15} />
               </span>
             </h3>
+
             <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', margin: '0 0 1.25rem' }}>
-              Showcase your talent on <strong style={{ color: 'var(--text-1)' }}>15th August 2026</strong>. Stand out & win career guidance with top scholarships!
+              {scholarshipPhase === 'RESULT_LIVE' ? (
+                <>Scholarship Exam results are now published! Check your <strong style={{ color: 'var(--text-1)' }}>All India Rank</strong> and score card.</>
+              ) : scholarshipPhase === 'RESULT_WAITING' ? (
+                <>Scholarship Test 2026 result will be published on <strong style={{ color: '#F97316' }}>20th August 2026</strong>. Stay tuned!</>
+              ) : (
+                <>Showcase your talent on <strong style={{ color: 'var(--text-1)' }}>15th August 2026</strong>. Stand out & win career guidance with top scholarships!</>
+              )}
             </p>
             
             {/* Feature highlights */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left', margin: '0 0 1.5rem', padding: '1rem', borderRadius: '14px', background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
-              {[
+              {scholarshipPhase === 'RESULT_LIVE' || scholarshipPhase === 'RESULT_WAITING' ? [
+                { icon: '📅', text: 'Official Result Date: 20th August 2026' },
+                { icon: '🏆', text: 'Rank #1 to #300 Prize Allocations' }
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.82rem', color: 'var(--text-2)', fontWeight: 600 }}>
+                  <span style={{ fontSize: '1rem' }}>{item.icon}</span>
+                  <span>{item.text}</span>
+                </div>
+              )) : [
                 { icon: '📝', text: '150 MCQs • 150 Minutes' },
                 { icon: '🏆', text: 'Win scholarships up to ₹15,000' }
               ].map((item, i) => (
@@ -479,12 +503,41 @@ export default function HomePage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
               <Link 
-                href="/scholarship" 
+                href={
+                  scholarshipPhase === 'RESULT_LIVE' || scholarshipPhase === 'RESULT_WAITING'
+                    ? '/scholarship/result'
+                    : scholarshipPhase === 'EXAM_LIVE' || scholarshipPhase === 'REGISTRATION_CLOSED'
+                    ? '/scholarship/exam'
+                    : '/scholarship'
+                } 
                 onClick={() => { setShowPopup(false); }}
                 className="btn btn-primary" 
-                style={{ width: '100%', padding: '0.9rem', justifyContent: 'center', fontWeight: 800 }}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.9rem', 
+                  justifyContent: 'center', 
+                  fontWeight: 800,
+                  background: scholarshipPhase === 'RESULT_LIVE' 
+                    ? 'linear-gradient(135deg, #3b82f6, #6366f1)' 
+                    : scholarshipPhase === 'EXAM_LIVE' 
+                    ? 'linear-gradient(135deg, #10b981, #059669)' 
+                    : undefined,
+                  boxShadow: scholarshipPhase === 'RESULT_LIVE'
+                    ? '0 8px 24px rgba(59,130,246,0.35)'
+                    : scholarshipPhase === 'EXAM_LIVE'
+                    ? '0 8px 24px rgba(16,185,129,0.35)'
+                    : undefined
+                }}
               >
-                Register Now →
+                {scholarshipPhase === 'RESULT_LIVE'
+                  ? '🏆 CHECK RESULT NOW →'
+                  : scholarshipPhase === 'RESULT_WAITING'
+                  ? 'Check Result Status →'
+                  : scholarshipPhase === 'EXAM_LIVE'
+                  ? '🔥 TAKE EXAM NOW →'
+                  : scholarshipPhase === 'REGISTRATION_CLOSED'
+                  ? 'Enter Scholarship Exam Portal →'
+                  : 'Register Now →'}
               </Link>
               <button 
                 onClick={() => { setShowPopup(false); }} 

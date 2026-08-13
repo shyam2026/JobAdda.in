@@ -70,7 +70,7 @@ export async function GET(req: Request) {
 
   const rankMap: Record<string, number> = {};
   allSubmitted.forEach((e: any, idx: number) => {
-    rankMap[e.registrationNo] = idx + 1;
+    rankMap[e.registrationNo] = idx + 101;
   });
 
   // Attach rank to original entries

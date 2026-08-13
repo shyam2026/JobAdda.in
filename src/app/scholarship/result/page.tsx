@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Trophy, Search, Loader2, Mail, ExternalLink, Sparkles, HelpCircle, ArrowLeft, CheckCircle2, AlertCircle, Star, BookOpen, Target } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Search, Loader2, Mail, ExternalLink, Sparkles, HelpCircle, ArrowLeft, CheckCircle2, AlertCircle, Star, BookOpen, Target, Calendar, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { getScholarshipPhase, ScholarshipPhase } from '@/lib/scholarship-schedule';
 
 function maskMobile(mobile: string) {
   if (!mobile) return '';
@@ -23,6 +24,13 @@ export default function ScholarshipResultPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<ScholarshipPhase>('REGISTRATION_OPEN');
+
+  useEffect(() => {
+    setPhase(getScholarshipPhase());
+  }, []);
+
+  const isResultLive = phase === 'RESULT_LIVE';
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,11 +46,17 @@ export default function ScholarshipResultPage() {
   };
 
   const getPrizeDetails = (rank: number) => {
-    if (rank === 1) return { title: '1st Rank Winner!', prize: '₹15,000 Cash Scholarship', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.3)', emoji: '🥇' };
-    if (rank === 2) return { title: '2nd Rank Winner!', prize: '₹12,000 Cash Scholarship', color: '#94A3B8', bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.25)', emoji: '🥈' };
-    if (rank === 3) return { title: '3rd Rank Winner!', prize: '₹10,000 Cash Scholarship', color: '#CD7F32', bg: 'rgba(205,127,50,0.08)', border: 'rgba(205,127,50,0.3)', emoji: '🥉' };
-    if (rank >= 4 && rank <= 10) return { title: `${rank}th Rank Winner!`, prize: '₹5,000 Cash Scholarship', color: '#6366F1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.25)', emoji: '🏅' };
-    if (rank >= 11 && rank <= 200) return { title: `${rank}th Rank Holder!`, prize: 'Flat ₹15,000 Course Discount', description: 'Get Flat ₹15,000 Discount on Data Analyst & Business Analyst Courses, offered by Microsoft Education Partner.', color: '#10B981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.25)', emoji: '🏅' };
+    if (rank >= 101 && rank <= 300) {
+      return {
+        title: `Rank #${rank} Qualifier!`,
+        prize: 'Flat ₹15,000 Course Discount',
+        description: 'Get Flat ₹15,000 Discount on Data Analyst & Business Analyst Courses, offered by Microsoft Education Partner.',
+        color: '#10B981',
+        bg: 'rgba(16,185,129,0.08)',
+        border: 'rgba(16,185,129,0.25)',
+        emoji: '🎓',
+      };
+    }
     return null;
   };
 
@@ -70,7 +84,7 @@ export default function ScholarshipResultPage() {
         .prize-trophy { position: absolute; right: -12px; bottom: -12px; opacity: 0.08; }
         .not-submitted { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 20px; padding: 2.5rem 2rem; text-align: center; }
         .support-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 20px; padding: 1.75rem; margin-top: 1.5rem; }
-        .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem; }
+        .announcement-card { background: linear-gradient(145deg, var(--bg-2) 0%, #0f172a 100%); border: 1px solid rgba(249,115,22,0.3); border-radius: 24px; padding: 2.5rem 2rem; text-align: center; margin-bottom: 2rem; boxShadow: 0 20px 40px rgba(0,0,0,0.3); }
         @media (max-width: 480px) {
           .result-container { padding: 6rem 1rem 3rem; }
           .score-grid { grid-template-columns: 1fr; }
@@ -93,25 +107,71 @@ export default function ScholarshipResultPage() {
             <span style={{ color: 'var(--text-1)' }}>Test </span>
             <span style={{ color: '#22C55E' }}>Result</span>
           </h1>
-          <p className="result-sub">Enter your Registration ID or Mobile Number to check your score & rank</p>
+          <p className="result-sub">
+            {isResultLive 
+              ? 'Enter your Registration ID or Mobile Number to check your score & rank' 
+              : 'Official Results for Scholarship Exam 2026'}
+          </p>
         </div>
 
-        {/* Search */}
-        <div className="search-card">
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Target size={20} color="var(--primary-light)" /> Check Your Result
-          </h2>
-          <form onSubmit={handleSearch} className="search-form">
-            <input className="search-input" type="text" value={lookup} onChange={e => setLookup(e.target.value)} placeholder="e.g. JA-XYZ12345 or 9876543210" required />
-            <button type="submit" disabled={loading} className="search-btn">
-              {loading ? <Loader2 size={18} className="animate-spin" /> : <><Search size={18} /> Search</>}
-            </button>
-          </form>
-          {error && <div className="error-box"><AlertCircle size={16} />{error}</div>}
-        </div>
+        {/* Before Aug 20 Announcement Banner */}
+        {!isResultLive ? (
+          <div className="announcement-card">
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '20px', background: 'rgba(249,115,22,0.12)', color: '#F97316', marginBottom: '1.25rem', border: '1px solid rgba(249,115,22,0.3)' }}>
+              <Calendar size={32} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-1)', margin: '0 0 0.75rem' }}>
+              📢 Result Announcement Notice
+            </h2>
 
-        {/* Results */}
-        {result && (
+            <div style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.25)', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+              <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#F97316', margin: '0 0 0.4rem' }}>
+                Scholarship Test 2026 Result will be published on 20th August 2026.
+              </p>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>
+                Evaluation & Merit Rank processing for all exam submissions (15th August 2026) is currently under progress. Top rank holders will be awarded scholarships as per official merit terms.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', textAlign: 'left', marginBottom: '1.5rem' }}>
+              <div style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Exam Status</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#22C55E', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <CheckCircle2 size={16} /> Completed (15th Aug)
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Result Publication</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#F97316', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Clock size={16} /> 20th August 2026
+                </div>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>
+              Return to this page on <strong style={{ color: 'var(--text-1)' }}>20th August 2026</strong> to enter your Registration ID or Mobile Number and check your score card live.
+            </p>
+          </div>
+        ) : (
+          /* Live Result Search Form */
+          <div className="search-card">
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Target size={20} color="var(--primary-light)" /> Check Your Result
+            </h2>
+            <form onSubmit={handleSearch} className="search-form">
+              <input className="search-input" type="text" value={lookup} onChange={e => setLookup(e.target.value)} placeholder="e.g. JA-XYZ12345 or 9876543210" required />
+              <button type="submit" disabled={loading} className="search-btn">
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <><Search size={18} /> Search</>}
+              </button>
+            </form>
+            {error && <div className="error-box"><AlertCircle size={16} />{error}</div>}
+          </div>
+        )}
+
+        {/* Results Card */}
+        {isResultLive && result && (
           <>
             {!result.examSubmitted ? (
               <div className="not-submitted">

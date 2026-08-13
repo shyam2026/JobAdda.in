@@ -49,9 +49,15 @@ async function sendRegistrationSMS(to: string, name: string, regNo: string) {
   }
 }
 
+const REGISTRATION_CUTOFF = new Date('2026-08-14T22:00:00+05:30').getTime();
+
 // POST → register new applicant
 export async function POST(req: Request) {
   try {
+    if (Date.now() > REGISTRATION_CUTOFF) {
+      return NextResponse.json({ error: 'Scholarship registration closed on 14th August 2026 at 10:00 PM.' }, { status: 400 });
+    }
+
     const body = await req.json();
     const { name, fatherName, aadharNo, mobile, email, district, state, lastQualification, marksPercent, careerGoal, passportImage } = body;
 

@@ -4,11 +4,11 @@ import { Award, BookOpen, Clock, Check, ArrowLeft, FileText, Scale, Shield, Aler
 import Link from 'next/link';
 
 const AWARDS = [
-  { emoji: '🥇', rank: '1st Rank', prize: '₹15,000 Scholarship', hi_rank: 'पहला स्थान' },
-  { emoji: '🥈', rank: '2nd Rank', prize: '₹12,000 Scholarship', hi_rank: 'दूसरा स्थान' },
-  { emoji: '🥉', rank: '3rd Rank', prize: '₹10,000 Scholarship', hi_rank: 'तीसरा स्थान' },
-  { emoji: '🏅', rank: '4th–10th Rank', prize: '₹5,000 Scholarship each', hi_rank: '4थी से 10वीं रैंक' },
-  { emoji: '🏅', rank: '11th–200th Rank', prize: 'Flat ₹15,000 Course Discount', hi_rank: '11वीं से 200वीं रैंक' },
+  { emoji: '🥇', rank: '1st Rank Winner', prize: '₹15,000 Scholarship', hi_rank: 'रैंक #1 (प्रथम स्थान)' },
+  { emoji: '🥈', rank: '2nd Rank Winner', prize: '₹12,000 Scholarship', hi_rank: 'रैंक #2 (द्वितीय स्थान)' },
+  { emoji: '🥉', rank: '3rd Rank Winner', prize: '₹10,000 Scholarship', hi_rank: 'रैंक #3 (तृतीय स्थान)' },
+  { emoji: '🏅', rank: 'Rank 4th–10th Winners', prize: '₹5,000 Scholarship each', hi_rank: 'रैंक #4 से #10' },
+  { emoji: '🏅', rank: 'Rank 11th–300th Holders', prize: 'Flat ₹15,000 Course Discount', hi_rank: 'रैंक #11 से #300' },
 ];
 
 const EXAM_SUBJECTS = [
@@ -57,7 +57,7 @@ const TERMS_EN = {
   },
   awards: {
     title: "Scholarship Awards",
-    note: "11th–200th rank holders get a Flat ₹15,000 Discount on Data Analyst & Business Analyst Courses, offered by Microsoft Education Partner."
+    note: "Rank 11th–300th holders get a Flat ₹15,000 Discount on Data Analyst & Business Analyst Courses, offered by Microsoft Education Partner."
   },
   payment: {
     title: "Scholarship Payment Terms",
@@ -149,7 +149,7 @@ const TERMS_HI = {
   },
   awards: {
     title: "स्कॉलरशिप पुरस्कार (Scholarship Awards)",
-    note: "11वीं से 200वीं रैंक प्राप्त करने वालों को माइक्रोसॉफ्ट एजुकेशन पार्टनर द्वारा प्रस्तुत डेटा एनालिस्ट और बिजनेस एनालिस्ट कोर्सेज पर ₹15,000 की फ्लैट छूट दी जाएगी।"
+    note: "रैंक #11 से #300 प्राप्त करने वालों को माइक्रोसॉफ्ट एजुकेशन पार्टनर द्वारा प्रस्तुत डेटा एनालिस्ट और बिजनेस एनालिस्ट कोर्सेज पर ₹15,000 की फ्लैट छूट दी जाएगी।"
   },
   payment: {
     title: "स्कॉलरशिप भुगतान की शर्तें (Payment Terms)",

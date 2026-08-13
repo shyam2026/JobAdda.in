@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { SCHOLARSHIP_QUESTIONS } from '@/lib/scholarship-questions';
 
+import { EXAM_START_TIME, EXAM_END_TIME } from '@/lib/scholarship-schedule';
+
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -20,6 +22,15 @@ export async function POST(req: Request) {
     }
 
     const isLocal = process.env.NODE_ENV === 'development';
+
+    // Time window check (unless local debug bypass)
+    const now = Date.now();
+    if (now < EXAM_START_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
+      return NextResponse.json({ error: 'Scholarship Exam starts on 15th August 2026 at 6:00 AM IST.' }, { status: 403 });
+    }
+    if (now > EXAM_END_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
+      return NextResponse.json({ error: 'Scholarship Exam portal closed on 15th August 2026 at 11:00 PM IST.' }, { status: 403 });
+    }
 
     if (isLocal && registrationNo === 'JA-DEBUG') {
       // Return template questions directly for local test mode

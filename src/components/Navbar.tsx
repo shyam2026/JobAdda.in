@@ -25,14 +25,18 @@ const WavingImageFlag = ({ width = 24, height = 16 }: { width?: number; height?:
   />
 );
 
+import { getScholarshipPhase } from '@/lib/scholarship-schedule';
+
 export default function Navbar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [navProfileImage, setNavProfileImage] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [scholarshipPhase, setScholarshipPhase] = useState<'REGISTRATION_OPEN' | 'REGISTRATION_CLOSED' | 'EXAM_LIVE' | 'RESULT_WAITING' | 'RESULT_LIVE'>('REGISTRATION_OPEN');
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -51,9 +55,12 @@ export default function Navbar() {
     setProfileOpen(false);
   }, [pathname]);
 
-  const [isPremium, setIsPremium] = useState(false);
+  // Check scholarship schedule phase
+  useEffect(() => {
+    setScholarshipPhase(getScholarshipPhase());
+  }, []);
 
-  // Fetch unread notifications count
+  // Fetch unread notifications count & profile data
   useEffect(() => {
     if (status === 'authenticated') {
       fetch('/api/user/notifications')
@@ -65,7 +72,6 @@ export default function Navbar() {
         })
         .catch(() => { });
 
-      // Fetch profile data (image + premium status)
       fetch('/api/profile')
         .then(res => res.json())
         .then(data => { 
@@ -76,10 +82,17 @@ export default function Navbar() {
     }
   }, [status]);
 
+  const isPostExam = scholarshipPhase === 'RESULT_WAITING' || scholarshipPhase === 'RESULT_LIVE';
+
   const navLinks = [
     { href: '/jobs', label: 'Find Jobs', icon: Search },
     { href: '/companies', label: 'Companies', icon: Building2 },
-    { href: '/scholarship', label: 'Scholarship 2026', icon: GraduationCap, highlight: true}, 
+    { 
+      href: isPostExam ? '/scholarship/result' : '/scholarship', 
+      label: isPostExam ? 'Scholarship Result' : 'Scholarship 2026', 
+      icon: GraduationCap, 
+      highlight: true
+    }, 
     { href: session ? '/user/resume' : '/resume', label: 'Resume', icon: FileText },
     { href: session ? '/user/refer' : '/refer', label: 'Refer & Earn', icon: Gift },
   ];

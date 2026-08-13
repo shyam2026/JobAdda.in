@@ -95,7 +95,7 @@ export async function GET(req: Request) {
       }
     });
 
-    const rank = higherScoreCount + 1;
+    const rank = higherScoreCount + 101;
 
     return NextResponse.json({
       success: true,

@@ -15,7 +15,39 @@ function isSameDay(d1: Date, d2: Date) {
     d1.getDate() === d2.getDate();
 }
 
-async function sendEmail(to: string, otp: string) {
+async function sendSMS(to: string, name: string, otp: string) {
+  const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'Candidate';
+  const msgText = `Dear ${cleanName} Your OTP for JobAdda.in Scholarship Registration is ${otp}. Please do not share this OTP with anyone. This OTP is valid for 10 Minutes. Team JobAdda.in`;
+
+  const username = process.env.SMS_USERNAME || 'gapsms01.trans';
+  const password = process.env.SMS_PASSWORD || 'f_vRA68q';
+  const from = process.env.SMS_FROM || 'JOADIN';
+  const dltContentId = process.env.SMS_DLT_CONTENT_ID || '1707178185523758730';
+  const dltPrincipalEntityId = process.env.SMS_DLT_PRINCIPAL_ENTITY_ID || '1701178116898320542';
+
+  const url = new URL('https://pgapi.sparc.smartping.io/fe/api/v1/send');
+  url.searchParams.set('username', username);
+  url.searchParams.set('password', password);
+  url.searchParams.set('unicode', 'false');
+  url.searchParams.set('from', from);
+  url.searchParams.set('text', msgText);
+  url.searchParams.set('to', to);
+  url.searchParams.set('dltContentId', dltContentId);
+  url.searchParams.set('dltPrincipalEntityId', dltPrincipalEntityId);
+
+  try {
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: { 'accept': 'application/json' }
+    });
+    const data = await res.text();
+    console.log(`[EXAM SMS OTP - SENT] to: ${to}, response: ${data}`);
+  } catch (error) {
+    console.error(`[EXAM SMS OTP - ERROR] Failed to send SMS to ${to}:`, error);
+  }
+}
+
+async function sendEmail(to: string, name: string, otp: string) {
   const host = process.env.SMTP_HOST;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
@@ -31,18 +63,31 @@ async function sendEmail(to: string, otp: string) {
       port: Number(process.env.SMTP_PORT || 587),
       auth: { user, pass },
     });
+    const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'Candidate';
     await transporter.sendMail({
       from: `"JobAdda Exam" <${user}>`,
       to,
-      subject: 'Your OTP for Scholarship Exam Access',
-      html: `<p>Your OTP to log in and start the JobAdda Scholarship Exam is: <strong style="font-size:24px;letter-spacing:4px">${otp}</strong></p><p>Valid for ${OTP_EXPIRY_MIN} minutes. Do not share this with anyone.</p>`,
+      subject: 'Your OTP for Scholarship Exam Access - JobAdda.in',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #6366f1; text-align: center;">JobAdda.in Scholarship Exam</h2>
+          <p>Dear <strong>${cleanName}</strong>,</p>
+          <p>Your 6-digit OTP code to log in and start your Scholarship Exam is:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #6366f1; background: #f0f0ff; padding: 12px 24px; border-radius: 8px; border: 1px solid #c7d2fe;">${otp}</span>
+          </div>
+          <p style="color: #555;">This OTP is valid for <strong>${OTP_EXPIRY_MIN} minutes</strong>. You can use this code received via Email or SMS to verify and access your exam.</p>
+          <p style="color: #888; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">If you did not request this OTP, please ignore this email.</p>
+        </div>
+      `,
     });
     console.log(`[EXAM OTP - SENT] Sent email to: ${to}`);
   } catch (error) {
     console.error(`[EXAM OTP - EMAIL ERROR] Failed to send email to ${to}:`, error);
-    console.log(`[EXAM OTP - FALLBACK] Email: ${to} OTP: ${otp} (SMTP error fallback)`);
   }
 }
+
+import { EXAM_START_TIME, EXAM_END_TIME } from '@/lib/scholarship-schedule';
 
 // POST /api/scholarship/exam/verify
 export async function POST(req: Request) {
@@ -50,6 +95,15 @@ export async function POST(req: Request) {
     const { registrationNo, mobile, action, otp } = await req.json();
     if (!registrationNo || !mobile || !action) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+
+    const isLocal = process.env.NODE_ENV === 'development';
+    const nowTime = Date.now();
+    if (nowTime < EXAM_START_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
+      return NextResponse.json({ error: 'Scholarship Exam starts on 15th August 2026 at 6:00 AM IST.' }, { status: 403 });
+    }
+    if (nowTime > EXAM_END_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
+      return NextResponse.json({ error: 'Scholarship Exam portal closed on 15th August 2026 at 11:00 PM IST.' }, { status: 403 });
     }
 
     const db = prisma as any;
@@ -104,13 +158,16 @@ export async function POST(req: Request) {
         });
       }
 
-      // Print to console (critical for browser test agent retrieval)
-      console.log(`[EXAM OTP] Mobile: ${mobile} OTP: ${newOtp}`);
+      // Print to console (critical for server debugging)
+      console.log(`[EXAM OTP] Mobile: ${mobile} Email: ${entry.email} OTP: ${newOtp}`);
 
-      // Send via email as well as fallback
-      await sendEmail(entry.email, newOtp);
+      // Send via SMS and Email simultaneously
+      await Promise.allSettled([
+        sendSMS(mobile, entry.name, newOtp),
+        sendEmail(entry.email, entry.name, newOtp)
+      ]);
 
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, message: 'OTP sent to mobile and email simultaneously.' });
     }
 
     if (action === 'verify') {

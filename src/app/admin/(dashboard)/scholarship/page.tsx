@@ -390,9 +390,9 @@ export default function AdminScholarshipPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {entries.map((entry) => {
             const getRankBadgeStyle = (rank: number) => {
-              if (rank === 1) return { background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', color: '#000', shadow: 'rgba(217, 119, 6, 0.25)' };
-              if (rank === 2) return { background: 'linear-gradient(135deg, #cbd5e1 0%, #64748b 100%)', color: '#000', shadow: 'rgba(100, 116, 139, 0.25)' };
-              if (rank === 3) return { background: 'linear-gradient(135deg, #fed7aa 0%, #ea580c 100%)', color: '#fff', shadow: 'rgba(234, 88, 12, 0.25)' };
+              if (rank === 101) return { background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', color: '#000', shadow: 'rgba(217, 119, 6, 0.25)' };
+              if (rank === 102) return { background: 'linear-gradient(135deg, #cbd5e1 0%, #64748b 100%)', color: '#000', shadow: 'rgba(100, 116, 139, 0.25)' };
+              if (rank === 103) return { background: 'linear-gradient(135deg, #fed7aa 0%, #ea580c 100%)', color: '#fff', shadow: 'rgba(234, 88, 12, 0.25)' };
               return { background: 'rgba(99, 102, 241, 0.15)', color: 'var(--primary-light)', shadow: 'none' };
             };
             const rankStyle = entry.rank ? getRankBadgeStyle(entry.rank) : null;
@@ -503,7 +503,7 @@ export default function AdminScholarshipPage() {
                             alignItems: 'center',
                             gap: '0.1rem'
                           }}>
-                            {entry.rank === 1 ? '👑 Rank #1' : entry.rank === 2 ? '🥈 Rank #2' : entry.rank === 3 ? '🥉 Rank #3' : `Rank #${entry.rank}`}
+                            {entry.rank === 101 ? '👑 Rank #101' : entry.rank === 102 ? '🥈 Rank #102' : entry.rank === 103 ? '🥉 Rank #103' : `Rank #${entry.rank}`}
                           </span>
                         )}
                       </div>

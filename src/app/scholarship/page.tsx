@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { INDIA_STATES } from '@/lib/india-states';
 import WavingIndianFlag from '@/components/WavingIndianFlag';
 import { useSession } from 'next-auth/react';
+import { REGISTRATION_CUTOFF, EXAM_START_TIME, EXAM_END_TIME } from '@/lib/scholarship-schedule';
 
 declare const Razorpay: any;
 
@@ -53,6 +54,30 @@ export default function ScholarshipPage() {
   // Entrance animation states
   const [showHeader, setShowHeader] = useState(false);
   const [showForm, setShowForm] = useState(false);
+
+  // Time gating states
+  const [isRegClosed, setIsRegClosed] = useState(false);
+  const [isExamLive, setIsExamLive] = useState(false);
+
+  useEffect(() => {
+    const checkSchedule = () => {
+      let isLocal = false;
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') isLocal = true;
+      }
+      const now = Date.now();
+      if (now >= REGISTRATION_CUTOFF && !isLocal) {
+        setIsRegClosed(true);
+      }
+      if (now >= EXAM_START_TIME && now <= EXAM_END_TIME) {
+        setIsExamLive(true);
+      }
+    };
+    checkSchedule();
+    const timer = setInterval(checkSchedule, 15000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const hTimer = setTimeout(() => setShowHeader(true), 1000);
@@ -672,11 +697,54 @@ export default function ScholarshipPage() {
               <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>Win ₹15,000</span>
             </div>
           </div>
+
+          {/* Prominent Exam Portal Link */}
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <Link 
+              href="/scholarship/exam" 
+              className="btn btn-primary btn-lg"
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                background: isExamLive ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                fontSize: '1.05rem',
+                fontWeight: 900,
+                padding: '0.9rem 1.5rem',
+                boxShadow: isExamLive ? '0 10px 30px rgba(16,185,129,0.35)' : '0 10px 30px rgba(99,102,241,0.35)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem'
+              }}
+            >
+              <Lock size={18} />
+              <span>{isExamLive ? '🔥 EXAM PORTAL IS LIVE! TAKE EXAM NOW →' : 'Enter Scholarship Exam Portal →'}</span>
+            </Link>
+          </div>
         </div>
 
         <div className={`card-form-animated ${showForm ? 'visible' : ''}`}>
           {step === 'form' && (
             <>
+              {isRegClosed ? (
+              <div className="card card-p" style={{ textAlign: 'center', padding: '3rem 2rem', borderRadius: '20px' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '1px solid rgba(239,68,68,0.25)' }}>
+                  <Clock size={32} color="#EF4444" />
+                </div>
+                <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Scholarship Registration Closed</h3>
+                <p style={{ color: 'var(--text-3)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.75rem', maxWidth: '480px', margin: '0 auto 1.75rem' }}>
+                  Registration for the Scholarship Test 2026 closed on <strong>14th August 2026 at 10:00 PM IST</strong>. New applications are no longer accepted.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', alignItems: 'center', maxWidth: '400px', margin: '0 auto' }}>
+                  <Link href="/scholarship/exam" className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center', fontWeight: 800, padding: '0.9rem' }}>
+                    Enter Exam Portal →
+                  </Link>
+                  <button onClick={() => setStep('retrieve')} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', padding: '0.8rem' }}>
+                    Already Registered? Pay Pending Fee / Retrieve ID
+                  </button>
+                </div>
+              </div>
+            ) : (
               <div className="card card-p">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
                   <h3 style={{ margin: 0, fontWeight: 800 }}>Registration Form</h3>
@@ -971,6 +1039,7 @@ export default function ScholarshipPage() {
                   <InlineNotification toast={toast} onClose={() => setToast(null)} />
                 </form>
               </div>
+            )}
 
               {/* Support and Already Registered cards below the main form */}
               <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>

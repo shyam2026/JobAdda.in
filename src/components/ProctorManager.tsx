@@ -267,7 +267,8 @@ export default function ProctorManager({
     };
 
     const handleBlur = () => {
-      // Additional check for window losing focus (some browsers)
+      // Ignore blur on mobile devices or when element focus shifts to avoid false warnings on touch/inputs
+      if (isMobileDevice) return;
       if (!document.hidden) {
         addViolation('TAB_SWITCH', 'Browser window lost focus');
         flashWarning(`⚠️ Window focus lost! Violation ${violationsRef.current}/${maxViolations}.`, 4000);
@@ -281,18 +282,50 @@ export default function ProctorManager({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleBlur);
     };
-  }, [addViolation, flashWarning, maxViolations]);
+  }, [addViolation, flashWarning, maxViolations, isMobileDevice]);
 
-  // ──────────────── 3. Fullscreen Enforcement ────────────────
-  useEffect(() => {
-    if (isMobileDevice) {
-      setIsFullscreen(true);
-      setShowFullscreenPrompt(false);
-      return;
+  // ──────────────── 3. Fullscreen Enforcement (Mobile + PC) ────────────────
+  const requestFullscreen = useCallback(() => {
+    try {
+      const el = document.documentElement as any;
+      const req =
+        el.requestFullscreen ||
+        el.webkitRequestFullscreen ||
+        el.webkitRequestIsFullScreen ||
+        el.mozRequestFullScreen ||
+        el.msRequestFullscreen;
+
+      if (req) {
+        const promise = req.call(el);
+        if (promise && typeof promise.then === 'function') {
+          promise
+            .then(() => {
+              setIsFullscreen(true);
+              setShowFullscreenPrompt(false);
+            })
+            .catch(() => {
+              setShowFullscreenPrompt(true);
+            });
+        } else {
+          setIsFullscreen(true);
+          setShowFullscreenPrompt(false);
+        }
+      } else {
+        setShowFullscreenPrompt(true);
+      }
+    } catch {
+      setShowFullscreenPrompt(true);
     }
+  }, []);
 
+  useEffect(() => {
     const handleFullscreenChange = () => {
-      const isFull = !!document.fullscreenElement;
+      const isFull = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
       setIsFullscreen(isFull);
       if (!isFull) {
         setShowFullscreenPrompt(true);
@@ -303,31 +336,20 @@ export default function ProctorManager({
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-    // Auto-request fullscreen on mount
+    // Auto-request fullscreen on mount for mobile & PC
     requestFullscreen();
 
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
-  }, [addViolation, isMobileDevice]);
-
-  const requestFullscreen = () => {
-    if (isMobileDevice) return;
-    try {
-      const el = document.documentElement;
-      if (el.requestFullscreen) {
-        el.requestFullscreen().then(() => {
-          setIsFullscreen(true);
-          setShowFullscreenPrompt(false);
-        }).catch(() => {
-          setShowFullscreenPrompt(true);
-        });
-      }
-    } catch {
-      setShowFullscreenPrompt(true);
-    }
-  };
+  }, [addViolation, requestFullscreen]);
 
   // ──────────────── 4. Webcam: Start Camera ────────────────
   useEffect(() => {

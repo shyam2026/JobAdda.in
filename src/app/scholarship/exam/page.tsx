@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import ProctorManager from '@/components/ProctorManager';
 
+import { EXAM_START_TIME, EXAM_END_TIME } from '@/lib/scholarship-schedule';
+import Link from 'next/link';
+
 interface Question {
   id: number;
   subject: string;
@@ -52,17 +55,33 @@ export default function ScholarshipExamPage() {
   // Ref for auto-submit safety
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Local testing state
+  // Local testing & time gating state
   const [isLocalHost, setIsLocalHost] = useState(false);
+  const [examStatus, setExamStatus] = useState<'BEFORE' | 'ACTIVE' | 'AFTER'>('ACTIVE');
 
-  // Restore state from localStorage if starting/active
+  // Check localhost & exam window schedule
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        setIsLocalHost(true);
+    const checkSchedule = () => {
+      let isLocal = false;
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          isLocal = true;
+          setIsLocalHost(true);
+        }
       }
-    }
+      const now = Date.now();
+      if (now < EXAM_START_TIME && !isLocal) {
+        setExamStatus('BEFORE');
+      } else if (now > EXAM_END_TIME && !isLocal) {
+        setExamStatus('AFTER');
+      } else {
+        setExamStatus('ACTIVE');
+      }
+    };
+    checkSchedule();
+    const interval = setInterval(checkSchedule, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   // Restore state from localStorage if starting/active
@@ -155,6 +174,26 @@ export default function ScholarshipExamPage() {
     }
   };
 
+  const triggerDeviceFullscreen = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    const el = document.documentElement as any;
+    if (!el) return;
+    const req =
+      el.requestFullscreen ||
+      el.webkitRequestFullscreen ||
+      el.webkitRequestIsFullScreen ||
+      el.mozRequestFullScreen ||
+      el.msRequestFullscreen;
+    if (req) {
+      try {
+        const p = req.call(el);
+        if (p && typeof p.then === 'function') {
+          p.catch(() => {});
+        }
+      } catch (e) {}
+    }
+  }, []);
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -170,7 +209,7 @@ export default function ScholarshipExamPage() {
       const data = await res.json();
       if (res.ok) {
         setOtpSent(true);
-        setSuccessMsg('OTP sent successfully to your registered mobile and email.');
+        setSuccessMsg('OTP sent successfully to your registered mobile and email. You can use the code received via SMS or email.');
       } else {
         setError(data.error || 'Verification failed.');
       }
@@ -187,6 +226,9 @@ export default function ScholarshipExamPage() {
     setSuccessMsg('');
     setLoading(true);
 
+    // Request fullscreen on user gesture (submitting OTP)
+    triggerDeviceFullscreen();
+
     try {
       const res = await fetch('/api/scholarship/exam/verify', {
         method: 'POST',
@@ -202,6 +244,7 @@ export default function ScholarshipExamPage() {
           setStudentName(detailData.name);
         }
         setStep('rules');
+        setTimeout(() => triggerDeviceFullscreen(), 100);
       } else {
         setError(data.error || 'Invalid OTP.');
       }
@@ -217,6 +260,9 @@ export default function ScholarshipExamPage() {
     setError('');
     setLoading(true);
 
+    // Request fullscreen on user gesture (clicking Start Exam)
+    triggerDeviceFullscreen();
+
     const success = await fetchQuestions(registrationNo, mobile);
     if (success) {
       setStep('exam');
@@ -227,6 +273,7 @@ export default function ScholarshipExamPage() {
       localStorage.setItem('jobadda_exam_mobile', mobile);
       localStorage.setItem('jobadda_exam_step', 'exam');
       setTimeLeft(150 * 60);
+      setTimeout(() => triggerDeviceFullscreen(), 100);
     }
     setLoading(false);
   };
@@ -489,141 +536,200 @@ export default function ScholarshipExamPage() {
         
         {/* STEP 1: VERIFICATION SCREEN */}
         {step === 'verify' && (
-          <div className="card exam-verify-card" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '1px solid rgba(99,102,241,0.2)' }}>
-                <Lock size={28} color="var(--primary)" />
+          examStatus === 'BEFORE' && !isLocalHost ? (
+            <div className="card exam-verify-card" style={{ width: '100%', maxWidth: '480px', padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.25rem', borderRadius: '24px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: 'rgba(249,115,22,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', border: '1px solid rgba(249,115,22,0.25)' }}>
+                <Clock size={32} color="#F97316" />
               </div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Access Verification</h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>Verify paid registration to start the exam</p>
+              <div>
+                <div style={{ display: 'inline-block', padding: '0.35rem 0.9rem', borderRadius: '9999px', backgroundColor: 'rgba(249,115,22,0.1)', color: '#F97316', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>
+                  EXAM SCHEDULED: 15TH AUGUST 2026
+                </div>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Exam Portal Opening Soon</h2>
+                <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
+                  The Scholarship Examination portal will activate on <strong>15th August 2026 at 6:00 AM IST</strong> and deactivate at <strong>11:00 PM IST</strong>.
+                </p>
+              </div>
+
+              <div style={{ background: 'var(--bg-3)', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-2)', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
+                  <Shield size={16} color="var(--primary-light)" />
+                  <span>Important Instructions</span>
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-3)', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                  <li>Keep your Registration ID (JA-XXXXXXXX) ready.</li>
+                  <li>Exam window: 6:00 AM to 11:00 PM IST on 15th August 2026.</li>
+                  <li>Total duration: 150 Minutes | 150 MCQs.</li>
+                </ul>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '0.5rem' }}>
+                <Link href="/" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '0.8rem' }}>
+                  Go to Homepage
+                </Link>
+                <Link href="/scholarship" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center', padding: '0.8rem' }}>
+                  Scholarship Page
+                </Link>
+              </div>
             </div>
-
-            {error && (
-              <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--danger)', fontSize: '0.8rem', borderRadius: '8px', display: 'flex', gap: '0.5rem' }}>
-                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
-                <span>{error}</span>
+          ) : examStatus === 'AFTER' && !isLocalHost ? (
+            <div className="card exam-verify-card" style={{ width: '100%', maxWidth: '480px', padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.25rem', borderRadius: '24px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', border: '1px solid rgba(239,68,68,0.25)' }}>
+                <AlertTriangle size={32} color="#EF4444" />
               </div>
-            )}
-
-            {successMsg && (
-              <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: 'var(--success)', fontSize: '0.8rem', borderRadius: '8px', display: 'flex', gap: '0.5rem' }}>
-                <CheckCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
-                <span>{successMsg}</span>
+              <div>
+                <div style={{ display: 'inline-block', padding: '0.35rem 0.9rem', borderRadius: '9999px', backgroundColor: 'rgba(239,68,68,0.1)', color: '#EF4444', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>
+                  EXAM CONCLUDED
+                </div>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Exam Portal Closed</h2>
+                <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
+                  The Scholarship Examination portal for 15th August 2026 closed at <strong>11:00 PM IST</strong>. No further exam submissions are accepted.
+                </p>
               </div>
-            )}
 
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <span className="label">Registration ID</span>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', fontWeight: 800 }}>JA-</span>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Enter 8-character Code"
-                      value={registrationNo.replace('JA-', '')}
-                      onChange={(e) => setRegistrationNo(`JA-${e.target.value.toUpperCase().trim()}`)}
-                      style={{ paddingLeft: '2.8rem' }}
-                    />
-                  </div>
-                </div>
-
-                <div className="input-group">
-                  <span className="label">Registered Mobile Number</span>
-                  <div style={{ position: 'relative' }}>
-                    <Phone size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-                    <input
-                      type="tel"
-                      required
-                      maxLength={10}
-                      placeholder="Enter 10-digit number"
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                      style={{ paddingLeft: '2.5rem' }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-primary"
-                  style={{ width: '100%', justifyContent: 'center', padding: '0.85rem' }}
-                >
-                  {loading ? (
-                    <RefreshCw className="animate-spin" size={18} />
-                  ) : (
-                    <>
-                      <span>Send OTP Code</span>
-                      <Send size={14} />
-                    </>
-                  )}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div className="input-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className="label">Enter OTP Code</span>
-                    <button
-                      type="button"
-                      onClick={() => setOtpSent(false)}
-                      style={{ background: 'none', border: 'none', color: 'var(--primary-light)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700 }}
-                    >
-                      Change Details
-                    </button>
-                  </div>
-                  <div style={{ position: 'relative' }}>
-                    <Key size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-                    <input
-                      type="text"
-                      required
-                      maxLength={6}
-                      placeholder="6-digit verification code"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      style={{ paddingLeft: '2.5rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold' }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-primary"
-                  style={{ width: '100%', justifyContent: 'center', padding: '0.85rem' }}
-                >
-                  {loading ? (
-                    <RefreshCw className="animate-spin" size={18} />
-                  ) : (
-                    <>
-                      <span>Verify & Enter Portal</span>
-                      <CheckCircle2 size={16} />
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
-            {isLocalHost && (
-              <div style={{ marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem', textAlign: 'center' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRegistrationNo('JA-DEBUG');
-                    setMobile('9999999999');
-                    setStudentName('Local Test Candidate');
-                    setStep('rules');
-                  }}
-                  className="btn btn-outline"
-                  style={{ width: '100%', justifyContent: 'center', borderColor: 'var(--warning)', color: 'var(--warning)', gap: '0.5rem', fontWeight: 700 }}
-                >
-                  <span>🔧 Local Test: Bypass to Rules</span>
-                </button>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '0.5rem' }}>
+                <Link href="/" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.8rem' }}>
+                  Go to Homepage
+                </Link>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="card exam-verify-card" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '1px solid rgba(99,102,241,0.2)' }}>
+                  <Lock size={28} color="var(--primary)" />
+                </div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Access Verification</h2>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>Verify paid registration to start the exam</p>
+              </div>
+
+              {error && (
+                <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--danger)', fontSize: '0.8rem', borderRadius: '8px', display: 'flex', gap: '0.5rem' }}>
+                  <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {successMsg && (
+                <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: 'var(--success)', fontSize: '0.8rem', borderRadius: '8px', display: 'flex', gap: '0.5rem' }}>
+                  <CheckCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              {!otpSent ? (
+                <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div className="input-group">
+                    <span className="label">Registration ID</span>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', fontWeight: 800 }}>JA-</span>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter 8-character Code"
+                        value={registrationNo.replace('JA-', '')}
+                        onChange={(e) => setRegistrationNo(`JA-${e.target.value.toUpperCase().trim()}`)}
+                        style={{ paddingLeft: '2.8rem' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="input-group">
+                    <span className="label">Registered Mobile Number</span>
+                    <div style={{ position: 'relative' }}>
+                      <Phone size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="Enter 10-digit number"
+                        value={mobile}
+                        onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                        style={{ paddingLeft: '2.5rem' }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', padding: '0.85rem' }}
+                  >
+                    {loading ? (
+                      <RefreshCw className="animate-spin" size={18} />
+                    ) : (
+                      <>
+                        <span>Send OTP Code</span>
+                        <Send size={14} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div className="input-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="label">Enter OTP Code</span>
+                      <button
+                        type="button"
+                        onClick={() => setOtpSent(false)}
+                        style={{ background: 'none', border: 'none', color: 'var(--primary-light)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700 }}
+                      >
+                        Change Details
+                      </button>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <Key size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
+                      <input
+                        type="text"
+                        required
+                        maxLength={6}
+                        placeholder="6-digit verification code"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                        style={{ paddingLeft: '2.5rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold' }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', padding: '0.85rem' }}
+                  >
+                    {loading ? (
+                      <RefreshCw className="animate-spin" size={18} />
+                    ) : (
+                      <>
+                        <span>Verify & Enter Portal</span>
+                        <CheckCircle2 size={16} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {isLocalHost && (
+                <div style={{ marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem', textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRegistrationNo('JA-DEBUG');
+                      setMobile('9999999999');
+                      setStudentName('Local Test Candidate');
+                      setStep('rules');
+                    }}
+                    className="btn btn-outline"
+                    style={{ width: '100%', justifyContent: 'center', borderColor: 'var(--warning)', color: 'var(--warning)', gap: '0.5rem', fontWeight: 700 }}
+                  >
+                    <span>🔧 Local Test: Bypass to Rules</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )
         )}
 
         {/* STEP 2: RULES SCREEN */}
