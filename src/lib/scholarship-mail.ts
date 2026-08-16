@@ -91,7 +91,7 @@ export async function sendScholarshipConfirmationEmail(to: string, name: string,
           Important Exam Schedule & Details
         </h4>
         <p style="margin: 0 0 10px 0; font-size: 14px; color: #78350f; line-height: 1.6;">
-          The scholarship exam will be held online on <strong>15th August 2026</strong>. 
+          The scholarship main exam was held on <strong>15th August 2026</strong> (Special re-exam window on <strong>16th August 2026</strong> for missed candidates). 
         </p>
         <p style="margin: 0 0 10px 0; font-size: 14px; color: #78350f; line-height: 1.6;">
           You will receive a notification containing your exam slot and details approximately <strong>1 week before</strong> the exam date.

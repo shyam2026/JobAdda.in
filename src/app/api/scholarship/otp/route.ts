@@ -24,13 +24,19 @@ async function sendSMS(to: string, name: string, otp: string) {
   const dltContentId = process.env.SMS_DLT_CONTENT_ID || '1707178185523758730';
   const dltPrincipalEntityId = process.env.SMS_DLT_PRINCIPAL_ENTITY_ID || '1701178116898320542';
 
+  // Ensure 91 country code prefix for Indian numbers (SmartPing requires it)
+  let formattedTo = to.replace(/\D/g, '');
+  if (formattedTo.length === 10) {
+    formattedTo = '91' + formattedTo;
+  }
+
   const url = new URL('https://pgapi.sparc.smartping.io/fe/api/v1/send');
   url.searchParams.set('username', username);
   url.searchParams.set('password', password);
   url.searchParams.set('unicode', 'false');
   url.searchParams.set('from', from);
   url.searchParams.set('text', msgText);
-  url.searchParams.set('to', to);
+  url.searchParams.set('to', formattedTo);
   url.searchParams.set('dltContentId', dltContentId);
   url.searchParams.set('dltPrincipalEntityId', dltPrincipalEntityId);
 
@@ -40,9 +46,9 @@ async function sendSMS(to: string, name: string, otp: string) {
       headers: { 'accept': 'application/json' }
     });
     const data = await res.text();
-    console.log(`[SMS OTP - SENT] to: ${to}, response: ${data}`);
+    console.log(`[SMS OTP] to: ${formattedTo}, HTTP ${res.status}, response: ${data}`);
   } catch (error) {
-    console.error(`[SMS OTP - ERROR] Failed to send SMS to ${to}:`, error);
+    console.error(`[SMS OTP - ERROR] Failed to send SMS to ${formattedTo}:`, error);
   }
 }
 

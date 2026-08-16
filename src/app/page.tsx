@@ -476,7 +476,7 @@ export default function HomePage() {
               ) : scholarshipPhase === 'RESULT_WAITING' ? (
                 <>Scholarship Test 2026 result will be published on <strong style={{ color: '#F97316' }}>20th August 2026</strong>. Stay tuned!</>
               ) : (
-                <>Showcase your talent on <strong style={{ color: 'var(--text-1)' }}>15th August 2026</strong>. Stand out & win career guidance with top scholarships!</>
+                <>Main Exam was held on <strong style={{ color: 'var(--text-1)' }}>15th August 2026</strong>. Special re-exam window is open today for missed candidates!</>
               )}
             </p>
             

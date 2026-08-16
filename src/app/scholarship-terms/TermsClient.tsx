@@ -297,7 +297,7 @@ export default function TermsClient() {
             <span style={{ color: '#22C55E' }}>{lang === 'hi' ? 'नियम व शर्तें' : 'Terms & Conditions'}</span>
           </h1>
           <p style={{ color: 'var(--text-3)', fontSize: '0.9rem', margin: 0 }}>
-            {lang === 'hi' ? 'परीक्षा तिथि: 15 अगस्त 2026 • कृपया पंजीकरण से पहले सभी नियम ध्यानपूर्वक पढ़ें।' : 'Exam Date: 15th August 2026 • Please read all terms carefully before registering.'}
+            {lang === 'hi' ? 'परीक्षा तिथि: 15 अगस्त 2026 (पुनः परीक्षा विंडो: 16 अगस्त 2026) • कृपया पंजीकरण से पहले सभी नियम ध्यानपूर्वक पढ़ें।' : 'Exam Date: 15th August 2026 (Re-exam Window: 16th August 2026) • Please read all terms carefully before registering.'}
           </p>
         </div>
 

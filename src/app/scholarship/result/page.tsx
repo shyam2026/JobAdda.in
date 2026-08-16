@@ -130,7 +130,7 @@ export default function ScholarshipResultPage() {
                 Scholarship Test 2026 Result will be published on 20th August 2026.
               </p>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>
-                Evaluation & Merit Rank processing for all exam submissions (15th August 2026) is currently under progress. Top rank holders will be awarded scholarships as per official merit terms.
+                Evaluation & Merit Rank processing for all exam submissions (15th & 16th August 2026) is currently under progress. Top rank holders will be awarded scholarships as per official merit terms.
               </p>
             </div>
 
@@ -138,7 +138,7 @@ export default function ScholarshipResultPage() {
               <div style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1rem' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Exam Status</div>
                 <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#22C55E', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <CheckCircle2 size={16} /> Completed (15th Aug)
+                  <CheckCircle2 size={16} /> Completed (15th & 16th Aug)
                 </div>
               </div>
 

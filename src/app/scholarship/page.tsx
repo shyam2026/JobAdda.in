@@ -667,7 +667,7 @@ export default function ScholarshipPage() {
               <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
               <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
             </span>
-            <span style={{ color: '#818CF8' }}>Test Date: 15th August 2026</span>
+            <span style={{ color: '#818CF8' }}>Test Date: 15th August 2026 (Re-Exam Window: 16th Aug)</span>
             <span style={{ display: 'inline-flex', gap: '4px' }}>
               <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
               <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>

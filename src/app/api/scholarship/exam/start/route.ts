@@ -26,10 +26,10 @@ export async function POST(req: Request) {
     // Time window check (unless local debug bypass)
     const now = Date.now();
     if (now < EXAM_START_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
-      return NextResponse.json({ error: 'Scholarship Exam starts on 15th August 2026 at 6:00 AM IST.' }, { status: 403 });
+      return NextResponse.json({ error: 'Scholarship Exam re-exam window opens on 16th August 2026 at 10:00 AM IST.' }, { status: 403 });
     }
     if (now > EXAM_END_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
-      return NextResponse.json({ error: 'Scholarship Exam portal closed on 15th August 2026 at 11:00 PM IST.' }, { status: 403 });
+      return NextResponse.json({ error: 'Scholarship Exam re-exam portal closed on 16th August 2026 at 10:00 PM IST.' }, { status: 403 });
     }
 
     if (isLocal && registrationNo === 'JA-DEBUG') {

@@ -27,13 +27,19 @@ async function sendRegistrationSMS(to: string, name: string, regNo: string) {
     .replace('{Name}', cleanName)
     .replace('{RegNo}', regNo);
 
+  // Ensure 91 country code prefix for Indian numbers (SmartPing requires it)
+  let formattedTo = to.replace(/\D/g, '');
+  if (formattedTo.length === 10) {
+    formattedTo = '91' + formattedTo;
+  }
+
   const url = new URL('https://pgapi.sparc.smartping.io/fe/api/v1/send');
   url.searchParams.set('username', username);
   url.searchParams.set('password', password);
   url.searchParams.set('unicode', 'false');
   url.searchParams.set('from', from);
   url.searchParams.set('text', msgText);
-  url.searchParams.set('to', to);
+  url.searchParams.set('to', formattedTo);
   url.searchParams.set('dltContentId', dltContentId);
   url.searchParams.set('dltPrincipalEntityId', dltPrincipalEntityId);
 
@@ -43,9 +49,9 @@ async function sendRegistrationSMS(to: string, name: string, regNo: string) {
       headers: { 'accept': 'application/json' }
     });
     const data = await res.text();
-    console.log(`[SMS REGISTRATION - SENT] to: ${to}, response: ${data}`);
+    console.log(`[SMS REGISTRATION] to: ${formattedTo}, HTTP ${res.status}, response: ${data}`);
   } catch (error) {
-    console.error(`[SMS REGISTRATION - ERROR] Failed to send registration SMS to ${to}:`, error);
+    console.error(`[SMS REGISTRATION - ERROR] Failed to send registration SMS to ${formattedTo}:`, error);
   }
 }
 

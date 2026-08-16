@@ -46,7 +46,7 @@ const T = {
     dates: [
       { label: 'रजिस्ट्रेशन शुरू', val: '21 जून 2026', color: '#10B981' },
       { label: 'अंतिम तिथि', val: '10 अगस्त 2026', color: '#EF4444' },
-      { label: 'परीक्षा तिथि', val: '15 अगस्त 2026', color: '#F59E0B' },
+      { label: 'परीक्षा तिथि', val: '15 अगस्त 2026 (पुनः परीक्षा: 16 अगस्त)', color: '#F59E0B' },
     ],
     trackTitle: '🔍 अपने कूपन कोड की रिपोर्ट देखें',
     trackPlaceholder: 'कूपन कोड दर्ज करें (उदा. SHYAM)',
@@ -86,7 +86,7 @@ const T = {
     dates: [
       { label: 'Registration Starts', val: '21st June 2026', color: '#10B981' },
       { label: 'Last Date', val: '10th August 2026', color: '#EF4444' },
-      { label: 'Exam Date', val: '15th August 2026', color: '#F59E0B' },
+      { label: 'Exam Date', val: '15th August 2026 (Re-exam: 16th Aug)', color: '#F59E0B' },
     ],
     trackTitle: '🔍 Check Your Coupon Code Report',
     trackPlaceholder: 'Enter coupon code (e.g. CODE10)',

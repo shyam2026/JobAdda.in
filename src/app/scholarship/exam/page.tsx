@@ -209,7 +209,7 @@ export default function ScholarshipExamPage() {
       const data = await res.json();
       if (res.ok) {
         setOtpSent(true);
-        setSuccessMsg('OTP sent successfully to your registered mobile and email. You can use the code received via SMS or email.');
+        setSuccessMsg(data.message || 'OTP sent successfully. Check your registered mobile and email.');
       } else {
         setError(data.error || 'Verification failed.');
       }
@@ -543,11 +543,11 @@ export default function ScholarshipExamPage() {
               </div>
               <div>
                 <div style={{ display: 'inline-block', padding: '0.35rem 0.9rem', borderRadius: '9999px', backgroundColor: 'rgba(249,115,22,0.1)', color: '#F97316', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>
-                  EXAM SCHEDULED: 15TH AUGUST 2026
+                  RE-EXAM WINDOW: 16TH AUGUST 2026
                 </div>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Exam Portal Opening Soon</h2>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Special Re-Exam Window</h2>
                 <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
-                  The Scholarship Examination portal will activate on <strong>15th August 2026 at 6:00 AM IST</strong> and deactivate at <strong>11:00 PM IST</strong>.
+                  For candidates who missed the 15th August exam or faced OTP/technical issues, the portal will be active on <strong>16th August 2026 from 10:00 AM IST to 10:00 PM IST</strong>.
                 </p>
               </div>
 
@@ -558,7 +558,7 @@ export default function ScholarshipExamPage() {
                 </div>
                 <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-3)', fontSize: '0.8rem', lineHeight: 1.5 }}>
                   <li>Keep your Registration ID (JA-XXXXXXXX) ready.</li>
-                  <li>Exam window: 6:00 AM to 11:00 PM IST on 15th August 2026.</li>
+                  <li>Re-exam window: 10:00 AM to 10:00 PM IST on 16th August 2026.</li>
                   <li>Total duration: 150 Minutes | 150 MCQs.</li>
                 </ul>
               </div>
@@ -583,7 +583,7 @@ export default function ScholarshipExamPage() {
                 </div>
                 <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Exam Portal Closed</h2>
                 <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
-                  The Scholarship Examination portal for 15th August 2026 closed at <strong>11:00 PM IST</strong>. No further exam submissions are accepted.
+                  The Scholarship Examination portal for 15th & 16th August 2026 is now closed. No further exam submissions are accepted.
                 </p>
               </div>
 

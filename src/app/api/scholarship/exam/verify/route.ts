@@ -15,7 +15,7 @@ function isSameDay(d1: Date, d2: Date) {
     d1.getDate() === d2.getDate();
 }
 
-async function sendSMS(to: string, name: string, otp: string) {
+async function sendSMS(to: string, name: string, otp: string): Promise<boolean> {
   const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'Candidate';
   const msgText = `Dear ${cleanName} Your OTP for JobAdda.in Scholarship Registration is ${otp}. Please do not share this OTP with anyone. This OTP is valid for 10 Minutes. Team JobAdda.in`;
 
@@ -25,13 +25,19 @@ async function sendSMS(to: string, name: string, otp: string) {
   const dltContentId = process.env.SMS_DLT_CONTENT_ID || '1707178185523758730';
   const dltPrincipalEntityId = process.env.SMS_DLT_PRINCIPAL_ENTITY_ID || '1701178116898320542';
 
+  // Ensure 91 country code prefix for Indian numbers (SmartPing requires it)
+  let formattedTo = to.replace(/\D/g, '');
+  if (formattedTo.length === 10) {
+    formattedTo = '91' + formattedTo;
+  }
+
   const url = new URL('https://pgapi.sparc.smartping.io/fe/api/v1/send');
   url.searchParams.set('username', username);
   url.searchParams.set('password', password);
   url.searchParams.set('unicode', 'false');
   url.searchParams.set('from', from);
   url.searchParams.set('text', msgText);
-  url.searchParams.set('to', to);
+  url.searchParams.set('to', formattedTo);
   url.searchParams.set('dltContentId', dltContentId);
   url.searchParams.set('dltPrincipalEntityId', dltPrincipalEntityId);
 
@@ -41,9 +47,26 @@ async function sendSMS(to: string, name: string, otp: string) {
       headers: { 'accept': 'application/json' }
     });
     const data = await res.text();
-    console.log(`[EXAM SMS OTP - SENT] to: ${to}, response: ${data}`);
+    console.log(`[EXAM SMS OTP] to: ${formattedTo}, HTTP ${res.status}, response: ${data}`);
+
+    // Check for failure indicators in the response
+    if (!res.ok) {
+      console.error(`[EXAM SMS OTP - FAILED] HTTP ${res.status} for ${formattedTo}: ${data}`);
+      return false;
+    }
+
+    // SmartPing API may return 200 but with error in body
+    const lowerData = data.toLowerCase();
+    if (lowerData.includes('error') || lowerData.includes('fail') || lowerData.includes('invalid') || lowerData.includes('rejected') || lowerData.includes('blacklist') || lowerData.includes('insufficient')) {
+      console.error(`[EXAM SMS OTP - GATEWAY ERROR] ${formattedTo}: ${data}`);
+      return false;
+    }
+
+    console.log(`[EXAM SMS OTP - SUCCESS] Delivered to ${formattedTo}`);
+    return true;
   } catch (error) {
-    console.error(`[EXAM SMS OTP - ERROR] Failed to send SMS to ${to}:`, error);
+    console.error(`[EXAM SMS OTP - ERROR] Failed to send SMS to ${formattedTo}:`, error);
+    return false;
   }
 }
 
@@ -100,10 +123,10 @@ export async function POST(req: Request) {
     const isLocal = process.env.NODE_ENV === 'development';
     const nowTime = Date.now();
     if (nowTime < EXAM_START_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
-      return NextResponse.json({ error: 'Scholarship Exam starts on 15th August 2026 at 6:00 AM IST.' }, { status: 403 });
+      return NextResponse.json({ error: 'Scholarship Exam re-exam window opens on 16th August 2026 at 10:00 AM IST.' }, { status: 403 });
     }
     if (nowTime > EXAM_END_TIME && !(isLocal && registrationNo === 'JA-DEBUG')) {
-      return NextResponse.json({ error: 'Scholarship Exam portal closed on 15th August 2026 at 11:00 PM IST.' }, { status: 403 });
+      return NextResponse.json({ error: 'Scholarship Exam re-exam portal closed on 16th August 2026 at 10:00 PM IST.' }, { status: 403 });
     }
 
     const db = prisma as any;
@@ -162,12 +185,22 @@ export async function POST(req: Request) {
       console.log(`[EXAM OTP] Mobile: ${mobile} Email: ${entry.email} OTP: ${newOtp}`);
 
       // Send via SMS and Email simultaneously
-      await Promise.allSettled([
+      const [smsResult, emailResult] = await Promise.allSettled([
         sendSMS(mobile, entry.name, newOtp),
         sendEmail(entry.email, entry.name, newOtp)
       ]);
 
-      return NextResponse.json({ success: true, message: 'OTP sent to mobile and email simultaneously.' });
+      const smsSent = smsResult.status === 'fulfilled' && smsResult.value === true;
+      const emailSent = emailResult.status === 'fulfilled';
+
+      console.log(`[EXAM OTP DELIVERY] Mobile: ${mobile} SMS: ${smsSent ? 'OK' : 'FAILED'}, Email: ${emailSent ? 'OK' : 'FAILED'}`);
+
+      // Email is the primary reliable channel; SMS may be delayed due to gateway issues
+      const message = emailSent
+        ? 'OTP has been sent to your registered email address. Please check your inbox (and spam folder). The same OTP will also work if received via SMS.'
+        : 'OTP generated. Please check your registered email and mobile for the verification code.';
+
+      return NextResponse.json({ success: true, message, smsSent, emailSent });
     }
 
     if (action === 'verify') {
