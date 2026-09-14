@@ -55,13 +55,13 @@ async function sendRegistrationSMS(to: string, name: string, regNo: string) {
   }
 }
 
-const REGISTRATION_CUTOFF = new Date('2026-08-14T22:00:00+05:30').getTime();
+import { REGISTRATION_CUTOFF } from '@/lib/scholarship-schedule';
 
 // POST → register new applicant
 export async function POST(req: Request) {
   try {
     if (Date.now() > REGISTRATION_CUTOFF) {
-      return NextResponse.json({ error: 'Scholarship registration closed on 14th August 2026 at 10:00 PM.' }, { status: 400 });
+      return NextResponse.json({ error: 'Scholarship registration for Diwali Special 2026 closed on 04th November 2026 at 11:59 PM IST.' }, { status: 400 });
     }
 
     const body = await req.json();
@@ -77,8 +77,8 @@ export async function POST(req: Request) {
 
     // Mobile OTP check has been made optional and bypassed as requested
 
-    // Check if already registered
-    const existing = await db.scholarshipEntry.findFirst({ where: { mobile } });
+    // Check if already registered for Diwali campaign
+    const existing = await db.scholarshipEntry.findFirst({ where: { mobile, campaign: 'DIWALI' } });
     if (existing) {
       return NextResponse.json({ error: 'Mobile already registered', registrationNo: existing.registrationNo, paid: existing.paymentStatus === 'PAID' }, { status: 409 });
     }
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     }
 
     const entry = await (db.scholarshipEntry as any).create({
-      data: { name, fatherName, aadharNo: cleanAadhar, mobile, email, district, state, lastQualification, marksPercent, careerGoal, registrationNo, mobileVerified: true, emailVerified: true, passportImage },
+      data: { name, fatherName, aadharNo: cleanAadhar, mobile, email, district, state, lastQualification, marksPercent, careerGoal, registrationNo, mobileVerified: true, emailVerified: true, passportImage, campaign: 'DIWALI' },
     });
 
     // Send success SMS in the background
@@ -113,7 +113,7 @@ export async function GET(req: Request) {
 
   const db = prisma as any;
   const entry = await db.scholarshipEntry.findFirst({
-    where: { OR: [{ registrationNo: lookup }, { mobile: lookup }] },
+    where: { OR: [{ registrationNo: lookup }, { mobile: lookup }], campaign: 'DIWALI' },
     select: { id: true, registrationNo: true, name: true, mobile: true, email: true, paymentStatus: true },
   });
 

@@ -20,10 +20,11 @@ export async function GET(req: Request) {
   const search = searchParams.get('search') || '';
   const collector = searchParams.get('collector') || '';
   const export_ = searchParams.get('export') === 'xlsx';
+  const campaign = searchParams.get('campaign') || 'DIWALI';
 
   const db = (await import('@/lib/prisma')).default as any;
 
-  const where: any = {};
+  const where: any = { campaign };
   if (filter === 'paid') where.paymentStatus = 'PAID';
   if (filter === 'unpaid') where.paymentStatus = 'PENDING';
   if (filter === 'cash') {
@@ -46,9 +47,9 @@ export async function GET(req: Request) {
 
   const entries = await db.scholarshipEntry.findMany({ where, orderBy: { createdAt: 'desc' } });
 
-  // Calculate dynamic rank for exam participants
+  // Calculate dynamic rank for exam participants within the campaign
   const allSubmitted = await db.scholarshipEntry.findMany({
-    where: { examSubmitted: true },
+    where: { examSubmitted: true, campaign },
     select: { registrationNo: true, examScore: true, examReasoningScore: true, examMathScore: true, examCaScore: true, createdAt: true }
   });
 
@@ -152,13 +153,13 @@ export async function GET(req: Request) {
     });
   }
 
-  const total = await db.scholarshipEntry.count();
-  const paid = await db.scholarshipEntry.count({ where: { paymentStatus: 'PAID' } });
-  const cashPaid = await db.scholarshipEntry.count({ where: { paymentStatus: 'PAID', paymentId: { startsWith: 'CASH_' } } });
+  const total = await db.scholarshipEntry.count({ where: { campaign } });
+  const paid = await db.scholarshipEntry.count({ where: { paymentStatus: 'PAID', campaign } });
+  const cashPaid = await db.scholarshipEntry.count({ where: { paymentStatus: 'PAID', paymentId: { startsWith: 'CASH_' }, campaign } });
   
-  const examAttemptedCount = await db.scholarshipEntry.count({ where: { examSubmitted: true } });
+  const examAttemptedCount = await db.scholarshipEntry.count({ where: { examSubmitted: true, campaign } });
   const scoreAggregate = await db.scholarshipEntry.aggregate({
-    where: { examSubmitted: true },
+    where: { examSubmitted: true, campaign },
     _avg: { examScore: true },
     _max: { examScore: true }
   });
@@ -170,7 +171,8 @@ export async function GET(req: Request) {
     where: {
       paymentStatus: 'PAID',
       paymentId: { startsWith: 'CASH_' },
-      cashCollectedBy: { not: null }
+      cashCollectedBy: { not: null },
+      campaign
     },
     distinct: ['cashCollectedBy'],
     select: {

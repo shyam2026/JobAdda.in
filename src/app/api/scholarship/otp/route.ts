@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     if (action === 'send') {
       if (type === 'mobile' && purpose !== 'recovery') {
         const alreadyRegistered = await db.scholarshipEntry.findFirst({
-          where: { mobile: target }
+          where: { mobile: target, campaign: 'DIWALI' }
         });
         if (alreadyRegistered) {
           return NextResponse.json({

@@ -6,23 +6,52 @@ import { usePathname } from 'next/navigation';
 import { Bell, ChevronDown, LogOut, User, LayoutDashboard, Briefcase, Menu, X, DollarSign, Gift, Building2, Search, FileText, Share2, Star, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 
-const WavingImageFlag = ({ width = 24, height = 16 }: { width?: number; height?: number }) => (
-  <img 
-    src="/indian-flag.png" 
-    alt="Waving Indian Flag" 
-    width={width}
-    height={height}
-    style={{
-      width: `${width}px`,
-      height: `${height}px`,
-      borderRadius: '2px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-      display: 'inline-block',
+const DiwaliDiyaIcon = ({ width = 22, height = 18 }: { width?: number; height?: number }) => (
+  <svg 
+    width={width} 
+    height={height} 
+    viewBox="0 0 24 20" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ 
+      display: 'inline-block', 
       verticalAlign: 'middle',
-      transformOrigin: 'bottom left',
-      animation: 'flag-wave 2.5s ease-in-out infinite'
+      animation: 'diya-glow 2s ease-in-out infinite'
     }}
-  />
+  >
+    {/* Diya Base */}
+    <path 
+      d="M2 11C2 16 6.477 18 12 18C17.523 18 22 16 22 11C22 10.5 21.5 10 20 10C17 10 15 11 12 11C9 11 7 10 4 10C2.5 10 2 10.5 2 11Z" 
+      fill="url(#diyaNavGrad)" 
+      stroke="#D97706" 
+      strokeWidth="1"
+    />
+    {/* Diya Rim */}
+    <ellipse cx="12" cy="10.5" rx="9" ry="2" fill="#F59E0B" />
+    {/* Flame */}
+    <path 
+      d="M12 1C12 1 15 5 15 7C15 8.65685 13.6569 10 12 10C10.3431 10 9 8.65685 9 7C9 5 12 1 12 1Z" 
+      fill="url(#flameNavGrad)"
+    >
+      <animate attributeName="opacity" values="0.85;1;0.9;1" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    {/* Inner Flame */}
+    <path 
+      d="M12 4C12 4 13.5 6.5 13.5 7.5C13.5 8.32843 12.8284 9 12 9C11.1716 9 10.5 8.32843 10.5 7.5C10.5 6.5 12 4 12 4Z" 
+      fill="#FEF08A"
+    />
+    <defs>
+      <linearGradient id="diyaNavGrad" x1="2" y1="10" x2="22" y2="18" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#D97706" />
+        <stop offset="1" stopColor="#B45309" />
+      </linearGradient>
+      <linearGradient id="flameNavGrad" x1="12" y1="1" x2="12" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#F59E0B" />
+        <stop offset="0.6" stopColor="#EF4444" />
+        <stop offset="1" stopColor="#DC2626" />
+      </linearGradient>
+    </defs>
+  </svg>
 );
 
 import { getScholarshipPhase } from '@/lib/scholarship-schedule';
@@ -132,7 +161,7 @@ export default function Navbar() {
                       pointerEvents: 'none'
                     }}
                   >
-                    <WavingImageFlag width={22} height={15} />
+                    <DiwaliDiyaIcon width={22} height={18} />
                   </span>
                 )}
               </Link>
@@ -280,7 +309,7 @@ export default function Navbar() {
                             pointerEvents: 'none'
                           }}
                         >
-                          <WavingImageFlag width={22} height={15} />
+                          <DiwaliDiyaIcon width={22} height={18} />
                         </span>
                       )}
                     </span>
@@ -336,12 +365,9 @@ export default function Navbar() {
         </div>
       )}
       <style>{`
-        @keyframes flag-wave {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          20% { transform: translateY(-1px) rotate(3deg); }
-          40% { transform: translateY(1.5px) rotate(-1deg); }
-          60% { transform: translateY(-1px) rotate(2deg); }
-          80% { transform: translateY(1px) rotate(-2deg); }
+        @keyframes diya-glow {
+          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.4)); }
+          50% { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.85)); }
         }
       `}</style>
     </>

@@ -313,6 +313,7 @@ model ScholarshipEntry {
   amount          Float?
   couponCode      String?
   passportImage   String?  @db.LongText
+  campaign        String   @default("INDEPENDENCE") // "INDEPENDENCE" or "DIWALI"
   examScore           Float?
   examSubmitted       Boolean  @default(false)
   examAttempted       Int?
@@ -334,6 +335,8 @@ model ScholarshipEntry {
 
   @@index([mobile])
   @@index([email])
+  @@index([campaign])
+  @@index([mobile, campaign])
 }
 
 model ScholarshipOtp {

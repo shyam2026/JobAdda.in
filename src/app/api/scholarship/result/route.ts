@@ -10,18 +10,19 @@ export async function GET(req: Request) {
     }
 
     const db = prisma as any;
-    // Find the candidate using registration number or mobile number
+    // Find the candidate from the Independence Day (15 Aug) campaign using mobile or registration number
     const candidate = await db.scholarshipEntry.findFirst({
       where: {
         OR: [
           { registrationNo: lookup },
           { mobile: lookup }
-        ]
+        ],
+        campaign: 'INDEPENDENCE'
       }
     });
 
     if (!candidate) {
-      return NextResponse.json({ error: 'Candidate registration not found. Please verify the mobile number or Registration ID.' }, { status: 404 });
+      return NextResponse.json({ error: 'Candidate not found. Please verify the mobile number or Registration ID.' }, { status: 404 });
     }
 
     // Check if the exam has been submitted
@@ -51,10 +52,12 @@ export async function GET(req: Request) {
     // 3. Higher score in Mathematics (examMathScore)
     // 4. Higher score in Current Affairs (examCaScore)
     // 5. Earlier application submission date (createdAt)
+    // Only among Independence Day campaign candidates
     const higherScoreCount = await db.scholarshipEntry.count({
       where: {
         paymentStatus: 'PAID',
         examSubmitted: true,
+        campaign: 'INDEPENDENCE',
         OR: [
           {
             examScore: {
@@ -97,6 +100,7 @@ export async function GET(req: Request) {
 
     const rank = higherScoreCount + 101;
 
+    // Return only rank — no exam scores, correct/wrong counts
     return NextResponse.json({
       success: true,
       examSubmitted: true,
@@ -106,9 +110,6 @@ export async function GET(req: Request) {
         email: candidate.email,
         registrationNo: candidate.registrationNo
       },
-      examCorrect: candidate.examCorrect,
-      examWrong: candidate.examWrong,
-      examScore: candidate.examScore,
       rank
     });
   } catch (e: any) {

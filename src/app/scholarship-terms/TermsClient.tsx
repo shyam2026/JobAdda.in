@@ -4,11 +4,11 @@ import { Award, BookOpen, Clock, Check, ArrowLeft, FileText, Scale, Shield, Aler
 import Link from 'next/link';
 
 const AWARDS = [
-  { emoji: '🥇', rank: '1st Rank Winner', prize: '₹15,000 Scholarship', hi_rank: 'रैंक #1 (प्रथम स्थान)' },
-  { emoji: '🥈', rank: '2nd Rank Winner', prize: '₹12,000 Scholarship', hi_rank: 'रैंक #2 (द्वितीय स्थान)' },
-  { emoji: '🥉', rank: '3rd Rank Winner', prize: '₹10,000 Scholarship', hi_rank: 'रैंक #3 (तृतीय स्थान)' },
-  { emoji: '🏅', rank: 'Rank 4th–10th Winners', prize: '₹5,000 Scholarship each', hi_rank: 'रैंक #4 से #10' },
-  { emoji: '🏅', rank: 'Rank 11th–300th Holders', prize: 'Flat ₹15,000 Course Discount', hi_rank: 'रैंक #11 से #300' },
+  { emoji: '🥇', rank: '1st Prize Winner', prize: '₹1,00,000 Scholarship', hi_rank: 'रैंक #1 (प्रथम पुरस्कार)' },
+  { emoji: '🥈', rank: '2nd Prize Winner', prize: '₹75,000 Scholarship', hi_rank: 'रैंक #2 (द्वितीय पुरस्कार)' },
+  { emoji: '🥉', rank: '3rd Prize Winner', prize: '₹50,000 Scholarship', hi_rank: 'रैंक #3 (तृतीय पुरस्कार)' },
+  { emoji: '🏆', rank: 'Champion (7 Students)', prize: '₹10,000 Scholarship each', hi_rank: 'रैंक #4 से #10 (7 चैंपियन)' },
+  { emoji: '🎓', rank: 'Next 300 Participants', prize: 'Data Analyst Course at ₹15,000', hi_rank: 'अगले 300 प्रतिभागी (कोर्स ऑफर)' },
 ];
 
 const EXAM_SUBJECTS = [
@@ -57,7 +57,7 @@ const TERMS_EN = {
   },
   awards: {
     title: "Scholarship Awards",
-    note: "Rank 11th–300th holders get a Flat ₹15,000 Discount on Data Analyst & Business Analyst Courses, offered by Microsoft Education Partner."
+    note: "For next 300 participants: Get Data Analyst Course at just ₹15,000/- (T&C Applied), offered by Microsoft Education Partner."
   },
   payment: {
     title: "Scholarship Payment Terms",
@@ -149,7 +149,7 @@ const TERMS_HI = {
   },
   awards: {
     title: "स्कॉलरशिप पुरस्कार (Scholarship Awards)",
-    note: "रैंक #11 से #300 प्राप्त करने वालों को माइक्रोसॉफ्ट एजुकेशन पार्टनर द्वारा प्रस्तुत डेटा एनालिस्ट और बिजनेस एनालिस्ट कोर्सेज पर ₹15,000 की फ्लैट छूट दी जाएगी।"
+    note: "अगले 300 प्रतिभागियों के लिए: माइक्रोसॉफ्ट एजुकेशन पार्टनर द्वारा प्रस्तुत डेटा एनालिस्ट कोर्स मात्र ₹15,000/- में (नियम व शर्तें लागू)।"
   },
   payment: {
     title: "स्कॉलरशिप भुगतान की शर्तें (Payment Terms)",
@@ -222,24 +222,43 @@ export default function TermsClient() {
   const T = lang === 'hi' ? TERMS_HI : TERMS_EN;
 
   return (
-    <div className="patriotic-bg-container" style={{ position: 'relative', minHeight: '100vh', width: '100%', overflow: 'hidden' }}>
+    <div className="diwali-bg-container" style={{ position: 'relative', minHeight: '100vh', width: '100%', overflow: 'hidden', background: '#080c1b' }}>
       <style>{`
-        .patriotic-bg-container::before {
+        .diwali-bg-container::before {
           content: "";
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
-          background-image: url('/patriotic_bg.jpg');
+          background-image: url('/diwali_bg.jpg');
           background-size: cover;
-          background-position: center;
+          background-position: center top;
           background-repeat: no-repeat;
           background-attachment: fixed;
-          opacity: 0.75;
+          opacity: 0.65;
           z-index: 0;
           pointer-events: none;
         }
+        /* Floating sky lanterns effect */
+        @keyframes floatLantern {
+          0% { transform: translateY(105vh) translateX(0) scale(0.7); opacity: 0; }
+          12% { opacity: 0.85; }
+          85% { opacity: 0.85; }
+          100% { transform: translateY(-25vh) translateX(35px) scale(1.1); opacity: 0; }
+        }
+        .floating-lantern {
+          position: fixed;
+          bottom: -60px;
+          pointer-events: none;
+          z-index: 0;
+          animation: floatLantern linear infinite;
+        }
+        .lantern-1 { left: 6%; animation-duration: 24s; animation-delay: 1s; }
+        .lantern-2 { left: 22%; animation-duration: 29s; animation-delay: 7s; }
+        .lantern-3 { left: 76%; animation-duration: 26s; animation-delay: 3s; }
+        .lantern-4 { left: 92%; animation-duration: 33s; animation-delay: 13s; }
+
         .card {
           background: var(--bg-2) !important;
           backdrop-filter: none !important;
@@ -249,21 +268,44 @@ export default function TermsClient() {
           transform: none !important;
         }
         .terms-container { max-width: 900px; margin: 0 auto; padding: 7rem 1.25rem 4rem; }
-        .terms-hero { background: linear-gradient(135deg, rgba(249,115,22,0.1) 0%, rgba(34,197,94,0.07) 100%); border: 1px solid var(--border); border-radius: 24px; padding: 2.5rem 2rem; text-align: center; margin-bottom: 2.5rem; }
-        .terms-body { background: var(--bg-2); border: 1px solid var(--border); border-radius: 22px; padding: 2.5rem; color: var(--text-2); font-size: 0.93rem; line-height: 1.8; }
+        .terms-hero {
+          background: rgba(13, 19, 38, 0.95);
+          background: linear-gradient(165deg, rgba(20, 29, 56, 0.97) 0%, rgba(10, 16, 33, 0.98) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.4);
+          border-radius: 24px;
+          padding: 2.75rem 2rem;
+          text-align: center;
+          margin-bottom: 2.5rem;
+          box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(245, 158, 11, 0.15);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        .terms-body {
+          background: rgba(13, 19, 38, 0.95);
+          background: linear-gradient(165deg, rgba(20, 29, 56, 0.97) 0%, rgba(10, 16, 33, 0.98) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.25);
+          border-radius: 22px;
+          padding: 2.5rem;
+          color: var(--text-2);
+          font-size: 0.93rem;
+          line-height: 1.8;
+          box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
         .terms-ol { padding-left: 1.5rem; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
         .terms-ol li { color: var(--text-2); }
         .award-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
-        .award-card { background: var(--bg-3); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; }
+        .award-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; }
         .terms-table { width: 100%; border-collapse: collapse; }
-        .terms-table th { background: var(--bg-3); padding: 0.75rem 1rem; text-align: left; font-weight: 800; color: var(--text-1); border-bottom: 2px solid var(--border); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .terms-table th { background: rgba(30, 41, 59, 0.9); padding: 0.75rem 1rem; text-align: left; font-weight: 800; color: var(--text-1); border-bottom: 2px solid var(--border); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
         .terms-table td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); }
         .terms-table tbody tr:last-child td { border-bottom: none; }
-        .terms-table tfoot td { background: var(--bg-3); font-weight: 800; color: var(--text-1); border-top: 2px solid var(--border); }
+        .terms-table tfoot td { background: rgba(30, 41, 59, 0.9); font-weight: 800; color: var(--text-1); border-top: 2px solid var(--border); }
         .exam-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
-        .exam-detail-box { background: var(--bg-3); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; }
-        .lang-toggle { display: inline-flex; background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 0.25rem; margin-bottom: 1.5rem; align-items: center; }
-        .lang-btn { padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; background: transparent; color: var(--text-3); transition: all 0.2s; }
+        .exam-detail-box { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1rem 1.25rem; }
+        .lang-toggle { display: inline-flex; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.25rem; margin-bottom: 1.5rem; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .lang-btn { padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; background: transparent; color: var(--text-2); transition: all 0.2s; }
         .lang-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         @media (max-width: 640px) {
           .terms-container { padding: 6rem 1rem 3rem; }
@@ -272,10 +314,64 @@ export default function TermsClient() {
         }
       `}</style>
 
+      {/* Floating Diwali Sky Lanterns */}
+      <div className="floating-lantern lantern-1">
+        <svg width="42" height="52" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG1)" />
+          <ellipse cx="21" cy="45" rx="5" ry="3" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FEF08A" />
+              <stop offset="40%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#DC2626" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="floating-lantern lantern-2">
+        <svg width="34" height="44" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG2)" />
+          <ellipse cx="21" cy="45" rx="5" ry="3" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FEF08A" />
+              <stop offset="40%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#B45309" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="floating-lantern lantern-3">
+        <svg width="48" height="60" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG3)" />
+          <ellipse cx="21" cy="45" rx="6" ry="3.5" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG3" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FFFBEB" />
+              <stop offset="35%" stopColor="#FBBF24" />
+              <stop offset="100%" stopColor="#EA580C" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="floating-lantern lantern-4">
+        <svg width="30" height="38" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG4)" />
+          <ellipse cx="21" cy="45" rx="4" ry="2.5" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG4" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FEF08A" />
+              <stop offset="45%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#EF4444" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
       <div className="terms-container" style={{ position: 'relative', zIndex: 1 }}>
         {/* Back and Language Toggle */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.75rem', gap: '1rem' }}>
-          <Link href="/scholarship" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-3)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none' }}>
+          <Link href="/scholarship" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#E2E8F0', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', background: 'rgba(15, 23, 42, 0.85)', padding: '0.45rem 1rem', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.3)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
             <ArrowLeft size={16} /> {lang === 'hi' ? 'वापस जाएं (Back)' : 'Back to Scholarship'}
           </Link>
 
@@ -288,16 +384,16 @@ export default function TermsClient() {
 
         {/* Hero */}
         <div className="terms-hero">
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.25)', color: '#F97316', borderRadius: '9999px', padding: '0.35rem 1rem', fontSize: '0.75rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '0.04em' }}>
-            INDEPENDENCE DAY SPECIAL 2026
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(245,158,11,0.18)', border: '1px solid rgba(245,158,11,0.4)', color: '#FBBF24', borderRadius: '9999px', padding: '0.4rem 1.1rem', fontSize: '0.78rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '0.04em', boxShadow: '0 2px 12px rgba(245,158,11,0.15)' }}>
+            🪔 DIWALI SPECIAL 2026
           </div>
-          <h1 style={{ fontSize: 'clamp(1.7rem, 5vw, 2.4rem)', fontWeight: 900, lineHeight: 1.2, margin: '0 0 0.5rem' }}>
-            <span style={{ color: '#F97316' }}>Scholarship </span>
-            <span style={{ color: 'var(--text-1)' }}>Test </span>
-            <span style={{ color: '#22C55E' }}>{lang === 'hi' ? 'नियम व शर्तें' : 'Terms & Conditions'}</span>
+          <h1 style={{ fontSize: 'clamp(1.7rem, 5vw, 2.4rem)', fontWeight: 900, lineHeight: 1.25, margin: '0 0 0.75rem' }}>
+            <span style={{ color: '#F59E0B' }}>Scholarship </span>
+            <span style={{ color: '#FFFFFF' }}>Program </span>
+            <span style={{ color: '#F87171' }}>{lang === 'hi' ? 'नियम व शर्तें' : 'Terms & Conditions'}</span>
           </h1>
-          <p style={{ color: 'var(--text-3)', fontSize: '0.9rem', margin: 0 }}>
-            {lang === 'hi' ? 'परीक्षा तिथि: 15 अगस्त 2026 (पुनः परीक्षा विंडो: 16 अगस्त 2026) • कृपया पंजीकरण से पहले सभी नियम ध्यानपूर्वक पढ़ें।' : 'Exam Date: 15th August 2026 (Re-exam Window: 16th August 2026) • Please read all terms carefully before registering.'}
+          <p style={{ color: '#E2E8F0', fontSize: '0.93rem', margin: '0 auto', lineHeight: 1.65, maxWidth: '780px', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+            {lang === 'hi' ? 'आवेदन: 01 सितंबर से 04 नवंबर 2026 • परीक्षा तिथि: 06 नवंबर 2026 (150 मिनट, 150 MCQs) • कृपया पंजीकरण से पहले सभी नियम ध्यानपूर्वक पढ़ें।' : 'Apply: 01-Sep to 04-Nov-2026 • Exam Date: 06th November 2026 (150 Mins, 150 MCQs) • Please read all terms carefully before registering.'}
           </p>
         </div>
 

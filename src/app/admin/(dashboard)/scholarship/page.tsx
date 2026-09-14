@@ -37,6 +37,8 @@ export default function AdminScholarshipPage() {
   const [markCashPaidError, setMarkCashPaidError] = useState('');
   const [showCashPasscode, setShowCashPasscode] = useState(false);
 
+  // Campaign switcher state
+  const [campaign, setCampaign] = useState<'DIWALI' | 'INDEPENDENCE'>('DIWALI');
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
   const handleSendEmail = async (regNo: string) => {
@@ -167,7 +169,7 @@ export default function AdminScholarshipPage() {
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}&collector=${selectedCollector}`);
+      const res = await fetch(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}&collector=${selectedCollector}&campaign=${campaign}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setEntries(data.entries || []);
@@ -192,7 +194,7 @@ export default function AdminScholarshipPage() {
 
   useEffect(() => {
     fetchEntries();
-  }, [filter, examFilter, sortBy, selectedCollector]);
+  }, [filter, examFilter, sortBy, selectedCollector, campaign]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,20 +202,64 @@ export default function AdminScholarshipPage() {
   };
 
   const handleExport = () => {
-    window.open(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}&collector=${selectedCollector}&export=xlsx`, '_blank');
+    window.open(`/api/admin/scholarship?filter=${filter}&examFilter=${examFilter}&sortBy=${sortBy}&search=${encodeURIComponent(search)}&collector=${selectedCollector}&campaign=${campaign}&export=xlsx`, '_blank');
   };
 
   return (
     <div className="anim-fade-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <GraduationCap color="var(--primary)" size={28} /> Scholarship Test Command Center
+            <GraduationCap color="var(--primary)" size={28} /> {campaign === 'INDEPENDENCE' ? '🇮🇳 Independence Day Scholarship' : '🪔 Diwali Scholarship'} Command Center
           </h1>
-          <p style={{ color: 'var(--text-3)', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>Manage registrations, monitor live exam responses, and review results</p>
+          <p style={{ color: 'var(--text-3)', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
+            {campaign === 'INDEPENDENCE' ? 'View 15 August exam submissions, scores, and merit rank list' : 'Manage registrations, monitor live exam responses, and review results'}
+          </p>
         </div>
         <button onClick={handleExport} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Download size={16} /> Export Registrations (Excel)
+        </button>
+      </div>
+
+      {/* Campaign Switcher */}
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', background: 'var(--bg-3)', padding: '4px', borderRadius: '14px', border: '1px solid var(--border)' }}>
+        <button
+          onClick={() => setCampaign('DIWALI')}
+          style={{
+            flex: 1,
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: 800,
+            fontSize: '0.85rem',
+            fontFamily: 'inherit',
+            background: campaign === 'DIWALI' ? 'var(--primary)' : 'transparent',
+            color: campaign === 'DIWALI' ? '#fff' : 'var(--text-3)',
+            boxShadow: campaign === 'DIWALI' ? '0 4px 12px rgba(99,102,241,0.3)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          🪔 Diwali Scholarship 2026
+        </button>
+        <button
+          onClick={() => setCampaign('INDEPENDENCE')}
+          style={{
+            flex: 1,
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: 800,
+            fontSize: '0.85rem',
+            fontFamily: 'inherit',
+            background: campaign === 'INDEPENDENCE' ? 'linear-gradient(135deg, #22C55E, #F97316)' : 'transparent',
+            color: campaign === 'INDEPENDENCE' ? '#fff' : 'var(--text-3)',
+            boxShadow: campaign === 'INDEPENDENCE' ? '0 4px 12px rgba(34,197,94,0.3)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          🇮🇳 Independence Day (15 Aug) Scholarship
         </button>
       </div>
 

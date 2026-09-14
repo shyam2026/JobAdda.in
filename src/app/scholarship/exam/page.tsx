@@ -542,12 +542,12 @@ export default function ScholarshipExamPage() {
                 <Clock size={32} color="#F97316" />
               </div>
               <div>
-                <div style={{ display: 'inline-block', padding: '0.35rem 0.9rem', borderRadius: '9999px', backgroundColor: 'rgba(249,115,22,0.1)', color: '#F97316', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>
-                  RE-EXAM WINDOW: 16TH AUGUST 2026
+                <div style={{ display: 'inline-block', padding: '0.35rem 0.9rem', borderRadius: '9999px', backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>
+                  🪔 DIWALI SPECIAL: EXAM ON 06TH NOVEMBER 2026
                 </div>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Special Re-Exam Window</h2>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Scholarship Exam Portal</h2>
                 <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
-                  For candidates who missed the 15th August exam or faced OTP/technical issues, the portal will be active on <strong>16th August 2026 from 10:00 AM IST to 10:00 PM IST</strong>.
+                  The Scholarship Examination portal for Diwali Special 2026 will be active on <strong>06th November 2026 from 10:00 AM IST to 10:00 PM IST</strong>.
                 </p>
               </div>
 
@@ -558,7 +558,7 @@ export default function ScholarshipExamPage() {
                 </div>
                 <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-3)', fontSize: '0.8rem', lineHeight: 1.5 }}>
                   <li>Keep your Registration ID (JA-XXXXXXXX) ready.</li>
-                  <li>Re-exam window: 10:00 AM to 10:00 PM IST on 16th August 2026.</li>
+                  <li>Exam window: 10:00 AM to 10:00 PM IST on 06th November 2026.</li>
                   <li>Total duration: 150 Minutes | 150 MCQs.</li>
                 </ul>
               </div>
@@ -583,7 +583,7 @@ export default function ScholarshipExamPage() {
                 </div>
                 <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Exam Portal Closed</h2>
                 <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
-                  The Scholarship Examination portal for 15th & 16th August 2026 is now closed. No further exam submissions are accepted.
+                  The Scholarship Examination portal for 06th November 2026 is now closed. Official results will be declared on 10th November 2026.
                 </p>
               </div>
 
@@ -1119,7 +1119,7 @@ export default function ScholarshipExamPage() {
             </div>
 
             <p style={{ fontSize: '0.7rem', color: 'var(--text-3)', lineHeight: 1.4 }}>
-              Merit Ranks and official results will be declared on the JobAdda.in platform on <strong>25th August 2026</strong>.
+              Merit Ranks and official results will be declared on the JobAdda.in platform on <strong>10th November 2026</strong>.
             </p>
 
             <a href="/scholarship" className="btn btn-outline" style={{ justifyContent: 'center' }}>

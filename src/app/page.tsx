@@ -1,31 +1,54 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Briefcase, TrendingUp, ChevronDown, Star, Zap, Shield, ArrowRight, Loader2, Code, Megaphone, Banknote, Palette, Stethoscope, GraduationCap, Settings, BarChart3, HelpCircle, Users, FileText, Wallet, X } from 'lucide-react';
+import { Search, MapPin, Briefcase, TrendingUp, ChevronDown, Star, Zap, Shield, ArrowRight, Loader2, Code, Megaphone, Banknote, Palette, Stethoscope, GraduationCap, Settings, BarChart3, HelpCircle, Users, FileText, Wallet, X, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { JobCard } from '@/features/jobs/components/JobCard';
 import { FAQSchema } from '@/components/StructuredData';
-import { EXAM_START_TIME, EXAM_END_TIME, getScholarshipPhase, ScholarshipPhase } from '@/lib/scholarship-schedule';
+import { REGISTRATION_CUTOFF, EXAM_START_TIME, EXAM_END_TIME, getScholarshipPhase, ScholarshipPhase } from '@/lib/scholarship-schedule';
 
-const REGISTRATION_CUTOFF = new Date('2026-08-14T22:00:00+05:30').getTime();
-
-const WavingImageFlag = ({ width = 24, height = 16 }: { width?: number; height?: number }) => (
-  <img 
-    src="/indian-flag.png" 
-    alt="Waving Indian Flag" 
-    width={width}
-    height={height}
-    style={{
-      width: `${width}px`,
-      height: `${height}px`,
-      borderRadius: '2px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-      display: 'inline-block',
-      verticalAlign: 'middle',
-      transformOrigin: 'bottom left',
-      animation: 'flag-wave 2.5s ease-in-out infinite'
-    }}
-  />
+const DiwaliDiyaIcon = ({ width = 24, height = 20 }: { width?: number; height?: number }) => (
+  <svg 
+    width={width} 
+    height={height} 
+    viewBox="0 0 24 20" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ display: 'inline-block', verticalAlign: 'middle' }}
+  >
+    {/* Diya Base */}
+    <path 
+      d="M2 11C2 16 6.477 18 12 18C17.523 18 22 16 22 11C22 10.5 21.5 10 20 10C17 10 15 11 12 11C9 11 7 10 4 10C2.5 10 2 10.5 2 11Z" 
+      fill="url(#diyaGrad)" 
+      stroke="#D97706" 
+      strokeWidth="1"
+    />
+    {/* Diya Rim */}
+    <ellipse cx="12" cy="10.5" rx="9" ry="2" fill="#F59E0B" />
+    {/* Flame */}
+    <path 
+      d="M12 1C12 1 15 5 15 7C15 8.65685 13.6569 10 12 10C10.3431 10 9 8.65685 9 7C9 5 12 1 12 1Z" 
+      fill="url(#flameGrad)"
+    >
+      <animate attributeName="opacity" values="0.85;1;0.9;1" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    {/* Inner Flame */}
+    <path 
+      d="M12 4C12 4 13.5 6.5 13.5 7.5C13.5 8.32843 12.8284 9 12 9C11.1716 9 10.5 8.32843 10.5 7.5C10.5 6.5 12 4 12 4Z" 
+      fill="#FEF08A"
+    />
+    <defs>
+      <linearGradient id="diyaGrad" x1="2" y1="10" x2="22" y2="18" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#D97706" />
+        <stop offset="1" stopColor="#B45309" />
+      </linearGradient>
+      <linearGradient id="flameGrad" x1="12" y1="1" x2="12" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#F59E0B" />
+        <stop offset="0.6" stopColor="#EF4444" />
+        <stop offset="1" stopColor="#DC2626" />
+      </linearGradient>
+    </defs>
+  </svg>
 );
 
 const CATEGORIES = [
@@ -459,14 +482,14 @@ export default function HomePage() {
             >
               <X size={18} />
             </button>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))', color: 'var(--primary)', marginBottom: '1.25rem', boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}>
-              <GraduationCap size={32} />
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))', color: '#F59E0B', marginBottom: '1.25rem', boxShadow: '0 8px 24px rgba(245,158,11,0.2)' }}>
+              <Sparkles size={32} />
             </div>
 
             <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', width: '100%', position: 'relative' }}>
-              {scholarshipPhase === 'RESULT_LIVE' ? 'Scholarship Results LIVE 🏆' : scholarshipPhase === 'RESULT_WAITING' ? 'Scholarship Result 2026' : 'Scholarship Test 2026'}
-              <span style={{ display: 'inline-block', position: 'relative', top: '-6px' }}>
-                <WavingImageFlag width={22} height={15} />
+              {scholarshipPhase === 'RESULT_LIVE' ? 'Scholarship Results LIVE 🏆' : scholarshipPhase === 'RESULT_WAITING' ? 'Scholarship Result 2026' : 'Diwali Special Scholarship 2026'}
+              <span style={{ display: 'inline-block', position: 'relative', top: '-2px' }}>
+                <DiwaliDiyaIcon width={22} height={20} />
               </span>
             </h3>
 
@@ -474,16 +497,16 @@ export default function HomePage() {
               {scholarshipPhase === 'RESULT_LIVE' ? (
                 <>Scholarship Exam results are now published! Check your <strong style={{ color: 'var(--text-1)' }}>All India Rank</strong> and score card.</>
               ) : scholarshipPhase === 'RESULT_WAITING' ? (
-                <>Scholarship Test 2026 result will be published on <strong style={{ color: '#F97316' }}>20th August 2026</strong>. Stay tuned!</>
+                <>Scholarship Program 2026 result will be published on <strong style={{ color: '#F59E0B' }}>10th November 2026</strong>. Stay tuned!</>
               ) : (
-                <>Main Exam was held on <strong style={{ color: 'var(--text-1)' }}>15th August 2026</strong>. Special re-exam window is open today for missed candidates!</>
+                <>Win up to <strong style={{ color: '#F59E0B' }}>₹1,00,000 Cash Scholarship</strong> + Data Analyst Course for just ₹15,000! Exam on <strong style={{ color: 'var(--text-1)' }}>06th Nov 2026</strong>.</>
               )}
             </p>
             
             {/* Feature highlights */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left', margin: '0 0 1.5rem', padding: '1rem', borderRadius: '14px', background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left', margin: '0 0 1.5rem', padding: '1rem', borderRadius: '14px', background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.18)' }}>
               {scholarshipPhase === 'RESULT_LIVE' || scholarshipPhase === 'RESULT_WAITING' ? [
-                { icon: '📅', text: 'Official Result Date: 20th August 2026' },
+                { icon: '📅', text: 'Official Result Date: 10th November 2026' },
                 { icon: '🏆', text: 'Rank #1 to #300 Prize Allocations' }
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.82rem', color: 'var(--text-2)', fontWeight: 600 }}>
@@ -491,8 +514,10 @@ export default function HomePage() {
                   <span>{item.text}</span>
                 </div>
               )) : [
-                { icon: '📝', text: '150 MCQs • 150 Minutes' },
-                { icon: '🏆', text: 'Win scholarships up to ₹15,000' }
+                { icon: '🥇', text: '1st Prize: ₹1,00,000 • 2nd: ₹75,000 • 3rd: ₹50,000' },
+                { icon: '🏆', text: '7 Champions: ₹10,000 each' },
+                { icon: '🎓', text: 'Next 300 Participants: Data Analyst Course at ₹15,000' },
+                { icon: '📅', text: 'Apply by: 04-Nov • Online Exam: 06-Nov-2026' }
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.82rem', color: 'var(--text-2)', fontWeight: 600 }}>
                   <span style={{ fontSize: '1rem' }}>{item.icon}</span>

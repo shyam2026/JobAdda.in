@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GraduationCap, Shield, Star, Wallet, Lock, Tag, X, CheckCircle, AlertTriangle, Loader2, Sun, BookOpen, Clock, Trophy, Banknote, Eye, EyeOff, Mail } from 'lucide-react';
+import { GraduationCap, Shield, Star, Wallet, Tag, X, CheckCircle, AlertTriangle, Loader2, BookOpen, Clock, Trophy, Banknote, Eye, EyeOff, Mail, Sparkles, Award, Laptop, Flame, Users } from 'lucide-react';
 import Link from 'next/link';
 import { INDIA_STATES } from '@/lib/india-states';
-import WavingIndianFlag from '@/components/WavingIndianFlag';
 import { useSession } from 'next-auth/react';
-import { REGISTRATION_CUTOFF, EXAM_START_TIME, EXAM_END_TIME } from '@/lib/scholarship-schedule';
+import { REGISTRATION_CUTOFF } from '@/lib/scholarship-schedule';
 
 declare const Razorpay: any;
 
@@ -57,7 +56,6 @@ export default function ScholarshipPage() {
 
   // Time gating states
   const [isRegClosed, setIsRegClosed] = useState(false);
-  const [isExamLive, setIsExamLive] = useState(false);
 
   useEffect(() => {
     const checkSchedule = () => {
@@ -69,9 +67,6 @@ export default function ScholarshipPage() {
       const now = Date.now();
       if (now >= REGISTRATION_CUTOFF && !isLocal) {
         setIsRegClosed(true);
-      }
-      if (now >= EXAM_START_TIME && now <= EXAM_END_TIME) {
-        setIsExamLive(true);
       }
     };
     checkSchedule();
@@ -110,6 +105,7 @@ export default function ScholarshipPage() {
   // OTP Fields
   const [mobileOtp, setMobileOtp] = useState('');
   const [isMobileVerified, setIsMobileVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
   // Remaining OTP counts
   const [mobileOtpRemaining, setMobileOtpRemaining] = useState<number | null>(null);
@@ -225,6 +221,7 @@ export default function ScholarshipPage() {
       showToast('OTP sent successfully to your mobile number!', 'success');
       setMobileOtpRemaining(data.remaining);
       setMobileOtpCooldown(60);
+      setOtpSent(true);
     } catch (e: any) {
       const msg = e.message || '';
       if (msg.toLowerCase().includes('already registered')) {
@@ -581,24 +578,58 @@ export default function ScholarshipPage() {
   };
 
   return (
-    <div className="patriotic-bg-container" style={{ position: 'relative', minHeight: '100vh', width: '100%', overflow: 'hidden' }}>
+    <div className="diwali-bg-container" style={{ position: 'relative', minHeight: '100vh', width: '100%', overflow: 'hidden' }}>
       <style>{`
-        .patriotic-bg-container::before {
+        .diwali-bg-container {
+          position: relative;
+          min-height: 100vh;
+          width: 100%;
+          overflow: hidden;
+          background: #080c1b;
+        }
+        .diwali-bg-container::before {
           content: "";
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
-          background-image: url('/patriotic_bg.jpg');
+          background-image: url('/diwali_bg.jpg');
           background-size: cover;
-          background-position: center;
+          background-position: center top;
           background-repeat: no-repeat;
           background-attachment: fixed;
-          opacity: 0.75; /* More visible background */
+          opacity: 0.65;
           z-index: 0;
           pointer-events: none;
         }
+        /* Floating sky lanterns effect */
+        @keyframes floatLantern {
+          0% { transform: translateY(105vh) translateX(0) scale(0.7); opacity: 0; }
+          12% { opacity: 0.85; }
+          85% { opacity: 0.85; }
+          100% { transform: translateY(-25vh) translateX(35px) scale(1.1); opacity: 0; }
+        }
+        .floating-lantern {
+          position: fixed;
+          bottom: -60px;
+          pointer-events: none;
+          z-index: 0;
+          animation: floatLantern linear infinite;
+        }
+        .lantern-1 { left: 6%; animation-duration: 24s; animation-delay: 1s; }
+        .lantern-2 { left: 22%; animation-duration: 29s; animation-delay: 7s; }
+        .lantern-3 { left: 76%; animation-duration: 26s; animation-delay: 3s; }
+        .lantern-4 { left: 92%; animation-duration: 33s; animation-delay: 13s; }
+        
+        @keyframes starTwinkle {
+          0%, 100% { opacity: 0.45; transform: scale(0.92); }
+          50% { opacity: 1; transform: scale(1.12); }
+        }
+        .twinkle-star {
+          animation: starTwinkle 3s ease-in-out infinite;
+        }
+
         .card {
           background: var(--bg-2) !important;
           backdrop-filter: none !important;
@@ -611,6 +642,13 @@ export default function ScholarshipPage() {
         @media (max-width: 560px) {
           .scholarship-2col {
             grid-template-columns: 1fr !important;
+          }
+          .exam-details-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .medallions-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 1rem !important;
           }
         }
         .card-header-animated {
@@ -636,90 +674,287 @@ export default function ScholarshipPage() {
           visibility: visible;
         }
         .card-header-custom {
-          background: var(--bg-2) !important;
-          border: 1px solid rgba(255, 255, 255, 0.08) !important;
-          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
-          backdrop-filter: blur(8px) !important;
-          -webkit-backdrop-filter: blur(8px) !important;
+          background: rgba(15, 23, 42, 0.85) !important;
+          border: 1.5px solid rgba(245, 158, 11, 0.25) !important;
+          box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.5), 0 0 35px rgba(245, 158, 11, 0.08) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
         }
       `}</style>
-      <div style={{ position: 'relative', maxWidth: '720px', margin: '7rem auto 4rem', padding: '0 1.5rem', zIndex: 1 }} className="anim-fade-up">
 
-        {/* Header Banner Card */}
-        <div className={`card card-header-animated card-header-custom ${showHeader ? 'visible' : ''}`} style={{ textAlign: 'center', marginBottom: '2rem', padding: '2.25rem 1.5rem', borderRadius: '20px' }}>
+      {/* Floating Diwali Sky Lanterns */}
+      <div className="floating-lantern lantern-1">
+        <svg width="42" height="52" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG1)" />
+          <ellipse cx="21" cy="45" rx="5" ry="3" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FEF08A" />
+              <stop offset="40%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#DC2626" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="floating-lantern lantern-2">
+        <svg width="34" height="44" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG2)" />
+          <ellipse cx="21" cy="45" rx="5" ry="3" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FEF08A" />
+              <stop offset="40%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#B45309" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="floating-lantern lantern-3">
+        <svg width="48" height="60" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG3)" />
+          <ellipse cx="21" cy="45" rx="6" ry="3.5" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG3" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FFFBEB" />
+              <stop offset="35%" stopColor="#FBBF24" />
+              <stop offset="100%" stopColor="#EA580C" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="floating-lantern lantern-4">
+        <svg width="30" height="38" viewBox="0 0 42 52" fill="none">
+          <path d="M7 10C7 6 12 3 21 3C30 3 35 6 35 10L32 42C32 46 27 49 21 49C15 49 10 46 10 42L7 10Z" fill="url(#lantG4)" />
+          <ellipse cx="21" cy="45" rx="4" ry="2.5" fill="#FEF08A" />
+          <defs>
+            <radialGradient id="lantG4" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FEF08A" />
+              <stop offset="45%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#EF4444" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
 
-          {/* Independence Day Special Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 1rem', borderRadius: '9999px', backgroundColor: '#FFFFFF', border: '1px solid rgba(249,115,22,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '1.25rem' }}>
-            <Sun size={16} color="#F97316" fill="#F97316" />
-            <span style={{ color: '#F97316', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em' }}>INDEPENDENCE DAY SPECIAL</span>
+      <div style={{ position: 'relative', maxWidth: '740px', margin: '7rem auto 4rem', padding: '0 1.5rem', zIndex: 1 }} className="anim-fade-up">
+
+        {/* ═══ DIWALI HEADER BANNER CARD ═══ */}
+        <div className={`card card-header-animated card-header-custom ${showHeader ? 'visible' : ''}`} style={{ textAlign: 'center', marginBottom: '2rem', padding: '2.5rem 1.5rem', borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
+
+          {/* Decorative Top Accent Glow */}
+          <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: '3px', background: 'linear-gradient(90deg, transparent, #F59E0B, #EF4444, transparent)', borderRadius: '0 0 4px 4px' }} />
+
+          {/* Diwali Special Badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.4rem 1.3rem', borderRadius: '9999px', backgroundColor: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', boxShadow: '0 2px 12px rgba(245,158,11,0.15)', marginBottom: '1.25rem' }}>
+            <Sparkles size={16} color="#FBBF24" />
+            <span style={{ color: '#FBBF24', fontSize: '0.78rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Dewali Special</span>
+            <span style={{ fontSize: '0.9rem' }}>🪔</span>
           </div>
 
           {/* Title */}
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.65rem', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
-            <span style={{ color: '#F97316' }}>Scholarship </span>
-            <span style={{ color: '#FFFFFF' }}>Test </span>
-            <span style={{ color: '#22C55E' }}>2026</span>
+          <h1 style={{ fontSize: 'clamp(2.1rem, 5.5vw, 2.9rem)', fontWeight: 900, marginBottom: '0.35rem', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+            <span style={{ color: '#FFFFFF' }}>JobAdda</span>
+            <span style={{ color: '#FBBF24' }}>.in</span><br />
+            <span style={{ color: '#FACC15', textShadow: '0 0 25px rgba(250,204,21,0.4)' }}>SCHOLARSHIP</span><br />
+            <span style={{ color: '#FFFFFF', fontSize: '0.85em', letterSpacing: '0.04em' }}>PROGRAM 2026</span>
           </h1>
 
-          {/* Subtitle / Test Date with Saffron and Green Dashes */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', marginBottom: '1.75rem', fontSize: '1rem', fontWeight: 700 }}>
-            <span style={{ display: 'inline-flex', gap: '4px' }}>
-              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
-              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
-            </span>
-            <span style={{ color: '#818CF8' }}>Test Date: 15th August 2026 (Re-Exam Window: 16th Aug)</span>
-            <span style={{ display: 'inline-flex', gap: '4px' }}>
-              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#22C55E' }}></span>
-              <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: '#F97316' }}></span>
-            </span>
+          {/* Subtitle */}
+          <p style={{ color: '#FDE047', fontStyle: 'italic', fontSize: '1.15rem', fontWeight: 700, margin: '0.35rem 0 1.75rem', fontFamily: 'Georgia, serif', letterSpacing: '0.02em' }}>
+            Shape your future with JobAdda.in
+          </p>
+
+          {/* ═══ EXAM DETAILS BAR (From Poster) ═══ */}
+          <div style={{ 
+            background: 'rgba(15, 23, 42, 0.75)', 
+            border: '1.5px solid rgba(245, 158, 11, 0.35)', 
+            borderRadius: '18px', 
+            padding: '1.25rem 1rem', 
+            marginBottom: '1.75rem',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.4)'
+          }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 1rem', borderRadius: '6px', background: 'linear-gradient(90deg, #F59E0B, #DC2626)', color: '#FFFFFF', fontWeight: 900, fontSize: '0.8rem', letterSpacing: '0.08em', marginBottom: '1rem', textTransform: 'uppercase' }}>
+              EXAM DETAILS
+            </div>
+            <div className="exam-details-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.65rem', textAlign: 'center' }}>
+              <div style={{ padding: '0.55rem 0.4rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>📅 APPLY START</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#10B981', marginTop: '0.2rem' }}>01-SEP-2026</div>
+              </div>
+              <div style={{ padding: '0.55rem 0.4rem', background: 'rgba(239,68,68,0.12)', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.35)' }}>
+                <div style={{ fontSize: '0.68rem', color: '#FCA5A5', fontWeight: 800, textTransform: 'uppercase' }}>⏳ APPLY END</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 900, color: '#EF4444', marginTop: '0.2rem' }}>04-NOV-2026</div>
+              </div>
+              <div style={{ padding: '0.55rem 0.4rem', background: 'rgba(245,158,11,0.12)', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.35)' }}>
+                <div style={{ fontSize: '0.68rem', color: '#FDE68A', fontWeight: 800, textTransform: 'uppercase' }}>📝 EXAM DATE</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 900, color: '#F59E0B', marginTop: '0.2rem' }}>06-NOV-2026</div>
+              </div>
+              <div style={{ padding: '0.55rem 0.4rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>⏱️ DURATION</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#FFFFFF', marginTop: '0.2rem' }}>150 MINUTES</div>
+              </div>
+              <div style={{ padding: '0.55rem 0.4rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>📋 FORMAT</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#FFFFFF', marginTop: '0.2rem' }}>150 MCQs</div>
+              </div>
+              <div style={{ padding: '0.55rem 0.4rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>🌐 MODE</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#38BDF8', marginTop: '0.2rem' }}>ONLINE TEST</div>
+              </div>
+            </div>
           </div>
 
-          {/* Stats Row */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.25rem', marginTop: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#22C55E', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(34,197,94,0.2)' }}>
-                <BookOpen size={16} />
-              </div>
-              <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 MCQs</span>
-            </div>
+          {/* ═══ ROYAL ARCHWAY & HANGING PRIZE MEDALLIONS (Recreated from Poster) ═══ */}
+          <div style={{
+            background: 'linear-gradient(180deg, #FEF3C7 0%, #FDE68A 100%)',
+            borderRadius: '24px',
+            border: '2px solid #D97706',
+            boxShadow: '0 12px 35px rgba(0,0,0,0.35), inset 0 2px 6px rgba(255,255,255,0.8)',
+            padding: '2rem 1.25rem 1.75rem',
+            position: 'relative',
+            marginBottom: '1.75rem',
+            overflow: 'hidden',
+          }}>
+            {/* Hanging Decorative Strings from Top */}
+            <div style={{ position: 'absolute', top: 0, left: '15%', width: '2px', height: '24px', background: '#92400E' }} />
+            <div style={{ position: 'absolute', top: 0, left: '38%', width: '2px', height: '24px', background: '#92400E' }} />
+            <div style={{ position: 'absolute', top: 0, left: '62%', width: '2px', height: '24px', background: '#92400E' }} />
+            <div style={{ position: 'absolute', top: 0, left: '85%', width: '2px', height: '24px', background: '#92400E' }} />
 
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F97316', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(249,115,22,0.2)' }}>
-                <Clock size={16} />
+            <div className="medallions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem', alignItems: 'center' }}>
+              
+              {/* 1st Prize Medallion */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div style={{
+                  width: '92px',
+                  height: '92px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                  boxShadow: '0 8px 20px rgba(220,38,38,0.4), inset 0 2px 4px rgba(255,255,255,0.3)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFFFFF',
+                  padding: '6px',
+                  border: '3px solid #FEF08A'
+                }}>
+                  <span style={{ fontSize: '1.15rem' }}>🎗️</span>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 900, lineHeight: 1.1, marginTop: '2px' }}>1st Prize</div>
+                </div>
+                <div style={{ marginTop: '0.5rem', background: '#FEF08A', border: '1.5px solid #CA8A04', color: '#854D0E', padding: '0.25rem 0.65rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 900, whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+                  ₹1,00,000
+                </div>
               </div>
-              <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>150 Minutes</span>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#6366F1', color: '#FFFFFF', marginRight: '0.65rem', boxShadow: '0 4px 12px rgba(99,102,241,0.2)' }}>
-                <Trophy size={16} />
+              {/* 2nd Prize Medallion */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div style={{
+                  width: '88px',
+                  height: '88px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)',
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.8)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#0F172A',
+                  padding: '6px',
+                  border: '3px solid #CBD5E1'
+                }}>
+                  <span style={{ fontSize: '1.15rem' }}>🥈</span>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 900, lineHeight: 1.1, marginTop: '2px' }}>2nd Prize</div>
+                </div>
+                <div style={{ marginTop: '0.5rem', background: '#0F172A', border: '1.5px solid #475569', color: '#F8FAFC', padding: '0.25rem 0.65rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 900, whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+                  ₹75,000
+                </div>
               </div>
-              <span style={{ color: 'var(--text-2)', fontSize: '0.92rem', fontWeight: 700 }}>Win ₹15,000</span>
+
+              {/* 3rd Prize Medallion */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div style={{
+                  width: '88px',
+                  height: '88px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                  boxShadow: '0 8px 20px rgba(217,119,6,0.35), inset 0 2px 4px rgba(255,255,255,0.4)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFFFFF',
+                  padding: '6px',
+                  border: '3px solid #FEF08A'
+                }}>
+                  <span style={{ fontSize: '1.15rem' }}>🥉</span>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 900, lineHeight: 1.1, marginTop: '2px' }}>3rd Prize</div>
+                </div>
+                <div style={{ marginTop: '0.5rem', background: '#D97706', border: '1.5px solid #92400E', color: '#FFFFFF', padding: '0.25rem 0.65rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 900, whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+                  ₹50,000
+                </div>
+              </div>
+
+              {/* Champion (7 students) Medallion */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div style={{
+                  width: '88px',
+                  height: '88px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
+                  boxShadow: '0 8px 20px rgba(30,27,75,0.4), inset 0 2px 4px rgba(255,255,255,0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFFFFF',
+                  padding: '6px',
+                  border: '3px solid #6366F1'
+                }}>
+                  <span style={{ fontSize: '1.15rem' }}>🏆</span>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 900, lineHeight: 1.1, marginTop: '2px' }}>Champion</div>
+                  <div style={{ fontSize: '0.62rem', color: '#C7D2FE', fontWeight: 700 }}>(7 students)</div>
+                </div>
+                <div style={{ marginTop: '0.5rem', background: '#EA580C', border: '1.5px solid #9A3412', color: '#FFFFFF', padding: '0.25rem 0.65rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 900, whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+                  ₹10,000
+                </div>
+              </div>
+
             </div>
           </div>
 
-          {/* Prominent Exam Portal Link */}
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <Link 
-              href="/scholarship/exam" 
-              className="btn btn-primary btn-lg"
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                background: isExamLive ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                fontSize: '1.05rem',
-                fontWeight: 900,
-                padding: '0.9rem 1.5rem',
-                boxShadow: isExamLive ? '0 10px 30px rgba(16,185,129,0.35)' : '0 10px 30px rgba(99,102,241,0.35)',
-                borderRadius: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem'
-              }}
-            >
-              <Lock size={18} />
-              <span>{isExamLive ? '🔥 EXAM PORTAL IS LIVE! TAKE EXAM NOW →' : 'Enter Scholarship Exam Portal →'}</span>
-            </Link>
+          {/* ═══ SPECIAL COURSE OFFER BANNER (Bottom of Poster) ═══ */}
+          <div style={{
+            background: 'linear-gradient(135deg, #FEF08A 0%, #FDE047 100%)',
+            border: '2px solid #EAB308',
+            borderRadius: '20px',
+            padding: '1.25rem 1.5rem',
+            textAlign: 'left',
+            color: '#1E293B',
+            position: 'relative',
+            overflow: 'hidden',
+            marginBottom: 0,
+            boxShadow: '0 8px 25px rgba(0,0,0,0.25)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#EAB308', color: '#713F12', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.76rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+                  <Users size={14} /> For next 300 Participants
+                </div>
+                <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1.25rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.25 }}>
+                  Get Data Analyst <span style={{ background: '#DC2626', color: '#FFFFFF', padding: '0.15rem 0.5rem', borderRadius: '6px' }}>Course</span> at just
+                </h3>
+                <div style={{ display: 'inline-block', background: '#DC2626', color: '#FFFFFF', fontSize: '1.45rem', fontWeight: 900, padding: '0.3rem 1rem', borderRadius: '8px', boxShadow: '0 4px 12px rgba(220,38,38,0.3)' }}>
+                  ₹15,000/-
+                </div>
+                <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '0.35rem', fontWeight: 600 }}>T & C Applied • Offered by Microsoft Education Partner</div>
+              </div>
+
+              {/* Laptop Graphic Badge */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '20px', background: '#0F172A', color: '#38BDF8', border: '3px solid #DC2626', boxShadow: '0 8px 20px rgba(0,0,0,0.3)', flexShrink: 0 }}>
+                <Laptop size={44} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -733,12 +968,9 @@ export default function ScholarshipPage() {
                 </div>
                 <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.5rem' }}>Scholarship Registration Closed</h3>
                 <p style={{ color: 'var(--text-3)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.75rem', maxWidth: '480px', margin: '0 auto 1.75rem' }}>
-                  Registration for the Scholarship Test 2026 closed on <strong>14th August 2026 at 10:00 PM IST</strong>. New applications are no longer accepted.
+                  Registration for the Scholarship Test 2026 closed on <strong>04th November 2026 at 11:59 PM IST</strong>. New applications are no longer accepted.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', alignItems: 'center', maxWidth: '400px', margin: '0 auto' }}>
-                  <Link href="/scholarship/exam" className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center', fontWeight: 800, padding: '0.9rem' }}>
-                    Enter Exam Portal →
-                  </Link>
                   <button onClick={() => setStep('retrieve')} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', padding: '0.8rem' }}>
                     Already Registered? Pay Pending Fee / Retrieve ID
                   </button>
@@ -785,7 +1017,10 @@ export default function ScholarshipPage() {
 
                   {/* Mobile with OTP */}
                   <div className="input-group">
-                    <label className="label">Mobile Number</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                      <label className="label" style={{ margin: 0 }}>Mobile Number</label>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 500 }}>OTP verification is optional</span>
+                    </div>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
                       <input
                         type="tel"
@@ -793,6 +1028,9 @@ export default function ScholarshipPage() {
                         onChange={e => {
                           setMobile(e.target.value.replace(/\D/g, '').slice(0, 10));
                           setMobileError('');
+                          setOtpSent(false);
+                          setIsMobileVerified(false);
+                          setMobileOtp('');
                         }}
                         placeholder="10-digit mobile number"
                         disabled={isMobileVerified}
@@ -803,13 +1041,13 @@ export default function ScholarshipPage() {
                           type="button"
                           onClick={() => sendOtp(mobile)}
                           disabled={sendingMobileOtp || mobile.length !== 10 || mobileOtpCooldown > 0}
-                          className="btn btn-primary btn-sm"
-                          style={{ whiteSpace: 'nowrap' }}
+                          className="btn btn-outline btn-sm"
+                          style={{ whiteSpace: 'nowrap', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#F59E0B' }}
                         >
                           {sendingMobileOtp ? 'Sending...' : mobileOtpCooldown > 0 ? `Resend in ${mobileOtpCooldown}s` : 'Send OTP'}
                         </button>
                       ) : (
-                        <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={12} /> Verified</span>
+                        <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}><CheckCircle size={12} /> Verified</span>
                       )}
                     </div>
 
@@ -820,19 +1058,28 @@ export default function ScholarshipPage() {
                       </div>
                     )}
 
-                    {!isMobileVerified && mobileOtpRemaining !== null && (
+                    {!isMobileVerified && otpSent && mobileOtpRemaining !== null && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.25rem' }}>
                         Remaining attempts today: <strong style={{ color: 'var(--primary)' }}>{mobileOtpRemaining}</strong>
                       </div>
                     )}
                   </div>
 
-                  {/* Mobile OTP Input */}
-                  {!isMobileVerified && mobile.length === 10 && (
-                    <div className="input-group anim-fade-up" style={{ background: 'var(--bg-3)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <label className="label">Enter Mobile OTP</label>
+                  {/* Mobile OTP Input - Only visible after student explicitly clicks Send OTP */}
+                  {!isMobileVerified && otpSent && (
+                    <div className="input-group anim-fade-up" style={{ background: 'rgba(30, 41, 59, 0.85)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.35)', boxShadow: '0 8px 24px -6px rgba(0,0,0,0.4)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <label className="label" style={{ margin: 0 }}>Enter Mobile OTP</label>
+                        <span style={{ fontSize: '0.75rem', color: '#10B981', fontWeight: 600 }}>OTP sent to +91 {mobile}</span>
+                      </div>
                       <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <input type="text" value={mobileOtp} onChange={e => setMobileOtp(e.target.value.slice(0, 6))} placeholder="Enter 6-digit OTP" />
+                        <input
+                          type="text"
+                          value={mobileOtp}
+                          onChange={e => setMobileOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="Enter 6-digit OTP"
+                          style={{ letterSpacing: '0.1em' }}
+                        />
                         <button
                           type="button"
                           onClick={() => verifyOtp(mobile, mobileOtp)}
