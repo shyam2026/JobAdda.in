@@ -14,6 +14,12 @@ const nextConfig = {
   // Standalone output for Hostinger VPS deployment
   output: 'standalone',
 
+  // Limit workers to prevent Hostinger container thread/process exhaustion ("os error 11")
+  experimental: {
+    cpus: 2,
+    workerThreads: false,
+  },
+
   // Redirect HTTP to HTTPS in production
   async redirects() {
     return []
