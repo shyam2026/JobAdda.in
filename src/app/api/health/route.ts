@@ -34,6 +34,29 @@ export async function GET(req: Request) {
     };
   }
 
+  let remotePrismaStatus = 'untested';
+  let remotePrismaError: any = null;
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('localhost')) {
+    try {
+      const remoteUrl = process.env.DATABASE_URL.replace('localhost', '193.203.184.191');
+      const { PrismaClient } = await import('@prisma/client');
+      const directClient = new PrismaClient({
+        datasources: { db: { url: remoteUrl } },
+        log: ['error'],
+      });
+      await directClient.$queryRawUnsafe('SELECT 1 as test');
+      remotePrismaStatus = 'connected';
+      await directClient.$disconnect().catch(() => {});
+    } catch (e: any) {
+      remotePrismaStatus = 'error';
+      remotePrismaError = {
+        name: e?.name || 'Error',
+        message: e?.message || String(e),
+        code: e?.code,
+      };
+    }
+  }
+
   const testTcp = (host: string, port: number, timeout = 3000): Promise<{ reachable: boolean; error?: string; timeMs?: number }> => {
     return new Promise((resolve) => {
       const net = require('net');
@@ -87,5 +110,7 @@ export async function GET(req: Request) {
     },
     dbStatus,
     dbError,
+    remotePrismaStatus,
+    remotePrismaError,
   });
 }
