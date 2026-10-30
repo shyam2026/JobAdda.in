@@ -16,21 +16,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const email = credentials.email as string;
+        const rawEmail = (credentials.email as string || '').trim();
         const password = credentials.password as string;
         const portalType = credentials.portalType as string || 'student';
 
         try {
           let user;
           if (portalType === 'admin') {
-            user = await (prisma as any).adminUser.findUnique({ where: { email } });
+            user = await (prisma as any).adminUser.findUnique({ where: { email: rawEmail } });
+            if (!user && rawEmail.toLowerCase() !== rawEmail) {
+              user = await (prisma as any).adminUser.findUnique({ where: { email: rawEmail.toLowerCase() } });
+            }
           } else if (portalType === 'company') {
-            user = await (prisma as any).companyUser.findUnique({ where: { email } });
+            user = await (prisma as any).companyUser.findUnique({ where: { email: rawEmail } });
+            if (!user && rawEmail.toLowerCase() !== rawEmail) {
+              user = await (prisma as any).companyUser.findUnique({ where: { email: rawEmail.toLowerCase() } });
+            }
           } else {
             user = await (prisma as any).user.findUnique({ 
-              where: { email },
+              where: { email: rawEmail },
               include: { studentProfile: true }
             });
+            if (!user && rawEmail.toLowerCase() !== rawEmail) {
+              user = await (prisma as any).user.findUnique({ 
+                where: { email: rawEmail.toLowerCase() },
+                include: { studentProfile: true }
+              });
+            }
           }
 
           if (!user) return null;
@@ -110,5 +122,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "yoursecretkey1234567890yoursecretkey",
 });
