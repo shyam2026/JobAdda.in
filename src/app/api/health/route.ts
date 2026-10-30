@@ -34,6 +34,42 @@ export async function GET(req: Request) {
     };
   }
 
+  const testTcp = (host: string, port: number, timeout = 3000): Promise<{ reachable: boolean; error?: string; timeMs?: number }> => {
+    return new Promise((resolve) => {
+      const net = require('net');
+      const start = Date.now();
+      const socket = new net.Socket();
+      socket.setTimeout(timeout);
+
+      socket.on('connect', () => {
+        const timeMs = Date.now() - start;
+        socket.destroy();
+        resolve({ reachable: true, timeMs });
+      });
+
+      socket.on('timeout', () => {
+        socket.destroy();
+        resolve({ reachable: false, error: 'Connection timed out', timeMs: Date.now() - start });
+      });
+
+      socket.on('error', (err: any) => {
+        socket.destroy();
+        resolve({ reachable: false, error: err?.message || String(err), timeMs: Date.now() - start });
+      });
+
+      try {
+        socket.connect(port, host);
+      } catch (e: any) {
+        resolve({ reachable: false, error: e?.message || String(e) });
+      }
+    });
+  };
+
+  const [tcpLocalhost, tcpRemoteDb] = await Promise.all([
+    testTcp('127.0.0.1', 3306),
+    testTcp('193.203.184.191', 3306),
+  ]);
+
   return NextResponse.json({
     nodeVersion: process.version,
     platform: process.platform,
@@ -44,6 +80,10 @@ export async function GET(req: Request) {
       hasNextAuthSecret: Boolean(process.env.NEXTAUTH_SECRET),
       hasNextAuthUrl: Boolean(process.env.NEXTAUTH_URL),
       hasSiteUrl: Boolean(process.env.NEXT_PUBLIC_SITE_URL),
+    },
+    tcpConnectivity: {
+      localhost3306: tcpLocalhost,
+      remoteMysql193_203_184_191: tcpRemoteDb,
     },
     dbStatus,
     dbError,
