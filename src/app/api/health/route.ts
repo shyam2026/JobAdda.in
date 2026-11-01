@@ -9,13 +9,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ status: 'ok' });
   }
 
+  let dbDetails: any = { status: 'none' };
   let dbHost = 'none';
   if (process.env.DATABASE_URL) {
     try {
       const parsed = new URL(process.env.DATABASE_URL);
       dbHost = `${parsed.hostname}:${parsed.port}`;
+      dbDetails = {
+        protocol: parsed.protocol,
+        user: parsed.username,
+        hasPassword: Boolean(parsed.password),
+        host: parsed.hostname,
+        port: parsed.port,
+        database: parsed.pathname.replace('/', ''),
+      };
     } catch {
       dbHost = 'invalid-url-format';
+      dbDetails = { error: 'invalid-url-format' };
     }
   }
 
@@ -125,17 +135,28 @@ export async function GET(req: Request) {
     }
   }
 
-  const testTcp = (host: string, port: number, timeout = 3000): Promise<{ reachable: boolean; error?: string; timeMs?: number }> => {
+  const testTcp = (host: string, port: number, timeout = 3000): Promise<{ reachable: boolean; greeting?: string; error?: string; timeMs?: number }> => {
     return new Promise((resolve) => {
       const net = require('net');
       const start = Date.now();
       const socket = new net.Socket();
       socket.setTimeout(timeout);
 
-      socket.on('connect', () => {
+      socket.once('data', (chunk: any) => {
         const timeMs = Date.now() - start;
+        const greeting = chunk.toString('utf8', 5).split('\0')[0];
         socket.destroy();
-        resolve({ reachable: true, timeMs });
+        resolve({ reachable: true, greeting, timeMs });
+      });
+
+      socket.on('connect', () => {
+        setTimeout(() => {
+          if (!socket.destroyed) {
+            const timeMs = Date.now() - start;
+            socket.destroy();
+            resolve({ reachable: true, timeMs });
+          }
+        }, 500);
       });
 
       socket.on('timeout', () => {
@@ -167,6 +188,7 @@ export async function GET(req: Request) {
     env: {
       hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
       dbHost,
+      dbDetails,
       hasAuthSecret: Boolean(process.env.AUTH_SECRET),
       hasNextAuthSecret: Boolean(process.env.NEXTAUTH_SECRET),
       hasNextAuthUrl: Boolean(process.env.NEXTAUTH_URL),

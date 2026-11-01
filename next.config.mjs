@@ -16,7 +16,7 @@ const nextConfig = {
 
   // Limit workers to prevent Hostinger container thread/process exhaustion ("os error 11")
   experimental: {
-    cpus: 2,
+    cpus: 1,
     workerThreads: false,
   },
 
