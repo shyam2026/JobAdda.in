@@ -57,6 +57,74 @@ export async function GET(req: Request) {
     }
   }
 
+  const fs = require('fs');
+  const path = require('path');
+  const { execSync } = require('child_process');
+
+  const engineDiagnostics: any = {
+    enginesFound: [],
+    execTests: [],
+    osRelease: '',
+    libc: '',
+  };
+
+  try {
+    if (fs.existsSync('/etc/os-release')) {
+      engineDiagnostics.osRelease = fs.readFileSync('/etc/os-release', 'utf8').split('\n').slice(0, 4).join('; ');
+    }
+  } catch (e: any) {
+    engineDiagnostics.osRelease = 'Error: ' + e.message;
+  }
+
+  try {
+    const lddOutput = execSync('ldd --version 2>&1 || true').toString().split('\n')[0];
+    engineDiagnostics.libc = lddOutput;
+  } catch (e: any) {
+    engineDiagnostics.libc = 'Error: ' + e.message;
+  }
+
+  const searchDirs = [
+    path.join(process.cwd(), 'node_modules', '.prisma', 'client'),
+    path.join(process.cwd(), 'node_modules', '@prisma', 'engines'),
+    path.join(process.cwd(), 'node_modules', '@prisma', 'client', 'runtime'),
+  ];
+
+  for (const dir of searchDirs) {
+    try {
+      if (fs.existsSync(dir)) {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+          if (file.includes('engine')) {
+            const fullPath = path.join(dir, file);
+            const stat = fs.statSync(fullPath);
+            engineDiagnostics.enginesFound.push({
+              file,
+              size: stat.size,
+              mode: '0' + (stat.mode & 0o777).toString(8),
+            });
+
+            if (!file.endsWith('.node') && !file.endsWith('.js') && !file.endsWith('.wasm') && !file.endsWith('.d.ts')) {
+              try {
+                const out = execSync(`"${fullPath}" --version 2>&1`, { timeout: 3000 }).toString().trim();
+                engineDiagnostics.execTests.push({ file, success: true, output: out });
+              } catch (execErr: any) {
+                engineDiagnostics.execTests.push({
+                  file,
+                  success: false,
+                  error: execErr.message,
+                  status: execErr.status,
+                  stderr: execErr.stderr?.toString(),
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (err: any) {
+      engineDiagnostics.enginesFound.push({ dir, error: err.message });
+    }
+  }
+
   const testTcp = (host: string, port: number, timeout = 3000): Promise<{ reachable: boolean; error?: string; timeMs?: number }> => {
     return new Promise((resolve) => {
       const net = require('net');
@@ -112,5 +180,6 @@ export async function GET(req: Request) {
     dbError,
     remotePrismaStatus,
     remotePrismaError,
+    engineDiagnostics,
   });
 }
